@@ -1,15 +1,14 @@
-import { Routes, Route } from 'react-router-dom'
-
-function Home() {
-  return <h1>Transporte Klein</h1>
-}
+import React from 'react';
+import { Routes, Route } from 'react-router-dom';
+import Login from './Login'; // Asegúrate de que tu archivo Login.jsx esté en la misma carpeta
 
 function App() {
   return (
     <Routes>
-      <Route path="/" element={<Home />} />
+      {/* Definimos que la ruta principal "/" muestre el componente Login */}
+      <Route path="/" element={<Login />} />
     </Routes>
-  )
+  );
 }
 
-export default App
+export default App;
