@@ -1,0 +1,93 @@
+.us-navbar {
+  background: var(--color-primario);
+  color: #FFFFFF;
+  padding: 18px 28px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.us-navbar__marca {
+  font-size: var(--texto-titulo);
+  font-weight: 700;
+}
+
+.us-contenido {
+  max-width: 1000px;
+  margin: 0 auto;
+  padding: 28px;
+}
+
+.us-encabezado {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.us-encabezado h1 {
+  font-size: var(--texto-titulo);
+  margin: 0;
+  color: var(--color-primario);
+}
+
+.us-tabla-caja {
+  border: 2px solid var(--color-borde-suave);
+  border-radius: var(--radio);
+  overflow-x: auto;
+}
+
+.us-tabla {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: var(--texto-base);
+}
+
+.us-tabla th {
+  background: var(--color-primario-claro);
+  color: var(--color-primario);
+  text-align: left;
+  font-size: var(--texto-label);
+  padding: 14px 16px;
+  border-bottom: 2px solid var(--color-borde-suave);
+  white-space: nowrap;
+}
+
+.us-tabla td {
+  padding: 14px 16px;
+  border-bottom: 1px solid var(--color-borde-suave);
+  color: var(--color-texto);
+}
+
+.us-tabla tr:last-child td {
+  border-bottom: none;
+}
+
+/* Resalta brevemente el usuario recién agregado */
+.us-tabla tr.us-fila--nueva td {
+  background: var(--color-confirmar-claro);
+}
+
+.us-etiqueta-rol {
+  display: inline-block;
+  padding: 4px 12px;
+  border-radius: 999px;
+  font-size: var(--texto-ayuda);
+  font-weight: 700;
+  background: var(--color-primario-claro);
+  color: var(--color-primario);
+}
+
+.us-etiqueta-rol--camionero {
+  background: var(--color-confirmar-claro);
+  color: var(--color-confirmar-oscuro);
+}
+
+.us-vacio {
+  padding: 40px 24px;
+  text-align: center;
+  color: var(--color-texto-suave);
+  font-size: var(--texto-base);
+}

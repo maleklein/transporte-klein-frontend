@@ -1,12 +1,13 @@
-import React from 'react';
 import { Routes, Route } from 'react-router-dom';
-import Login from './Login'; // Asegúrate de que tu archivo Login.jsx esté en la misma carpeta
+import Login from './login';
+import Usuarios from './pages/Usuarios';
 
 function App() {
   return (
     <Routes>
-      {/* Definimos que la ruta principal "/" muestre el componente Login */}
       <Route path="/" element={<Login />} />
+      {/* HU 1.1 — Alta de usuarios */}
+      <Route path="/usuarios" element={<Usuarios />} />
     </Routes>
   );
 }
