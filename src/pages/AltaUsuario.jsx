@@ -9,6 +9,8 @@ import {
   IconoGuardar,
   IconoUsuarioMas,
 } from '../components/Iconos';
+import Campo from '../components/Campo';
+import { evitarFoco } from '../utils/formulario';
 import './AltaUsuario.css';
 
 const VALORES_INICIALES = {
@@ -22,68 +24,6 @@ const VALORES_INICIALES = {
   tipo_vehiculo: '',
   capacidad_kg: '',
 };
-
-/**
- * Campo de formulario reutilizable (label + input + mensaje de error).
- * Se define fuera del componente de la página a propósito: si estuviera adentro,
- * React lo volvería a montar en cada tecla y el input perdería el foco.
- *
- * @param {object} props
- * @param {string} props.id - id del input, usado también para asociar label/error.
- * @param {string} props.etiqueta - texto del label.
- * @param {string} [props.error] - mensaje de error a mostrar, si hay.
- * @param {boolean} [props.obligatorio=true] - si se marca el campo como obligatorio.
- * @param {function} [props.children] - render prop `({id, idError, tieneError}) => JSX`
- *   para reemplazar el `<input>` por un control distinto (ej: `<select>`).
- * @param {import('react').Ref} [props.refInput] - ref a reenviar al `<input>`.
- * @param {object} propsInput - resto de props que se pasan directo al `<input>`.
- * @returns {JSX.Element}
- */
-function Campo({
-  id,
-  etiqueta,
-  error,
-  obligatorio = true,
-  children,
-  refInput,
-  ...propsInput
-}) {
-  const idError = `${id}-error`;
-
-  return (
-    <div className="ds-campo">
-      {/* El label va siempre arriba del campo, no como placeholder */}
-      <label className="ds-campo__label" htmlFor={id}>
-        {etiqueta}
-        {obligatorio && (
-          <span className="ds-campo__obligatorio" aria-hidden="true">
-            *
-          </span>
-        )}
-      </label>
-
-      {children ? (
-        children({ id, idError, tieneError: Boolean(error) })
-      ) : (
-        <input
-          id={id}
-          ref={refInput}
-          className={`ds-campo__input${error ? ' ds-campo__input--error' : ''}`}
-          aria-invalid={Boolean(error)}
-          aria-describedby={error ? idError : undefined}
-          {...propsInput}
-        />
-      )}
-
-      {error && (
-        <span className="ds-campo__error" id={idError} role="alert">
-          <IconoAlerta />
-          {error}
-        </span>
-      )}
-    </div>
-  );
-}
 
 /**
  * Reglas de validación del formulario, evaluadas en tiempo real.
@@ -473,11 +413,19 @@ export default function AltaUsuario() {
             )}
           </div>
 
+          {/*
+            Los botones no toman el foco al apretarlos (evitarFoco). Si lo tomaran,
+            el campo que estaba enfocado dispararía su onBlur, aparecería su mensaje
+            de error y el botón bajaría ~29px entre el mousedown y el mouseup: el
+            mouseup caería al vacío, el click nunca se dispararía y el primer intento
+            de registrar no haría nada.
+          */}
           <div className="au-footer">
             <button
               type="button"
               className="ds-boton ds-boton--cancelar"
               onClick={cancelar}
+              onMouseDown={evitarFoco}
               disabled={enviando}
             >
               <IconoCerrar />
@@ -486,6 +434,7 @@ export default function AltaUsuario() {
             <button
               type="submit"
               className="ds-boton ds-boton--confirmar"
+              onMouseDown={evitarFoco}
               disabled={enviando || Boolean(mensajeExito)}
             >
               <IconoGuardar />

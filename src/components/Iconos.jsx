@@ -61,6 +61,16 @@ export function IconoCamion(props) {
   );
 }
 
+export function IconoCajaMas(props) {
+  return (
+    <svg {...base} {...props}>
+      <path d="M12 21 3 16.5v-9L12 3l9 4.5v4" />
+      <path d="M3 7.5 12 12l9-4.5M12 12v9" />
+      <path d="M18 15v6M21 18h-6" />
+    </svg>
+  );
+}
+
 export function IconoGuardar(props) {
   return (
     <svg {...base} {...props}>

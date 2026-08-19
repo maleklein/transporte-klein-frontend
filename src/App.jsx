@@ -2,6 +2,7 @@ import { Routes, Route } from 'react-router-dom';
 import Login from './login';
 import Usuarios from './pages/Usuarios';
 import AltaUsuario from './pages/AltaUsuario';
+import AltaCarga from './pages/AltaCarga';
 
 /**
  * Enrutador raíz de la aplicación.
@@ -15,6 +16,8 @@ function App() {
       {/* HU 1.1 — Alta de usuarios */}
       <Route path="/usuarios" element={<Usuarios />} />
       <Route path="/usuarios/nuevo" element={<AltaUsuario />} />
+      {/* HU 2.1 + 2.1.1 — Alta de cargas */}
+      <Route path="/cargas/nueva" element={<AltaCarga />} />
     </Routes>
   );
 }
