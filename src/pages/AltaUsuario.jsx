@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { crearUsuario, ErrorDeApi } from '../api/usuarios';
 import {
   IconoAlerta,
@@ -7,8 +8,8 @@ import {
   IconoCheck,
   IconoGuardar,
   IconoUsuarioMas,
-} from './Iconos';
-import './NuevoUsuarioModal.css';
+} from '../components/Iconos';
+import './AltaUsuario.css';
 
 const VALORES_INICIALES = {
   nombre: '',
@@ -23,9 +24,20 @@ const VALORES_INICIALES = {
 };
 
 /**
- * Campo de formulario reutilizable.
- * Se define fuera del componente del modal a propósito: si estuviera adentro,
+ * Campo de formulario reutilizable (label + input + mensaje de error).
+ * Se define fuera del componente de la página a propósito: si estuviera adentro,
  * React lo volvería a montar en cada tecla y el input perdería el foco.
+ *
+ * @param {object} props
+ * @param {string} props.id - id del input, usado también para asociar label/error.
+ * @param {string} props.etiqueta - texto del label.
+ * @param {string} [props.error] - mensaje de error a mostrar, si hay.
+ * @param {boolean} [props.obligatorio=true] - si se marca el campo como obligatorio.
+ * @param {function} [props.children] - render prop `({id, idError, tieneError}) => JSX`
+ *   para reemplazar el `<input>` por un control distinto (ej: `<select>`).
+ * @param {import('react').Ref} [props.refInput] - ref a reenviar al `<input>`.
+ * @param {object} propsInput - resto de props que se pasan directo al `<input>`.
+ * @returns {JSX.Element}
  */
 function Campo({
   id,
@@ -73,7 +85,12 @@ function Campo({
   );
 }
 
-/** Reglas de validación del formulario, evaluadas en tiempo real. */
+/**
+ * Reglas de validación del formulario, evaluadas en tiempo real.
+ *
+ * @param {typeof VALORES_INICIALES} valores - valores actuales del formulario.
+ * @returns {object} mapa `{ campo: mensaje }` con un error por cada campo inválido.
+ */
 function validar(valores) {
   const errores = {};
 
@@ -125,7 +142,12 @@ function validar(valores) {
   return errores;
 }
 
-/** Arma el cuerpo del POST: los datos de camionero solo viajan si corresponde. */
+/**
+ * Arma el cuerpo del POST: los datos de camionero solo viajan si corresponde.
+ *
+ * @param {typeof VALORES_INICIALES} valores - valores actuales del formulario.
+ * @returns {object} payload listo para `crearUsuario`.
+ */
 function armarPayload(valores) {
   const payload = {
     nombre: valores.nombre.trim(),
@@ -146,13 +168,14 @@ function armarPayload(valores) {
 }
 
 /**
- * Modal de alta de usuarios (HU 1.1).
+ * Pantalla de alta de usuarios (HU 1.1), en la ruta /usuarios/nuevo.
+ * Al cancelar o al registrar con éxito, navega de vuelta a /usuarios.
  *
- * @param {boolean}  abierto           si el modal se muestra
- * @param {function} onCerrar          se llama al cancelar o cerrar
- * @param {function} onUsuarioCreado   recibe el usuario creado por el backend (201)
+ * @returns {JSX.Element}
  */
-export default function NuevoUsuarioModal({ abierto, onCerrar, onUsuarioCreado }) {
+export default function AltaUsuario() {
+  const navigate = useNavigate();
+
   const [valores, setValores] = useState(VALORES_INICIALES);
   const [tocados, setTocados] = useState({});
   const [erroresBackend, setErroresBackend] = useState({});
@@ -161,74 +184,46 @@ export default function NuevoUsuarioModal({ abierto, onCerrar, onUsuarioCreado }
   const [intentoEnviar, setIntentoEnviar] = useState(false);
   const [enviando, setEnviando] = useState(false);
 
-  const refModal = useRef(null);
   const refPrimerCampo = useRef(null);
   const refTemporizador = useRef(null);
 
   const erroresValidacion = validar(valores);
   const formularioValido = Object.keys(erroresValidacion).length === 0;
 
-  /** Un error se muestra si el backend lo devolvió, o si el usuario ya tocó el campo. */
+  /**
+   * Un error se muestra si el backend lo devolvió, o si el usuario ya tocó el campo.
+   *
+   * @param {string} campo - nombre del campo (ej: "email", "dni").
+   * @returns {string|undefined} mensaje de error a mostrar, o undefined si no hay.
+   */
   const errorDe = (campo) => {
     if (erroresBackend[campo]) return erroresBackend[campo];
     if (tocados[campo] || intentoEnviar) return erroresValidacion[campo];
     return undefined;
   };
 
-  // Al abrir: estado limpio y foco en el primer campo.
+  // Foco en el primer campo al entrar a la pantalla.
   useEffect(() => {
-    if (!abierto) return;
-
-    setValores(VALORES_INICIALES);
-    setTocados({});
-    setErroresBackend({});
-    setErrorGeneral('');
-    setMensajeExito('');
-    setIntentoEnviar(false);
-    setEnviando(false);
-
     const foco = setTimeout(() => refPrimerCampo.current?.focus(), 60);
     return () => clearTimeout(foco);
-  }, [abierto]);
+  }, []);
 
-  // Limpia el cierre diferido si el modal se desmonta antes de tiempo.
+  // Limpia el temporizador de navegación si la pantalla se desmonta antes de tiempo.
   useEffect(() => () => clearTimeout(refTemporizador.current), []);
 
-  // Escape para cerrar y Tab atrapado dentro del modal.
-  useEffect(() => {
-    if (!abierto) return;
+  /**
+   * Cancela el alta y vuelve al listado de usuarios, sin registrar nada.
+   *
+   * @returns {void}
+   */
+  const cancelar = () => navigate('/usuarios');
 
-    const alPresionarTecla = (evento) => {
-      if (evento.key === 'Escape' && !enviando) {
-        onCerrar();
-        return;
-      }
-
-      if (evento.key !== 'Tab') return;
-
-      const focusables = refModal.current?.querySelectorAll(
-        'button, input, select, textarea, [href]',
-      );
-      if (!focusables?.length) return;
-
-      const primero = focusables[0];
-      const ultimo = focusables[focusables.length - 1];
-
-      if (evento.shiftKey && document.activeElement === primero) {
-        evento.preventDefault();
-        ultimo.focus();
-      } else if (!evento.shiftKey && document.activeElement === ultimo) {
-        evento.preventDefault();
-        primero.focus();
-      }
-    };
-
-    document.addEventListener('keydown', alPresionarTecla);
-    return () => document.removeEventListener('keydown', alPresionarTecla);
-  }, [abierto, enviando, onCerrar]);
-
-  if (!abierto) return null;
-
+  /**
+   * Crea el manejador `onChange` de un campo del formulario.
+   *
+   * @param {string} campo - nombre del campo a actualizar.
+   * @returns {function(evento: Event): void}
+   */
   const alCambiar = (campo) => (evento) => {
     const { value } = evento.target;
 
@@ -256,10 +251,25 @@ export default function NuevoUsuarioModal({ abierto, onCerrar, onUsuarioCreado }
     setErrorGeneral('');
   };
 
+  /**
+   * Crea el manejador `onBlur` de un campo: lo marca como "tocado" para
+   * que su error de validación empiece a mostrarse.
+   *
+   * @param {string} campo - nombre del campo.
+   * @returns {function(): void}
+   */
   const alSalirDelCampo = (campo) => () => {
     setTocados((previos) => ({ ...previos, [campo]: true }));
   };
 
+  /**
+   * Maneja el submit del formulario: valida, registra el usuario contra el
+   * backend y, si sale bien, navega de vuelta al listado tras mostrar el
+   * mensaje de éxito unos segundos.
+   *
+   * @param {import('react').FormEvent} evento
+   * @returns {Promise<void>}
+   */
   const alEnviar = async (evento) => {
     evento.preventDefault();
     setIntentoEnviar(true);
@@ -281,11 +291,10 @@ export default function NuevoUsuarioModal({ abierto, onCerrar, onUsuarioCreado }
         `El usuario ${usuarioCreado.nombre} ${usuarioCreado.apellido} se registró correctamente.`,
       );
 
-      // Actualiza la lista en pantalla sin recargar la página.
-      onUsuarioCreado?.(usuarioCreado);
-
-      // Se deja ver el mensaje de éxito antes de cerrar el modal.
-      refTemporizador.current = setTimeout(() => onCerrar(), 1800);
+      // Se deja ver el mensaje de éxito antes de volver a la lista de usuarios.
+      refTemporizador.current = setTimeout(() => {
+        navigate('/usuarios', { state: { usuarioCreado } });
+      }, 1800);
     } catch (error) {
       const esDeApi = error instanceof ErrorDeApi;
       const mensaje = esDeApi
@@ -308,49 +317,30 @@ export default function NuevoUsuarioModal({ abierto, onCerrar, onUsuarioCreado }
   const esCamionero = valores.rol === 'camionero';
 
   return (
-    <div
-      className="nu-overlay"
-      onMouseDown={(evento) => {
-        // Cierra solo si el click empezó en el fondo, no dentro del modal.
-        if (evento.target === evento.currentTarget && !enviando) onCerrar();
-      }}
-    >
-      <div
-        className="nu-modal"
-        role="dialog"
-        aria-modal="true"
-        aria-labelledby="nu-titulo"
-        ref={refModal}
-      >
-        <div className="nu-header">
-          <h2 className="nu-header__titulo" id="nu-titulo">
-            <IconoUsuarioMas width={26} height={26} />
-            Nuevo Usuario
-          </h2>
-          <button
-            type="button"
-            className="nu-header__cerrar"
-            onClick={onCerrar}
-            disabled={enviando}
-            aria-label="Cerrar ventana"
-            title="Cerrar ventana"
-          >
-            <IconoCerrar />
-          </button>
-        </div>
+    <>
+      <nav className="us-navbar">
+        <IconoCamion width={28} height={28} />
+        <span className="us-navbar__marca">Transporte Klein</span>
+      </nav>
 
-        <form onSubmit={alEnviar} noValidate>
-          <div className="nu-body">
+      <main className="au-contenido">
+        <h1 className="au-titulo">
+          <IconoUsuarioMas width={26} height={26} />
+          Nuevo Usuario
+        </h1>
+
+        <form onSubmit={alEnviar} noValidate className="au-formulario">
+          <div className="au-body">
             {/* Mensajes de estado, arriba del formulario */}
             {mensajeExito && (
-              <div className="nu-aviso nu-aviso--exito" role="status">
+              <div className="au-aviso au-aviso--exito" role="status">
                 <IconoCheck />
                 {mensajeExito}
               </div>
             )}
 
             {errorGeneral && (
-              <div className="nu-aviso nu-aviso--error" role="alert">
+              <div className="au-aviso au-aviso--error" role="alert">
                 <IconoAlerta width={22} height={22} />
                 {errorGeneral}
               </div>
@@ -439,8 +429,8 @@ export default function NuevoUsuarioModal({ abierto, onCerrar, onUsuarioCreado }
 
             {/* Bloque adicional: solo se muestra si el rol es camionero */}
             {esCamionero && (
-              <div className="nu-bloque-camionero">
-                <h3 className="nu-bloque-camionero__titulo">
+              <div className="au-bloque-camionero">
+                <h3 className="au-bloque-camionero__titulo">
                   <IconoCamion />
                   Datos adicionales del camionero
                 </h3>
@@ -483,11 +473,11 @@ export default function NuevoUsuarioModal({ abierto, onCerrar, onUsuarioCreado }
             )}
           </div>
 
-          <div className="nu-footer">
+          <div className="au-footer">
             <button
               type="button"
               className="ds-boton ds-boton--cancelar"
-              onClick={onCerrar}
+              onClick={cancelar}
               disabled={enviando}
             >
               <IconoCerrar />
@@ -503,7 +493,7 @@ export default function NuevoUsuarioModal({ abierto, onCerrar, onUsuarioCreado }
             </button>
           </div>
         </form>
-      </div>
-    </div>
+      </main>
+    </>
   );
 }
