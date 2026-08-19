@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import NuevoUsuarioModal from '../components/NuevoUsuarioModal';
+import { useEffect, useState } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { IconoCamion, IconoUsuarioMas } from '../components/Iconos';
 import './Usuarios.css';
 
@@ -10,17 +10,28 @@ import './Usuarios.css';
  * así que la tabla arranca vacía y se completa con los usuarios que se dan de alta
  * en esta sesión, usando la respuesta 201 del POST. Cuando exista el endpoint de
  * listado, basta con cargarlo acá con un useEffect.
+ *
+ * @returns {JSX.Element}
  */
 export default function Usuarios() {
+  const navigate = useNavigate();
+  const location = useLocation();
+
   const [usuarios, setUsuarios] = useState([]);
-  const [modalAbierto, setModalAbierto] = useState(false);
   const [idReciente, setIdReciente] = useState(null);
 
-  const agregarUsuario = (usuarioCreado) => {
-    // Actualiza la lista en pantalla sin recargar la página.
+  // La pantalla de alta (/usuarios/nuevo) vuelve para acá pasando el usuario
+  // recién creado por router state, ya que no hay GET /usuarios para recargar la lista.
+  useEffect(() => {
+    const usuarioCreado = location.state?.usuarioCreado;
+    if (!usuarioCreado) return;
+
     setUsuarios((previos) => [usuarioCreado, ...previos]);
     setIdReciente(usuarioCreado.id_usuario);
-  };
+
+    // Limpia el state para no volver a agregarlo si el usuario navega con atrás/adelante.
+    navigate(location.pathname, { replace: true, state: null });
+  }, [location.state, location.pathname, navigate]);
 
   return (
     <>
@@ -35,7 +46,7 @@ export default function Usuarios() {
           <button
             type="button"
             className="ds-boton ds-boton--primario"
-            onClick={() => setModalAbierto(true)}
+            onClick={() => navigate('/usuarios/nuevo')}
           >
             <IconoUsuarioMas />
             Nuevo Usuario
@@ -91,12 +102,6 @@ export default function Usuarios() {
           )}
         </div>
       </main>
-
-      <NuevoUsuarioModal
-        abierto={modalAbierto}
-        onCerrar={() => setModalAbierto(false)}
-        onUsuarioCreado={agregarUsuario}
-      />
     </>
   );
 }
