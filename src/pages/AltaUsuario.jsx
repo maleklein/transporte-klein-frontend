@@ -10,6 +10,7 @@ import {
   IconoUsuarioMas,
 } from '../components/Iconos';
 import Campo from '../components/Campo';
+import { evitarFoco } from '../utils/formulario';
 import './AltaUsuario.css';
 
 const VALORES_INICIALES = {
@@ -412,11 +413,19 @@ export default function AltaUsuario() {
             )}
           </div>
 
+          {/*
+            Los botones no toman el foco al apretarlos (evitarFoco). Si lo tomaran,
+            el campo que estaba enfocado dispararía su onBlur, aparecería su mensaje
+            de error y el botón bajaría ~29px entre el mousedown y el mouseup: el
+            mouseup caería al vacío, el click nunca se dispararía y el primer intento
+            de registrar no haría nada.
+          */}
           <div className="au-footer">
             <button
               type="button"
               className="ds-boton ds-boton--cancelar"
               onClick={cancelar}
+              onMouseDown={evitarFoco}
               disabled={enviando}
             >
               <IconoCerrar />
@@ -425,6 +434,7 @@ export default function AltaUsuario() {
             <button
               type="submit"
               className="ds-boton ds-boton--confirmar"
+              onMouseDown={evitarFoco}
               disabled={enviando || Boolean(mensajeExito)}
             >
               <IconoGuardar />

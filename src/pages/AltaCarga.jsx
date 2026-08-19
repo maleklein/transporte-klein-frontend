@@ -11,6 +11,7 @@ import {
   IconoGuardar,
 } from '../components/Iconos';
 import Campo from '../components/Campo';
+import { evitarFoco } from '../utils/formulario';
 import './AltaCarga.css';
 
 const VALORES_INICIALES = {
@@ -332,11 +333,19 @@ export default function AltaCarga() {
             </Campo>
           </div>
 
+          {/*
+            Los botones no toman el foco al apretarlos (evitarFoco). Si lo tomaran,
+            el campo que estaba enfocado dispararía su onBlur, aparecería su mensaje
+            de error y el botón bajaría ~29px entre el mousedown y el mouseup: el
+            mouseup caería al vacío, el click nunca se dispararía y el primer intento
+            de registrar no haría nada.
+          */}
           <div className="ac-footer">
             <button
               type="button"
               className="ds-boton ds-boton--cancelar"
               onClick={cancelar}
+              onMouseDown={evitarFoco}
               disabled={enviando}
             >
               <IconoCerrar />
@@ -344,12 +353,22 @@ export default function AltaCarga() {
             </button>
 
             {mensajeExito ? (
-              <button type="button" className="ds-boton ds-boton--primario" onClick={cargarOtra}>
+              <button
+                type="button"
+                className="ds-boton ds-boton--primario"
+                onClick={cargarOtra}
+                onMouseDown={evitarFoco}
+              >
                 <IconoCajaMas />
                 Cargar otra
               </button>
             ) : (
-              <button type="submit" className="ds-boton ds-boton--confirmar" disabled={enviando}>
+              <button
+                type="submit"
+                className="ds-boton ds-boton--confirmar"
+                onMouseDown={evitarFoco}
+                disabled={enviando}
+              >
                 <IconoGuardar />
                 {enviando ? 'Registrando...' : 'Registrar Carga'}
               </button>
