@@ -14,6 +14,10 @@ import Campo from '../components/Campo';
 import { evitarFoco } from '../utils/formulario';
 import './AltaCarga.css';
 
+/**
+ * Valores con los que arranca el formulario (todos los campos vacíos).
+ * Se usa para inicializar el estado y para dejarlo limpio al cargar otra carga.
+ */
 const VALORES_INICIALES = {
   origen: '',
   destino: '',
@@ -93,6 +97,9 @@ function armarPayload(valores) {
 export default function AltaCarga() {
   const navigate = useNavigate();
 
+  // Estado del formulario: valores cargados, campos ya tocados por el usuario,
+  // errores devueltos por el backend, mensajes generales y de éxito, y si ya
+  // se intentó enviar o hay un envío en curso.
   const [valores, setValores] = useState(VALORES_INICIALES);
   const [tocados, setTocados] = useState({});
   const [erroresBackend, setErroresBackend] = useState({});
@@ -101,8 +108,12 @@ export default function AltaCarga() {
   const [intentoEnviar, setIntentoEnviar] = useState(false);
   const [enviando, setEnviando] = useState(false);
 
+  // refPrimerCampo: input de "Origen", para ponerle el foco al entrar a la
+  // pantalla y para volver a enfocarlo después de cargar otra carga.
   const refPrimerCampo = useRef(null);
 
+  // Se recalculan en cada render: qué campos tienen error ahora mismo,
+  // y si el formulario está en condiciones de enviarse.
   const erroresValidacion = validar(valores);
   const formularioValido = Object.keys(erroresValidacion).length === 0;
 

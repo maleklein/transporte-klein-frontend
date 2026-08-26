@@ -25,6 +25,8 @@ export default function Campo({
   refInput,
   ...propsInput
 }) {
+  // Id del mensaje de error, para que el input lo referencie con aria-describedby
+  // y el lector de pantalla lo lea junto con el campo.
   const idError = `${id}-error`;
 
   return (

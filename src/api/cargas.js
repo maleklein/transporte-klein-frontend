@@ -6,6 +6,7 @@
 import { ErrorDeApi } from './usuarios';
 import { headersDeAuth } from './sesion';
 
+/** URL base del backend. Se puede pisar con la variable de entorno VITE_API_URL. */
 const URL_API = import.meta.env.VITE_API_URL ?? 'http://localhost:3000';
 
 /**
