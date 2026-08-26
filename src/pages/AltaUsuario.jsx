@@ -13,6 +13,10 @@ import Campo from '../components/Campo';
 import { evitarFoco } from '../utils/formulario';
 import './AltaUsuario.css';
 
+/**
+ * Valores con los que arranca el formulario (todos los campos vacíos).
+ * Se usa para inicializar el estado y también para "resetearlo" si hiciera falta.
+ */
 const VALORES_INICIALES = {
   nombre: '',
   apellido: '',
@@ -64,7 +68,7 @@ function validar(valores) {
     errores.rol = 'Elegí un rol para el usuario.';
   }
 
-  // Estos campos solo son obligatorios cuando el rol es camionero.
+  // Ubicación, vehículo y capacidad solo son obligatorios si el usuario es camionero.
   if (valores.rol === 'camionero') {
     if (!valores.ubicacion.trim()) {
       errores.ubicacion = 'Ingresá la ubicación del camionero.';
@@ -83,7 +87,9 @@ function validar(valores) {
 }
 
 /**
- * Arma el cuerpo del POST: los datos de camionero solo viajan si corresponde.
+ * Convierte los valores del formulario en el objeto que espera el backend.
+ * Los campos de camionero (ubicación, vehículo, capacidad) solo se incluyen
+ * si el rol elegido es "camionero"; si es "administrador" se omiten.
  *
  * @param {typeof VALORES_INICIALES} valores - valores actuales del formulario.
  * @returns {object} payload listo para `crearUsuario`.
@@ -108,14 +114,18 @@ function armarPayload(valores) {
 }
 
 /**
- * Pantalla de alta de usuarios (HU 1.1), en la ruta /usuarios/nuevo.
- * Al cancelar o al registrar con éxito, navega de vuelta a /usuarios.
+ * Pantalla de alta de usuarios, en la ruta /usuarios/nuevo.
+ * Muestra el formulario, valida los datos, los envía al backend y,
+ * al cancelar o al registrar con éxito, navega de vuelta a /usuarios.
  *
  * @returns {JSX.Element}
  */
 export default function AltaUsuario() {
   const navigate = useNavigate();
 
+  // Estado del formulario: valores cargados, campos ya tocados por el usuario,
+  // errores devueltos por el backend, mensajes generales y de éxito, y si ya
+  // se intentó enviar o hay un envío en curso.
   const [valores, setValores] = useState(VALORES_INICIALES);
   const [tocados, setTocados] = useState({});
   const [erroresBackend, setErroresBackend] = useState({});
@@ -124,14 +134,21 @@ export default function AltaUsuario() {
   const [intentoEnviar, setIntentoEnviar] = useState(false);
   const [enviando, setEnviando] = useState(false);
 
+  // refPrimerCampo: input de "Nombre", para ponerle el foco al entrar a la pantalla.
+  // refTemporizador: guarda el setTimeout que navega a /usuarios tras el éxito,
+  // para poder cancelarlo si la pantalla se desmonta antes de tiempo.
   const refPrimerCampo = useRef(null);
   const refTemporizador = useRef(null);
 
+  // Se recalculan en cada render: qué campos tienen error ahora mismo,
+  // y si el formulario está en condiciones de enviarse.
   const erroresValidacion = validar(valores);
   const formularioValido = Object.keys(erroresValidacion).length === 0;
 
   /**
-   * Un error se muestra si el backend lo devolvió, o si el usuario ya tocó el campo.
+   * Decide qué mensaje de error mostrar para un campo: prioriza el error
+   * del backend (más específico) y, si no hay, el de validación local,
+   * pero solo una vez que el usuario tocó el campo o intentó enviar.
    *
    * @param {string} campo - nombre del campo (ej: "email", "dni").
    * @returns {string|undefined} mensaje de error a mostrar, o undefined si no hay.
@@ -142,13 +159,14 @@ export default function AltaUsuario() {
     return undefined;
   };
 
-  // Foco en el primer campo al entrar a la pantalla.
+  // Al entrar a la pantalla, pone el foco en el primer campo del formulario.
   useEffect(() => {
     const foco = setTimeout(() => refPrimerCampo.current?.focus(), 60);
     return () => clearTimeout(foco);
   }, []);
 
-  // Limpia el temporizador de navegación si la pantalla se desmonta antes de tiempo.
+  // Si el usuario sale de la pantalla antes de que se cumpla el temporizador
+  // de éxito, lo cancela para no navegar sobre una pantalla ya desmontada.
   useEffect(() => () => clearTimeout(refTemporizador.current), []);
 
   /**
@@ -159,7 +177,9 @@ export default function AltaUsuario() {
   const cancelar = () => navigate('/usuarios');
 
   /**
-   * Crea el manejador `onChange` de un campo del formulario.
+   * Maneja el cambio en un campo del formulario: actualiza su valor y,
+   * si es el select de "rol" y deja de ser camionero, limpia los datos
+   * de vehículo que ya no corresponden. También limpia errores previos.
    *
    * @param {string} campo - nombre del campo a actualizar.
    * @returns {function(evento: Event): void}
@@ -192,8 +212,8 @@ export default function AltaUsuario() {
   };
 
   /**
-   * Crea el manejador `onBlur` de un campo: lo marca como "tocado" para
-   * que su error de validación empiece a mostrarse.
+   * Marca un campo como "tocado" cuando el usuario sale de él, para que
+   * recién ahí empiece a mostrarse su error de validación (si tiene).
    *
    * @param {string} campo - nombre del campo.
    * @returns {function(): void}
@@ -203,12 +223,9 @@ export default function AltaUsuario() {
   };
 
   /**
-   * Maneja el submit del formulario: valida, registra el usuario contra el
-   * backend y, si sale bien, navega de vuelta al listado tras mostrar el
-   * mensaje de éxito unos segundos.
-   *
-   * @param {import('react').FormEvent} evento
-   * @returns {Promise<void>}
+   * Maneja el envío del formulario: valida, registra el usuario contra el
+   * backend y, si sale bien, muestra el mensaje de éxito y vuelve al
+   * listado de usuarios. Si falla, muestra el error correspondiente.
    */
   const alEnviar = async (evento) => {
     evento.preventDefault();
@@ -254,6 +271,7 @@ export default function AltaUsuario() {
     }
   };
 
+  // Determina si hay que mostrar el bloque extra de datos de camionero.
   const esCamionero = valores.rol === 'camionero';
 
   return (
@@ -349,6 +367,8 @@ export default function AltaUsuario() {
               autoComplete="new-password"
             />
 
+            {/* El select de rol usa el render-prop de Campo (children) en vez de
+              un <input> normal, para reutilizar el mismo label + manejo de error. */}
             <Campo id="nu-rol" etiqueta="Rol" error={errorDe('rol')}>
               {({ id, idError, tieneError }) => (
                 <select

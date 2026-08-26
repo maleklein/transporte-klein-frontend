@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { IconoCamion, IconoUsuarioMas } from '../components/Iconos';
 import './Usuarios.css';
@@ -20,12 +20,18 @@ export default function Usuarios() {
   const [usuarios, setUsuarios] = useState([]);
   const [idReciente, setIdReciente] = useState(null);
 
+  // Guarda el id_usuario ya procesado para que el efecto sea idempotente
+  // ante el doble-invoke de <StrictMode> en desarrollo.
+  const idProcesadoRef = useRef(null);
+
   // La pantalla de alta (/usuarios/nuevo) vuelve para acá pasando el usuario
   // recién creado por router state, ya que no hay GET /usuarios para recargar la lista.
   useEffect(() => {
     const usuarioCreado = location.state?.usuarioCreado;
     if (!usuarioCreado) return;
+    if (idProcesadoRef.current === usuarioCreado.id_usuario) return;
 
+    idProcesadoRef.current = usuarioCreado.id_usuario;
     setUsuarios((previos) => [usuarioCreado, ...previos]);
     setIdReciente(usuarioCreado.id_usuario);
 
