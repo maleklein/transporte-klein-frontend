@@ -11,6 +11,7 @@
  *   localStorage.setItem('sesion', JSON.stringify({ id: 1, rol: 'administrador' }))
  */
 
+/** Clave con la que se guarda la sesión en `localStorage`. */
 const CLAVE = 'sesion';
 
 /**
