@@ -72,3 +72,62 @@ export async function crearCarga(datos) {
 
   return cuerpo;
 }
+
+/**
+ * GET /cargas (HU 2.5) — lista las cargas registradas.
+ *
+ * Los tres filtros son opcionales y combinables entre sí. El que llega vacío no
+ * se manda como query param. El backend interpreta `destino` como coincidencia
+ * parcial (no hace falta el nombre exacto).
+ *
+ * @param {object} [filtros]
+ * @param {string} [filtros.estado]  - `estado_actual` exacto ("disponible", "publicada", ...).
+ * @param {string} [filtros.fecha]   - fecha exacta en formato AAAA-MM-DD.
+ * @param {string} [filtros.destino] - texto a buscar dentro del destino.
+ * @param {object} [opciones]
+ * @param {AbortSignal} [opciones.signal] - para cancelar el pedido si se dispara otro antes.
+ * @returns {Promise<object[]>} las cargas que cumplen los filtros; `[]` si ninguna coincide.
+ * @throws {DOMException} `AbortError` si se canceló el pedido (se deja propagar tal cual).
+ * @throws {ErrorDeApi} si el backend rechaza un filtro (400) o falla (500, sin conexión).
+ */
+export async function listarCargas(filtros = {}, opciones = {}) {
+  const params = new URLSearchParams();
+  for (const clave of ['estado', 'fecha', 'destino']) {
+    const valor = String(filtros[clave] ?? '').trim();
+    if (valor) params.set(clave, valor);
+  }
+  const consulta = params.toString();
+
+  let respuesta;
+  try {
+    respuesta = await fetch(`${URL_API}/cargas${consulta ? `?${consulta}` : ''}`, {
+      headers: { ...headersDeAuth() },
+      signal: opciones.signal,
+    });
+  } catch (error) {
+    // Un pedido cancelado no es un error a mostrar: lo maneja quien llamó.
+    if (error?.name === 'AbortError') throw error;
+    throw new ErrorDeApi(
+      'No se pudo conectar con el servidor. Verificá que el sistema esté encendido e intentá de nuevo.',
+      null,
+      0,
+    );
+  }
+
+  let cuerpo = null;
+  try {
+    cuerpo = await respuesta.json();
+  } catch {
+    cuerpo = null;
+  }
+
+  if (!respuesta.ok) {
+    const mensaje =
+      cuerpo?.message ??
+      cuerpo?.error ??
+      `Ocurrió un error inesperado (código ${respuesta.status}).`;
+    throw new ErrorDeApi(mensaje, null, respuesta.status);
+  }
+
+  return Array.isArray(cuerpo) ? cuerpo : [];
+}
