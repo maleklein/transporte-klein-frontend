@@ -1,0 +1,6 @@
+/* Nota bajo el campo de DNI bloqueado, explicando por qué no se puede tocar. */
+.eu-nota {
+  margin: -14px 0 20px;
+  color: var(--color-texto-suave);
+  font-size: var(--texto-ayuda);
+}

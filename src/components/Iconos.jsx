@@ -26,6 +26,15 @@ export function IconoUsuarioMas(props) {
   );
 }
 
+export function IconoUsuario(props) {
+  return (
+    <svg {...base} {...props}>
+      <path d="M15 20v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
+      <circle cx="8.5" cy="7" r="4" />
+    </svg>
+  );
+}
+
 export function IconoCerrar(props) {
   return (
     <svg {...base} {...props}>
@@ -138,6 +147,24 @@ export function IconoEtiqueta(props) {
     <svg {...base} {...props}>
       <path d="M20.6 13.4 13.4 20.6a2 2 0 0 1-2.8 0l-7-7A2 2 0 0 1 3 12.2V5a2 2 0 0 1 2-2h7.2a2 2 0 0 1 1.4.6l7 7a2 2 0 0 1 0 2.8Z" />
       <circle cx="7.5" cy="7.5" r="1.5" />
+    </svg>
+  );
+}
+
+export function IconoEditar(props) {
+  return (
+    <svg {...base} {...props}>
+      <path d="M12 20h9" />
+      <path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z" />
+    </svg>
+  );
+}
+
+export function IconoCorreo(props) {
+  return (
+    <svg {...base} {...props}>
+      <rect x="2" y="4" width="20" height="16" rx="2" />
+      <path d="m2 6 10 7 10-7" />
     </svg>
   );
 }
