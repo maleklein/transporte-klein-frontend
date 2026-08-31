@@ -109,6 +109,17 @@ body {
   background: var(--color-peligro-claro);
 }
 
+/* Acción secundaria: mismo peso visual que un input, sin competir con el primario. */
+.ds-boton--secundario {
+  background: #FFFFFF;
+  color: var(--color-primario);
+  border-color: var(--color-borde);
+}
+.ds-boton--secundario:hover:not(:disabled) {
+  background: var(--color-primario-claro);
+  border-color: var(--color-primario);
+}
+
 /* --------------------------------------------------------------------------
    Campos de formulario — el label SIEMPRE arriba del campo, nunca placeholder solo.
    -------------------------------------------------------------------------- */
@@ -184,4 +195,42 @@ body {
   .ds-fila-2 {
     grid-template-columns: 1fr;
   }
+}
+
+/* --------------------------------------------------------------------------
+   Badge de estado de carga — se usa en el listado y en el detalle (HU 2.5).
+   -------------------------------------------------------------------------- */
+.ds-estado-carga {
+  display: inline-block;
+  padding: 4px 12px;
+  border-radius: 999px;
+  font-size: var(--texto-ayuda);
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.ds-estado-carga--disponible {
+  background: var(--color-primario-claro);
+  color: var(--color-primario);
+}
+
+.ds-estado-carga--publicada,
+.ds-estado-carga--entregada {
+  background: var(--color-confirmar-claro);
+  color: var(--color-confirmar-oscuro);
+}
+
+.ds-estado-carga--en-viaje {
+  background: #FFF4E5;
+  color: #8A5300;
+}
+
+.ds-estado-carga--cancelada {
+  background: var(--color-peligro-claro);
+  color: var(--color-peligro-oscuro);
+}
+
+.ds-estado-carga--neutro {
+  background: var(--color-fondo-alt);
+  color: var(--color-texto-suave);
 }

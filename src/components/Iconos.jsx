@@ -79,3 +79,74 @@ export function IconoGuardar(props) {
     </svg>
   );
 }
+
+export function IconoUbicacion(props) {
+  return (
+    <svg {...base} {...props}>
+      <path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z" />
+      <circle cx="12" cy="10" r="3" />
+    </svg>
+  );
+}
+
+export function IconoCalendario(props) {
+  return (
+    <svg {...base} {...props}>
+      <rect x="3" y="4" width="18" height="18" rx="2" />
+      <path d="M16 2v4M8 2v4M3 10h18" />
+    </svg>
+  );
+}
+
+export function IconoPeso(props) {
+  return (
+    <svg {...base} {...props}>
+      <path d="M9 7a3 3 0 1 1 6 0" />
+      <path d="M6 7h12l1.8 12.9a1 1 0 0 1-1 1.1H5.2a1 1 0 0 1-1-1.1L6 7Z" />
+    </svg>
+  );
+}
+
+export function IconoOjo(props) {
+  return (
+    <svg {...base} {...props}>
+      <path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7Z" />
+      <circle cx="12" cy="12" r="3" />
+    </svg>
+  );
+}
+
+export function IconoFlechaAtras(props) {
+  return (
+    <svg {...base} {...props}>
+      <path d="M19 12H5M12 19l-7-7 7-7" />
+    </svg>
+  );
+}
+
+export function IconoCaja(props) {
+  return (
+    <svg {...base} {...props}>
+      <path d="M12 2 3 7v10l9 5 9-5V7z" />
+      <path d="M3 7l9 5 9-5M12 12v10" />
+    </svg>
+  );
+}
+
+export function IconoEtiqueta(props) {
+  return (
+    <svg {...base} {...props}>
+      <path d="M20.6 13.4 13.4 20.6a2 2 0 0 1-2.8 0l-7-7A2 2 0 0 1 3 12.2V5a2 2 0 0 1 2-2h7.2a2 2 0 0 1 1.4.6l7 7a2 2 0 0 1 0 2.8Z" />
+      <circle cx="7.5" cy="7.5" r="1.5" />
+    </svg>
+  );
+}
+
+export function IconoDocumento(props) {
+  return (
+    <svg {...base} {...props}>
+      <path d="M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z" />
+      <path d="M14 3v6h6M9 13h6M9 17h6" />
+    </svg>
+  );
+}
