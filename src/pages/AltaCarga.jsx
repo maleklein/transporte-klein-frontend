@@ -28,6 +28,40 @@ const VALORES_INICIALES = {
 };
 
 /**
+ * Largo máximo de cada campo de texto. Son los mismos números que valida el
+ * backend, que a su vez salen del tamaño de las columnas en la tabla CARGA.
+ * Se usan tanto para el `maxLength` del input como para el mensaje de error.
+ */
+const LARGOS_MAXIMOS = {
+  origen: 255,
+  destino: 255,
+  tipo_carga: 100,
+  observaciones: 1000,
+};
+
+/**
+ * Rango de peso que soporta la columna `peso DECIMAL(10, 2)`.
+ * El mínimo no es cero: 0,001 kg se redondearía a 0,00 al guardarse.
+ */
+const PESO_MINIMO = 0.01;
+const PESO_MAXIMO = 99999999.99;
+
+/** Años aceptados, alineados con el backend. */
+const ANIO_MINIMO = 1900;
+const ANIO_MAXIMO = 2100;
+
+/**
+ * Interpreta el peso escrito por el usuario. Acepta la coma decimal, que es
+ * como se escribe acá ("12,5"), y la convierte al punto que espera el backend.
+ *
+ * @param {string} valor - lo que hay escrito en el input de peso.
+ * @returns {number} el peso como número, o NaN si no se puede interpretar.
+ */
+function parsearPeso(valor) {
+  return Number(String(valor).replace(',', '.').trim());
+}
+
+/**
  * Reglas de validación del formulario, evaluadas en tiempo real.
  * Replican lo que valida el backend en `POST /cargas`, para que el usuario
  * vea el error antes de mandar el formulario.
@@ -40,32 +74,51 @@ function validar(valores) {
 
   if (!valores.origen.trim()) {
     errores.origen = 'Ingresá el origen de la carga.';
+  } else if (valores.origen.trim().length > LARGOS_MAXIMOS.origen) {
+    errores.origen = `El origen no puede superar los ${LARGOS_MAXIMOS.origen} caracteres.`;
   }
 
   if (!valores.destino.trim()) {
     errores.destino = 'Ingresá el destino de la carga.';
+  } else if (valores.destino.trim().length > LARGOS_MAXIMOS.destino) {
+    errores.destino = `El destino no puede superar los ${LARGOS_MAXIMOS.destino} caracteres.`;
   }
 
   if (!valores.tipo_carga.trim()) {
     errores.tipo_carga = 'Ingresá el tipo de carga.';
+  } else if (valores.tipo_carga.trim().length > LARGOS_MAXIMOS.tipo_carga) {
+    errores.tipo_carga = `El tipo de carga no puede superar los ${LARGOS_MAXIMOS.tipo_carga} caracteres.`;
   }
+
+  const peso = parsearPeso(valores.peso);
 
   if (!String(valores.peso).trim()) {
     errores.peso = 'Ingresá el peso en kilos.';
-  } else if (Number.isNaN(Number(valores.peso))) {
+  } else if (!Number.isFinite(peso)) {
     errores.peso = 'El peso debe ser un número.';
-  } else if (!(Number(valores.peso) > 0)) {
-    errores.peso = 'El peso debe ser mayor a cero.';
+  } else if (peso < PESO_MINIMO) {
+    errores.peso = `El peso debe ser de al menos ${PESO_MINIMO} kg.`;
+  } else if (peso > PESO_MAXIMO) {
+    errores.peso = 'El peso es demasiado grande. Revisá el valor.';
   }
 
   if (!valores.fecha.trim()) {
     errores.fecha = 'Elegí la fecha de la carga.';
   } else if (!/^\d{4}-\d{2}-\d{2}$/.test(valores.fecha)) {
     errores.fecha = 'La fecha debe tener el formato día/mes/año.';
+  } else {
+    // El input date deja tipear años de 5 cifras y fechas del año 1, que la
+    // base no soporta. Se acota acá para no terminar en un error del servidor.
+    const anio = Number(valores.fecha.slice(0, 4));
+    if (anio < ANIO_MINIMO || anio > ANIO_MAXIMO) {
+      errores.fecha = `El año debe estar entre ${ANIO_MINIMO} y ${ANIO_MAXIMO}.`;
+    }
   }
 
   if (!valores.observaciones.trim()) {
     errores.observaciones = 'Ingresá las observaciones de la carga.';
+  } else if (valores.observaciones.trim().length > LARGOS_MAXIMOS.observaciones) {
+    errores.observaciones = `Las observaciones no pueden superar los ${LARGOS_MAXIMOS.observaciones} caracteres.`;
   }
 
   return errores;
@@ -82,7 +135,9 @@ function armarPayload(valores) {
     origen: valores.origen.trim(),
     destino: valores.destino.trim(),
     tipo_carga: valores.tipo_carga.trim(),
-    peso: Number(valores.peso),
+    // Se manda como número para que el backend reciba el punto decimal aunque
+    // el usuario haya escrito con coma.
+    peso: parsearPeso(valores.peso),
     fecha: valores.fecha,
     observaciones: valores.observaciones.trim(),
   };
@@ -275,6 +330,7 @@ export default function AltaCarga() {
                 error={errorDe('origen')}
                 refInput={refPrimerCampo}
                 type="text"
+                maxLength={LARGOS_MAXIMOS.origen}
                 placeholder="Ej: Paraná, Entre Ríos"
                 value={valores.origen}
                 onChange={alCambiar('origen')}
@@ -285,6 +341,7 @@ export default function AltaCarga() {
                 etiqueta="Destino"
                 error={errorDe('destino')}
                 type="text"
+                maxLength={LARGOS_MAXIMOS.destino}
                 placeholder="Ej: Rosario, Santa Fe"
                 value={valores.destino}
                 onChange={alCambiar('destino')}
@@ -298,19 +355,26 @@ export default function AltaCarga() {
                 etiqueta="Tipo de carga"
                 error={errorDe('tipo_carga')}
                 type="text"
+                maxLength={LARGOS_MAXIMOS.tipo_carga}
                 placeholder="Ej: Granos a granel"
                 value={valores.tipo_carga}
                 onChange={alCambiar('tipo_carga')}
                 onBlur={alSalirDelCampo('tipo_carga')}
               />
+              {/*
+                Es type="text" y no type="number" a propósito: el input numérico
+                descarta la coma decimal mientras se tipea, y acá se quiere poder
+                escribir "12,5" como se escribe en Argentina. inputMode="decimal"
+                igual saca el teclado numérico en el celular.
+              */}
               <Campo
                 id="nc-peso"
                 etiqueta="Peso (kg)"
                 error={errorDe('peso')}
-                type="number"
-                min="1"
-                step="0.01"
-                placeholder="Ej: 12500"
+                type="text"
+                inputMode="decimal"
+                maxLength={15}
+                placeholder="Ej: 12500 o 12,5"
                 value={valores.peso}
                 onChange={alCambiar('peso')}
                 onBlur={alSalirDelCampo('peso')}
@@ -332,6 +396,7 @@ export default function AltaCarga() {
                 <textarea
                   id={id}
                   rows={4}
+                  maxLength={LARGOS_MAXIMOS.observaciones}
                   className={`ds-campo__input ac-textarea${tieneError ? ' ds-campo__input--error' : ''}`}
                   aria-invalid={tieneError}
                   aria-describedby={tieneError ? idError : undefined}
