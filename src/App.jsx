@@ -22,7 +22,7 @@ function App() {
       <Route path="/cargas/nueva" element={<AltaCarga />} />
       {/* HU 2.5 — Consulta de cargas */}
       <Route path="/cargas" element={<Cargas />} />
-      <Route path="/cargas/detalle" element={<DetalleCarga />} />
+      <Route path="/cargas/:id" element={<DetalleCarga />} />
     </Routes>
   );
 }

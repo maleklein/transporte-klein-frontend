@@ -32,10 +32,9 @@ const RETRASO_DESTINO_MS = 350;
  *
  * Al entrar pide `GET /cargas` sin filtros. Cada vez que cambia un filtro
  * (estado, fecha o destino) vuelve a pedir con los query params correspondientes
- * y actualiza la grilla de tarjetas. Al hacer click en una tarjeta navega al
- * detalle de esa carga, pasándole los datos que ya tiene el listado por router
- * state (GET /cargas no devuelve `id_carga`, así que no hay forma de recargarla
- * por URL).
+ * y actualiza la grilla de tarjetas. Al hacer click en una tarjeta navega a
+ * `/cargas/:id` con el `id_carga` de esa fila; el detalle recarga la carga con
+ * `GET /cargas/:id`.
  *
  * @returns {JSX.Element}
  */
@@ -126,13 +125,14 @@ export default function Cargas() {
   };
 
   /**
-   * Navega al detalle de una carga, llevando sus datos por router state.
+   * Navega al detalle de una carga por su `id_carga`. El detalle recarga los
+   * datos con `GET /cargas/:id`, así que no hace falta pasarlos por router state.
    *
    * @param {object} carga - la fila del listado sobre la que se hizo click.
    * @returns {void}
    */
   const irAlDetalle = (carga) => {
-    navigate('/cargas/detalle', { state: { carga } });
+    navigate(`/cargas/${carga.id_carga}`);
   };
 
   // Incluye lo tipeado en destino aunque el debounce todavía no lo haya aplicado.
