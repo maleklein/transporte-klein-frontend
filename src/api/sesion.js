@@ -5,23 +5,66 @@
  * `Authorization: Bearer <token>` de cada llamada autenticada, que es lo que
  * espera el middleware `verifyToken` del backend (GIA-39).
  *
- * NOTA (GIA-32): la pantalla de login todavía no está hecha, así que por ahora
- * la sesión se arma a mano. Pedí un token desde la terminal:
- *
- *   curl -s -X POST http://localhost:3000/auth/login \
- *     -H 'Content-Type: application/json' \
- *     -d '{"email":"TU_EMAIL","contraseña":"TU_CLAVE"}'
- *
- * y pegá la respuesta en la consola del navegador:
- *
- *   localStorage.setItem('sesion', JSON.stringify({ token: 'eyJ...', usuario: { id: 1, rol: 'administrador' } }))
- *
- * Cuando el login exista, sólo tiene que llamar a `guardarSesion(token, usuario)`
- * con lo que devuelve el endpoint y el resto de la app no se entera del cambio.
+ * La pantalla de login (`login.jsx`, HU 1.4) llama a `iniciarSesion(email, clave)`
+ * de este módulo, que pega a `POST /auth/login` y guarda lo que devuelve con
+ * `guardarSesion(token, usuario)`. El resto de la app sólo lee la sesión con
+ * `obtenerSesion` / `headersDeAuth` y no se entera de cómo se creó.
  */
 
 /** Clave con la que se guarda la sesión en `localStorage`. */
 const CLAVE = 'sesion';
+
+/** URL base del backend. Se puede pisar con la variable de entorno VITE_API_URL. */
+const URL_API = import.meta.env.VITE_API_URL ?? 'http://localhost:3000';
+
+/**
+ * `POST /auth/login` — valida las credenciales contra el backend y, si son
+ * correctas, deja la sesión guardada para el resto de la app.
+ *
+ * El backend espera el body en español con ñ: `{ email, contraseña }` (no
+ * "password"). `JSON.stringify` serializa esa clave como UTF-8, que es lo que
+ * el backend destructura.
+ *
+ * Respuestas del backend:
+ *   200 → { token, user: { id, email, rol } }
+ *   400 → falta el email o la contraseña
+ *   401 → credenciales incorrectas
+ *   403 → la cuenta no está activa
+ * Todos los errores vienen como { message: "..." }.
+ *
+ * @param {string} email
+ * @param {string} contrasena - la contraseña tal cual la tipeó el usuario.
+ * @returns {Promise<{id: number, email: string, rol: string}>} el usuario logueado.
+ * @throws {Error} con un `.message` mostrable si el backend rechaza o no responde.
+ */
+export async function iniciarSesion(email, contrasena) {
+  let respuesta;
+  try {
+    respuesta = await fetch(`${URL_API}/auth/login`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email, contraseña: contrasena }),
+    });
+  } catch {
+    throw new Error(
+      'No se pudo conectar con el servidor. Verificá que el sistema esté encendido e intentá de nuevo.',
+    );
+  }
+
+  let cuerpo = null;
+  try {
+    cuerpo = await respuesta.json();
+  } catch {
+    cuerpo = null;
+  }
+
+  if (!respuesta.ok) {
+    throw new Error(cuerpo?.message ?? `No se pudo iniciar sesión (código ${respuesta.status}).`);
+  }
+
+  guardarSesion(cuerpo.token, cuerpo.user);
+  return cuerpo.user;
+}
 
 /**
  * Lee la sesión guardada.

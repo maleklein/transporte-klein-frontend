@@ -17,7 +17,7 @@ function App() {
   return (
   
     <Routes>
-     <Route element="{<IniciarSesion" path="/"/>} />
+      <Route path="/" element={<IniciarSesion />} />
       {/* HU 1.1 — Alta de usuarios */}
       <Route path="/usuarios" element={<Usuarios />} />
       <Route path="/usuarios/nuevo" element={<AltaUsuario />} />
