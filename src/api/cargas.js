@@ -4,7 +4,7 @@
  */
 
 import { ErrorDeApi } from './usuarios';
-import { headersDeAuth } from './sesion';
+import { headersDeAuth, manejarNoAutorizado } from './sesion';
 
 /** URL base del backend. Se puede pisar con la variable de entorno VITE_API_URL. */
 const URL_API = import.meta.env.VITE_API_URL ?? 'http://localhost:3000';
@@ -58,6 +58,9 @@ export async function crearCarga(datos) {
   }
 
   if (!respuesta.ok) {
+    // Un 401 significa que el token falta, vencio o dejo de servir:
+    // se limpia la sesion y se vuelve al login.
+    manejarNoAutorizado(respuesta.status);
     const mensaje =
       cuerpo?.message ??
       cuerpo?.error ??
@@ -122,6 +125,9 @@ export async function listarCargas(filtros = {}, opciones = {}) {
   }
 
   if (!respuesta.ok) {
+    // Un 401 significa que el token falta, vencio o dejo de servir:
+    // se limpia la sesion y se vuelve al login.
+    manejarNoAutorizado(respuesta.status);
     const mensaje =
       cuerpo?.message ??
       cuerpo?.error ??
@@ -170,6 +176,9 @@ export async function obtenerCarga(id, opciones = {}) {
   }
 
   if (!respuesta.ok) {
+    // Un 401 significa que el token falta, vencio o dejo de servir:
+    // se limpia la sesion y se vuelve al login.
+    manejarNoAutorizado(respuesta.status);
     const mensaje =
       cuerpo?.message ??
       cuerpo?.error ??
