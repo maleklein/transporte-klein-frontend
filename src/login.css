@@ -1,0 +1,94 @@
+/* ==========================================================================
+   Estilos de la pantalla de login (HU 1.4).
+
+   Van sólo acá, no en index.css: antes estaban en index.css como reglas de
+   `body` (`display:flex; align-items:center; height:100vh`), que se aplicaban a
+   TODAS las pantallas y empujaban el contenido de /usuarios y /cargas fuera de
+   la vista (el navbar quedaba arriba del viewport, sin forma de scrollear).
+   Ahora el centrado lo hace el contenedor `.login-pagina`, que sólo existe
+   dentro de esta pantalla.
+   ========================================================================== */
+
+.login-pagina {
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 24px;
+    background-color: #f8f9fa; /* Fondo gris muy clarito */
+}
+
+.tarjeta-login {
+    background-color: white;
+    padding: 40px;
+    border-radius: 6px;
+    box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.08); /* Sombra suave como en la imagen */
+    width: 400px;
+    max-width: 100%;
+    text-align: center;
+}
+
+.tarjeta-login .titulo {
+    color: #1c4573; /* El azul oscuro de tu diseño */
+    font-size: 26px;
+    margin-bottom: 5px;
+}
+
+.tarjeta-login .subtitulo {
+    color: #6c757d;
+    font-size: 14px;
+    margin-bottom: 30px;
+}
+
+.grupo-input {
+    text-align: left;
+    margin-bottom: 20px;
+}
+
+.grupo-input label {
+    display: block;
+    font-size: 14px;
+    font-weight: bold;
+    color: #333;
+    margin-bottom: 8px;
+}
+
+.grupo-input input {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 14px;
+}
+
+.boton-ingresar {
+    width: 100%;
+    padding: 12px;
+    background-color: #1c4573; /* Azul oscuro del botón */
+    color: white;
+    border: none;
+    border-radius: 4px;
+    font-size: 15px;
+    cursor: pointer;
+    font-weight: bold;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 8px; /* Espacio entre la flechita y el texto */
+    transition: background-color 0.3s;
+}
+
+.boton-ingresar:hover {
+    background-color: #133153; /* Se oscurece un poco al pasar el mouse */
+}
+
+.boton-ingresar:disabled {
+    opacity: 0.7;
+    cursor: not-allowed;
+}
+
+.mensaje-error {
+    color: #d9534f;
+    font-size: 14px;
+    margin-bottom: 15px;
+}

@@ -1,48 +1,53 @@
 import { useState } from 'react';
-import './index.css';
+import { useNavigate } from 'react-router-dom';
+import { iniciarSesion } from './api/sesion';
+import './login.css';
 
+/**
+ * Pantalla de inicio de sesión (HU 1.4), en la ruta `/`.
+ *
+ * Toma correo y contraseña, llama a `POST /auth/login` a través de
+ * `iniciarSesion` (que además guarda el token en la sesión) y, si todo sale
+ * bien, manda al listado de cargas. Si el backend rechaza las credenciales o la
+ * cuenta está inactiva, muestra el mensaje que devolvió el backend.
+ *
+ * @returns {JSX.Element}
+ */
 const IniciarSesion = () => {
+    const navigate = useNavigate();
+
     //Variables de estado
     const [correo, asignarCorreo] = useState('');
     const [clave, asignarClave] = useState('');
     const [mensajeError, asignarMensajeError] = useState('');
+    const [enviando, asignarEnviando] = useState(false);
 
     //Función que se ejecuta al apretar el botón
     const manejarEnvio = async (evento) => {
         evento.preventDefault(); //Evita que la página se recargue al enviar el formulario
 
+        asignarMensajeError('');
+        asignarEnviando(true);
+
         try {
-            //Hacemos la petición al backend local
-            const respuesta = await fetch('http://localhost:3000/autenticacion/iniciar-sesion', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({ correo, clave }) //Enviamos los datos en español
-            });
+            // iniciarSesion pega a POST /auth/login, valida y deja la sesión
+            // guardada. Devuelve el usuario logueado ({ id, email, rol }).
+            // Si algo falla, tira un Error con un mensaje mostrable.
+            const usuario = await iniciarSesion(correo, clave);
 
-            const datos = await respuesta.json();
-
-            //Si el backend nos devuelve un error (credenciales incorrectas)
-            if (!respuesta.ok) {
-                asignarMensajeError(datos.error);
-                return;
-            }
-
-            // Si todo salió bien
-            asignarMensajeError('');
-            alert(`¡Inicio de sesión exitoso! Bienvenido, ${datos.usuario.nombre}`);
-            console.log("Token recibido:", datos.token);
-
-            //MAS ADELANTE ACA VA EL CÓDIGO PARA REDIRECCIONAR A LA PÁGINA PRINCIPAL DE LA APP
-
+            // Login OK: cada rol arranca en su pantalla. El administrador
+            // gestiona usuarios; el camionero ve el listado de cargas.
+            navigate(usuario.rol === 'administrador' ? '/usuarios' : '/cargas');
         } catch (error) {
-            asignarMensajeError('Error de red: No se pudo conectar con el servidor.');
+            asignarMensajeError(error.message);
+        } finally {
+            asignarEnviando(false);
         }
     };
 
     return (
-        <div className="tarjeta-login">
+        <div className="login-pagina">
+          <div className="tarjeta-login">
             <h1 className="titulo">Transporte Klein</h1>
             <p className="subtitulo">Sistema de Gestión de Cargas</p>
 
@@ -54,10 +59,10 @@ const IniciarSesion = () => {
                         value={correo}
                         onChange={(evento) => {
                             asignarCorreo(evento.target.value);
-                            
+
                             //borro cualquier error previo para que el navegador no se confunda
-                            evento.target.setCustomValidity(''); 
-                            
+                            evento.target.setCustomValidity('');
+
                             //Evalúo si el texto actual es inválido (le falta el @ o está vacío)
                             if (!evento.target.validity.valid) {
                                 // Si está mal, volvemos a poner nuestro mensaje
@@ -84,10 +89,11 @@ const IniciarSesion = () => {
                 {/* Si hay un error, mostramos el mensaje en rojo */}
                 {mensajeError && <p className="mensaje-error">{mensajeError}</p>}
 
-                <button type="submit" className="boton-ingresar">
-                    ➔ Iniciar Sesión
+                <button type="submit" className="boton-ingresar" disabled={enviando}>
+                    {enviando ? 'Ingresando...' : '➔ Iniciar Sesión'}
                 </button>
             </form>
+          </div>
         </div>
     );
 };
