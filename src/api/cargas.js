@@ -74,7 +74,7 @@ export async function crearCarga(datos) {
 }
 
 /**
- * GET /cargas (HU 2.5) — lista las cargas registradas.
+ * GET /cargas (HU 2.5 - GIANNA) — lista las cargas registradas.
  *
  * Los tres filtros son opcionales y combinables entre sí. El que llega vacío no
  * se manda como query param. El backend interpreta `destino` como coincidencia
@@ -130,4 +130,52 @@ export async function listarCargas(filtros = {}, opciones = {}) {
   }
 
   return Array.isArray(cuerpo) ? cuerpo : [];
+}
+
+/**
+ * GET /cargas/:id (HU 2.5 - GIANNA) — trae una carga puntual por su `id_carga`.
+ *
+ * Se usa en el detalle: el listado navega a `/cargas/:id` y esta pantalla
+ * recarga la carga por URL (así funciona igual entrando desde el listado o
+ * escribiendo la dirección a mano).
+ *
+ * @param {number|string} id - `id_carga` de la carga buscada.
+ * @param {object} [opciones]
+ * @param {AbortSignal} [opciones.signal] - para cancelar el pedido.
+ * @returns {Promise<object>} la carga encontrada.
+ * @throws {DOMException} `AbortError` si se canceló el pedido (se deja propagar).
+ * @throws {ErrorDeApi} si la carga no existe (404) o el backend falla (500, sin conexión).
+ */
+export async function obtenerCarga(id, opciones = {}) {
+  let respuesta;
+  try {
+    respuesta = await fetch(`${URL_API}/cargas/${encodeURIComponent(id)}`, {
+      headers: { ...headersDeAuth() },
+      signal: opciones.signal,
+    });
+  } catch (error) {
+    if (error?.name === 'AbortError') throw error;
+    throw new ErrorDeApi(
+      'No se pudo conectar con el servidor. Verificá que el sistema esté encendido e intentá de nuevo.',
+      null,
+      0,
+    );
+  }
+
+  let cuerpo = null;
+  try {
+    cuerpo = await respuesta.json();
+  } catch {
+    cuerpo = null;
+  }
+
+  if (!respuesta.ok) {
+    const mensaje =
+      cuerpo?.message ??
+      cuerpo?.error ??
+      `Ocurrió un error inesperado (código ${respuesta.status}).`;
+    throw new ErrorDeApi(mensaje, null, respuesta.status);
+  }
+
+  return cuerpo;
 }
