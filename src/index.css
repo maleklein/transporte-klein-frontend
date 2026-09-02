@@ -74,6 +74,282 @@ body {
 
 .boton-ingresar:hover {
     background-color: #133153; /* Se oscurece un poco al pasar el mouse */
+/* ==========================================================================
+   Transporte Klein — Sistema de diseño
+   Tokens y estilos base. Se aplican a todo el proyecto, no a un solo módulo.
+   Pensado para usuarios no técnicos y adultos mayores:
+   tipografía grande, alto contraste y áreas de click amplias.
+   ========================================================================== */
+
+:root {
+  /* Colores institucionales */
+  --color-primario: #1F4E79;
+  --color-primario-oscuro: #17395A;
+  --color-primario-claro: #E8EFF6;
+
+  --color-confirmar: #2E7D32;
+  --color-confirmar-oscuro: #1B5E20;
+  --color-confirmar-claro: #E7F3E8;
+
+  --color-peligro: #C62828;
+  --color-peligro-oscuro: #8E1F1F;
+  --color-peligro-claro: #FDECEC;
+
+  /* Neutros — contraste alto sobre blanco */
+  --color-fondo: #FFFFFF;
+  --color-fondo-alt: #F1F4F7;
+  --color-texto: #1A1A1A;
+  --color-texto-suave: #4A5568;
+  --color-borde: #8A94A0;
+  --color-borde-suave: #D5DBE3;
+
+  /* Tipografía — mínimo 16px en texto general, 18px en labels */
+  --fuente: 'Inter', system-ui, -apple-system, 'Segoe UI', Arial, sans-serif;
+  --texto-base: 16px;
+  --texto-label: 18px;
+  --texto-titulo: 22px;
+  --texto-ayuda: 15px;
+
+  /* Espaciado y formas */
+  --radio: 10px;
+  --radio-chico: 8px;
+  --sombra-modal: 0 12px 44px rgba(0, 0, 0, 0.32);
+  --foco: 0 0 0 4px rgba(31, 78, 121, 0.35);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: var(--fuente);
+  font-size: var(--texto-base);
+  line-height: 1.5;
+  color: var(--color-texto);
+  background: var(--color-fondo);
+}
+
+/* Foco siempre visible: clave para navegación por teclado */
+:focus-visible {
+  outline: 3px solid var(--color-primario);
+  outline-offset: 2px;
+}
+
+/* --------------------------------------------------------------------------
+   Botones — regla del proyecto: SIEMPRE ícono + texto, nunca solo ícono.
+   -------------------------------------------------------------------------- */
+.ds-boton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 13px 22px;
+  min-height: 52px;
+  border-radius: var(--radio-chico);
+  font-family: var(--fuente);
+  font-size: var(--texto-base);
+  font-weight: 700;
+  cursor: pointer;
+  border: 2px solid transparent;
+  transition: background-color 0.15s ease, border-color 0.15s ease;
+}
+
+.ds-boton:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.ds-boton--primario {
+  background: var(--color-primario);
+  color: #FFFFFF;
+}
+.ds-boton--primario:hover:not(:disabled) {
+  background: var(--color-primario-oscuro);
+}
+
+.ds-boton--confirmar {
+  background: var(--color-confirmar);
+  color: #FFFFFF;
+}
+.ds-boton--confirmar:hover:not(:disabled) {
+  background: var(--color-confirmar-oscuro);
+}
+
+.ds-boton--cancelar {
+  background: #FFFFFF;
+  color: var(--color-peligro);
+  border-color: var(--color-peligro);
+}
+.ds-boton--cancelar:hover:not(:disabled) {
+  background: var(--color-peligro-claro);
+}
+
+/* Acción secundaria: mismo peso visual que un input, sin competir con el primario. */
+.ds-boton--secundario {
+  background: #FFFFFF;
+  color: var(--color-primario);
+  border-color: var(--color-borde);
+}
+.ds-boton--secundario:hover:not(:disabled) {
+  background: var(--color-primario-claro);
+  border-color: var(--color-primario);
+}
+
+/* --------------------------------------------------------------------------
+   Campos de formulario — el label SIEMPRE arriba del campo, nunca placeholder solo.
+   -------------------------------------------------------------------------- */
+.ds-campo {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 20px;
+}
+
+.ds-campo__label {
+  font-size: var(--texto-label);
+  font-weight: 700;
+  color: var(--color-texto);
+  margin-bottom: 8px;
+}
+
+.ds-campo__obligatorio {
+  color: var(--color-peligro);
+  margin-left: 2px;
+}
+
+.ds-campo__input {
+  width: 100%;
+  padding: 13px 14px;
+  min-height: 52px;
+  border: 2px solid var(--color-borde);
+  border-radius: var(--radio-chico);
+  font-family: var(--fuente);
+  font-size: var(--texto-base);
+  color: var(--color-texto);
+  background: #FFFFFF;
+}
+
+.ds-campo__input::placeholder {
+  color: #6B7280;
+}
+
+.ds-campo__input:focus {
+  outline: none;
+  border-color: var(--color-primario);
+  box-shadow: var(--foco);
+}
+
+/* Campo bloqueado (ej: DNI en la edición de usuarios) */
+.ds-campo__input:disabled {
+  background: var(--color-fondo-alt);
+  color: var(--color-texto-suave);
+  cursor: not-allowed;
+}
+
+/* Estado de error: borde rojo + mensaje rojo debajo del campo */
+.ds-campo__input--error {
+  border-color: var(--color-peligro);
+  background: var(--color-peligro-claro);
+}
+
+.ds-campo__input--error:focus {
+  border-color: var(--color-peligro);
+  box-shadow: 0 0 0 4px rgba(198, 40, 40, 0.3);
+}
+
+.ds-campo__error {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--color-peligro);
+  font-size: var(--texto-ayuda);
+  font-weight: 600;
+  margin-top: 6px;
+}
+
+/* Layout: máximo 2 columnas en todo el proyecto */
+.ds-fila-2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0 18px;
+}
+
+@media (max-width: 620px) {
+  .ds-fila-2 {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* --------------------------------------------------------------------------
+   Badge de estado de carga — se usa en el listado y en el detalle (HU 2.5).
+   -------------------------------------------------------------------------- */
+.ds-estado-carga {
+  display: inline-block;
+  padding: 4px 12px;
+  border-radius: 999px;
+  font-size: var(--texto-ayuda);
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.ds-estado-carga--disponible {
+  background: var(--color-primario-claro);
+  color: var(--color-primario);
+}
+
+.ds-estado-carga--publicada,
+.ds-estado-carga--entregada {
+  background: var(--color-confirmar-claro);
+  color: var(--color-confirmar-oscuro);
+}
+
+.ds-estado-carga--en-viaje {
+  background: #FFF4E5;
+  color: #8A5300;
+}
+
+.ds-estado-carga--cancelada {
+  background: var(--color-peligro-claro);
+  color: var(--color-peligro-oscuro);
+}
+
+.ds-estado-carga--neutro {
+  background: var(--color-fondo-alt);
+  color: var(--color-texto-suave);
+}
+
+/* --------------------------------------------------------------------------
+   Etiquetas de rol y estado de usuario — compartidas entre el listado
+   (Usuarios.jsx) y la ficha de detalle (DetalleUsuario.jsx).
+   -------------------------------------------------------------------------- */
+.ds-etiqueta-rol {
+  display: inline-block;
+  padding: 4px 12px;
+  border-radius: 999px;
+  font-size: var(--texto-ayuda);
+  font-weight: 700;
+  background: var(--color-primario-claro);
+  color: var(--color-primario);
+}
+
+.ds-etiqueta-rol--camionero {
+  background: var(--color-confirmar-claro);
+  color: var(--color-confirmar-oscuro);
+}
+
+.ds-etiqueta-estado {
+  display: inline-block;
+  padding: 4px 12px;
+  border-radius: 999px;
+  font-size: var(--texto-ayuda);
+  font-weight: 700;
+  background: var(--color-confirmar-claro);
+  color: var(--color-confirmar-oscuro);
+}
+
+.ds-etiqueta-estado--inactivo {
+  background: var(--color-peligro-claro);
+  color: var(--color-peligro-oscuro);
 }
 
 .mensaje-error {

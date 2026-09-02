@@ -1,0 +1,175 @@
+/* ==========================================================================
+   Consulta de cargas (HU 2.5) — listado en /cargas.
+   Barra de filtros + grilla de tarjetas (una por carga).
+   ========================================================================== */
+
+.cg-filtros {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr auto;
+  gap: 16px;
+  align-items: end;
+  padding: 20px;
+  margin-bottom: 20px;
+  border: 2px solid var(--color-borde-suave);
+  border-radius: var(--radio);
+  background: var(--color-fondo-alt);
+}
+
+.cg-filtro {
+  display: flex;
+  flex-direction: column;
+}
+
+.cg-filtro .ds-campo__label {
+  margin-bottom: 8px;
+}
+
+/* El botón alinea su base con la de los inputs de al lado. */
+.cg-limpiar {
+  white-space: nowrap;
+}
+
+@media (max-width: 720px) {
+  .cg-filtros {
+    grid-template-columns: 1fr;
+  }
+
+  .cg-limpiar {
+    width: 100%;
+  }
+}
+
+.cg-contador {
+  margin: 0 0 12px;
+  font-size: var(--texto-base);
+  color: var(--color-texto-suave);
+}
+
+.cg-aviso-error {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 14px 16px;
+  margin-bottom: 16px;
+  border: 2px solid var(--color-peligro);
+  border-radius: var(--radio-chico);
+  background: var(--color-peligro-claro);
+  color: var(--color-peligro-oscuro);
+  font-weight: 600;
+}
+
+/* Mensajes de estado (cargando / sin resultados / vacío). */
+.cg-mensaje {
+  margin: 0;
+  padding: 40px 24px;
+  border: 2px solid var(--color-borde-suave);
+  border-radius: var(--radio);
+  text-align: center;
+  color: var(--color-texto-suave);
+  font-size: var(--texto-base);
+}
+
+/* --------------------------------------------------------------------------
+   Grilla de tarjetas — máximo 2 columnas, igual que el resto del proyecto.
+   -------------------------------------------------------------------------- */
+.cg-grilla {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 18px;
+}
+
+@media (max-width: 720px) {
+  .cg-grilla {
+    grid-template-columns: 1fr;
+  }
+}
+
+.cg-card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 18px 20px;
+  border: 2px solid var(--color-borde-suave);
+  border-radius: var(--radio);
+  background: var(--color-fondo);
+  transition: border-color 0.12s ease, box-shadow 0.12s ease;
+}
+
+.cg-card:hover,
+.cg-card:focus-within {
+  border-color: var(--color-primario);
+  box-shadow: 0 4px 14px rgba(31, 78, 121, 0.12);
+}
+
+.cg-card__top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.cg-card__titulo {
+  margin: 0;
+  font-size: var(--texto-label);
+  font-weight: 700;
+  color: var(--color-texto);
+}
+
+.cg-card__ruta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+  padding: 8px 10px;
+  border-radius: var(--radio-chico);
+  background: var(--color-fondo-alt);
+  font-weight: 600;
+  color: var(--color-texto);
+}
+
+.cg-card__ruta svg {
+  flex-shrink: 0;
+  color: var(--color-primario);
+}
+
+.cg-card__flecha {
+  color: var(--color-texto-suave);
+}
+
+.cg-card__meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 20px;
+  color: var(--color-texto-suave);
+  font-size: var(--texto-ayuda);
+}
+
+.cg-card__meta span {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+/* Acción principal de la tarjeta. El ::after la estira sobre toda la tarjeta,
+   así el click funciona en cualquier parte sin duplicar controles. */
+.cg-card__vermas {
+  align-self: flex-end;
+  min-height: 44px;
+  padding: 9px 16px;
+  font-size: var(--texto-ayuda);
+}
+
+.cg-card__vermas::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: var(--radio);
+}
+
+.cg-card__vermas:focus-visible {
+  outline: 3px solid var(--color-primario);
+  outline-offset: 2px;
+}
+
+/* El badge de estado (.ds-estado-carga) vive en index.css: se comparte con el detalle. */

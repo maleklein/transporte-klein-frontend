@@ -1,0 +1,76 @@
+.ac-contenido {
+  max-width: 660px;
+  margin: 0 auto;
+  padding: 28px;
+}
+
+.ac-titulo {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: var(--texto-titulo);
+  font-weight: 700;
+  color: var(--color-primario);
+  margin: 0 0 24px;
+}
+
+.ac-formulario {
+  background: var(--color-fondo);
+  border: 2px solid var(--color-borde-suave);
+  border-radius: var(--radio);
+}
+
+.ac-body {
+  padding: 24px 26px 8px;
+}
+
+/* --- Mensajes de estado arriba del formulario --- */
+.ac-aviso {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 14px 16px;
+  border-radius: var(--radio-chico);
+  font-size: var(--texto-base);
+  font-weight: 600;
+  margin-bottom: 20px;
+  border: 2px solid transparent;
+}
+
+.ac-aviso--exito {
+  background: var(--color-confirmar-claro);
+  color: var(--color-confirmar-oscuro);
+  border-color: var(--color-confirmar);
+}
+
+.ac-aviso--error {
+  background: var(--color-peligro-claro);
+  color: var(--color-peligro-oscuro);
+  border-color: var(--color-peligro);
+}
+
+/* El textarea reusa .ds-campo__input, que fija min-height para inputs de una linea. */
+.ac-textarea {
+  min-height: 110px;
+  resize: vertical;
+  line-height: 1.5;
+}
+
+/* --- Pie con las acciones --- */
+.ac-footer {
+  display: flex;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+  gap: 12px;
+  padding: 18px 26px 24px;
+  border-top: 2px solid var(--color-fondo-alt);
+}
+
+@media (max-width: 620px) {
+  .ac-footer {
+    flex-direction: column-reverse;
+  }
+  .ac-footer .ds-boton {
+    width: 100%;
+  }
+}
