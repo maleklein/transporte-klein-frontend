@@ -163,6 +163,13 @@ body {
   box-shadow: var(--foco);
 }
 
+/* Campo bloqueado (ej: DNI en la edición de usuarios) */
+.ds-campo__input:disabled {
+  background: var(--color-fondo-alt);
+  color: var(--color-texto-suave);
+  cursor: not-allowed;
+}
+
 /* Estado de error: borde rojo + mensaje rojo debajo del campo */
 .ds-campo__input--error {
   border-color: var(--color-peligro);
@@ -233,4 +240,38 @@ body {
 .ds-estado-carga--neutro {
   background: var(--color-fondo-alt);
   color: var(--color-texto-suave);
+}
+
+/* --------------------------------------------------------------------------
+   Etiquetas de rol y estado de usuario — compartidas entre el listado
+   (Usuarios.jsx) y la ficha de detalle (DetalleUsuario.jsx).
+   -------------------------------------------------------------------------- */
+.ds-etiqueta-rol {
+  display: inline-block;
+  padding: 4px 12px;
+  border-radius: 999px;
+  font-size: var(--texto-ayuda);
+  font-weight: 700;
+  background: var(--color-primario-claro);
+  color: var(--color-primario);
+}
+
+.ds-etiqueta-rol--camionero {
+  background: var(--color-confirmar-claro);
+  color: var(--color-confirmar-oscuro);
+}
+
+.ds-etiqueta-estado {
+  display: inline-block;
+  padding: 4px 12px;
+  border-radius: 999px;
+  font-size: var(--texto-ayuda);
+  font-weight: 700;
+  background: var(--color-confirmar-claro);
+  color: var(--color-confirmar-oscuro);
+}
+
+.ds-etiqueta-estado--inactivo {
+  background: var(--color-peligro-claro);
+  color: var(--color-peligro-oscuro);
 }

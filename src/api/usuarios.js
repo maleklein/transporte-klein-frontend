@@ -3,6 +3,8 @@
  * Backend: Express en http://localhost:3000
  */
 
+import { headersDeAuth } from './sesion';
+
 const URL_API = import.meta.env.VITE_API_URL ?? 'http://localhost:3000';
 
 /**
@@ -71,6 +73,111 @@ export async function crearUsuario(datos) {
   }
 
   // Algunas respuestas de error pueden no traer JSON válido.
+  let cuerpo = null;
+  try {
+    cuerpo = await respuesta.json();
+  } catch {
+    cuerpo = null;
+  }
+
+  if (!respuesta.ok) {
+    const mensaje =
+      cuerpo?.message ??
+      cuerpo?.error ??
+      `Ocurrió un error inesperado (código ${respuesta.status}).`;
+    throw new ErrorDeApi(mensaje, campoDelMensaje(mensaje), respuesta.status);
+  }
+
+  return cuerpo;
+}
+
+/**
+ * GET /usuarios (HU 1.2) — lista los usuarios registrados.
+ *
+ * Los cuatro filtros son opcionales y combinables entre sí. El que llega vacío
+ * no se manda como query param.
+ *
+ * @param {object} [filtros]
+ * @param {string} [filtros.nombre] - texto a buscar dentro del nombre.
+ * @param {string} [filtros.dni]    - texto a buscar dentro del DNI.
+ * @param {string} [filtros.rol]    - `'administrador'` o `'camionero'`.
+ * @param {string} [filtros.estado] - `'activo'` o `'inactivo'`.
+ * @param {object} [opciones]
+ * @param {AbortSignal} [opciones.signal] - para cancelar el pedido si se dispara otro antes.
+ * @returns {Promise<object[]>} los usuarios que cumplen los filtros; `[]` si ninguno coincide.
+ * @throws {DOMException} `AbortError` si se canceló el pedido (se deja propagar tal cual).
+ * @throws {ErrorDeApi} si el backend rechaza un filtro (400) o falla (500, sin conexión).
+ */
+export async function listarUsuarios(filtros = {}, opciones = {}) {
+  const params = new URLSearchParams();
+  for (const clave of ['nombre', 'dni', 'rol', 'estado']) {
+    const valor = String(filtros[clave] ?? '').trim();
+    if (valor) params.set(clave, valor);
+  }
+  const consulta = params.toString();
+
+  let respuesta;
+  try {
+    respuesta = await fetch(`${URL_API}/usuarios${consulta ? `?${consulta}` : ''}`, {
+      headers: { ...headersDeAuth() },
+      signal: opciones.signal,
+    });
+  } catch (error) {
+    if (error?.name === 'AbortError') throw error;
+    throw new ErrorDeApi(
+      'No se pudo conectar con el servidor. Verificá que el sistema esté encendido e intentá de nuevo.',
+      null,
+      0,
+    );
+  }
+
+  let cuerpo = null;
+  try {
+    cuerpo = await respuesta.json();
+  } catch {
+    cuerpo = null;
+  }
+
+  if (!respuesta.ok) {
+    const mensaje =
+      cuerpo?.message ??
+      cuerpo?.error ??
+      `Ocurrió un error inesperado (código ${respuesta.status}).`;
+    throw new ErrorDeApi(mensaje, null, respuesta.status);
+  }
+
+  return Array.isArray(cuerpo) ? cuerpo : [];
+}
+
+/**
+ * PUT /usuarios/:id (HU 1.2) — edita nombre, apellido, email y estado de un
+ * usuario existente (y, si es camionero, sus datos de vehículo).
+ *
+ * El backend rechaza con 400 si el payload incluye `dni`, `rol` o `contraseña`:
+ * esos campos no se pueden tocar desde este endpoint.
+ *
+ * @param {number} idUsuario - id del usuario a editar.
+ * @param {object} datos - `{ nombre, apellido, email, estado, ubicacion?, tipo_vehiculo?, capacidad_kg? }`.
+ * @returns {Promise<object>} el usuario actualizado que devuelve el backend (200).
+ * @throws {ErrorDeApi} por validación (400), usuario inexistente (404) o error inesperado.
+ */
+export async function editarUsuario(idUsuario, datos) {
+  let respuesta;
+
+  try {
+    respuesta = await fetch(`${URL_API}/usuarios/${idUsuario}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json', ...headersDeAuth() },
+      body: JSON.stringify(datos),
+    });
+  } catch {
+    throw new ErrorDeApi(
+      'No se pudo conectar con el servidor. Verificá que el sistema esté encendido e intentá de nuevo.',
+      null,
+      0,
+    );
+  }
+
   let cuerpo = null;
   try {
     cuerpo = await respuesta.json();
