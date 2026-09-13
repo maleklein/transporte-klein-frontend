@@ -75,6 +75,10 @@
   border-radius: var(--radio);
 }
 
+.dc-card + .dc-card {
+  margin-top: 20px;
+}
+
 .dc-card__titulo {
   margin: 0 0 16px;
   font-size: var(--texto-label);
@@ -160,4 +164,107 @@
   .dc-datos {
     grid-template-columns: 1fr;
   }
+}
+
+/* ==========================================================================
+   Historial de estados (HU 8) — línea de tiempo vertical, `HistorialCarga.jsx`.
+   ========================================================================== */
+
+.dc-historial {
+  display: flex;
+  flex-direction: column;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.dc-historial__item {
+  position: relative;
+  display: flex;
+  gap: 14px;
+  padding-bottom: 20px;
+  padding-left: 4px;
+}
+
+.dc-historial__item:last-child {
+  padding-bottom: 0;
+}
+
+/* Línea vertical que conecta un punto con el siguiente. */
+.dc-historial__item:not(:last-child)::before {
+  content: '';
+  position: absolute;
+  top: 18px;
+  left: 9px;
+  bottom: 0;
+  width: 2px;
+  background: var(--color-borde-suave);
+}
+
+.dc-historial__punto {
+  flex-shrink: 0;
+  width: 14px;
+  height: 14px;
+  margin-top: 4px;
+  border-radius: 50%;
+  border: 2px solid var(--color-fondo);
+  box-shadow: 0 0 0 2px var(--color-borde-suave);
+}
+
+.dc-historial__punto--disponible {
+  background: var(--color-primario);
+}
+
+.dc-historial__punto--publicada,
+.dc-historial__punto--entregada {
+  background: var(--color-confirmar);
+}
+
+.dc-historial__punto--en-viaje {
+  background: #8a5300;
+}
+
+.dc-historial__punto--cancelada {
+  background: var(--color-peligro);
+}
+
+.dc-historial__punto--neutro {
+  background: var(--color-borde);
+}
+
+.dc-historial__contenido {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+
+.dc-historial__fecha {
+  font-size: var(--texto-ayuda);
+  font-weight: 700;
+  color: var(--color-texto-suave);
+}
+
+.dc-historial__transicion {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 0;
+}
+
+.dc-historial__creada {
+  font-size: var(--texto-ayuda);
+  font-weight: 700;
+  color: var(--color-texto);
+}
+
+.dc-historial__flecha {
+  color: var(--color-texto-suave);
+}
+
+.dc-historial__actor {
+  margin: 0;
+  font-size: var(--texto-ayuda);
+  color: var(--color-texto-suave);
 }

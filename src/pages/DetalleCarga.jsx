@@ -12,6 +12,7 @@ import {
   IconoUbicacion,
 } from '../components/Iconos';
 import EstadoCarga from '../components/EstadoCarga';
+import HistorialCarga from '../components/HistorialCarga';
 import { obtenerCarga } from '../api/cargas';
 import { ErrorDeApi } from '../api/usuarios';
 import { formatearFecha, formatearPeso } from '../utils/carga';
@@ -22,8 +23,8 @@ import './DetalleCarga.css';
  *
  * Replica el bloque "Información de la carga" del mockup: título con el badge de
  * estado, la ruta origen → destino, fecha de retiro, peso, tipo y la descripción
- * (`observaciones`). Los bloques de camioneros / asignación / historial son de
- * otras HU (Sprint 2) y no van acá.
+ * (`observaciones`). Debajo va el historial de estados (HU 8, `HistorialCarga`).
+ * Los bloques de camioneros / asignación son de otras HU (Sprint 2) y no van acá.
  *
  * El `id_carga` se lee de la URL y la carga se pide con `GET /cargas/:id` al
  * entrar. Funciona igual llegando desde el listado (click en una tarjeta) o
@@ -157,6 +158,8 @@ export default function DetalleCarga() {
                 <p className="dc-descripcion__texto">{descripcion}</p>
               </div>
             </section>
+
+            <HistorialCarga idCarga={carga.id_carga} />
           </>
         )}
       </main>
