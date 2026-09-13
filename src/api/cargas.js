@@ -188,3 +188,57 @@ export async function obtenerCarga(id, opciones = {}) {
 
   return cuerpo;
 }
+
+/**
+ * GET /cargas/:id/historial (HU 8) — trae la bitácora de cambios de estado de
+ * una carga, más vieja primero.
+ *
+ * Cada fila trae `estado_anterior` (`null` en el primer registro, antes del
+ * alta no había estado previo), `estado_nuevo`, `actor` (nombre ya resuelto
+ * por el backend, o "Sistema") y `marca_tiempo` (ISO 8601 con Z, sin
+ * transformar acá). Si la carga no existe o todavía no tiene cambios
+ * registrados, el backend responde `200 []` — no es un error.
+ *
+ * @param {number|string} id - `id_carga` de la carga.
+ * @param {object} [opciones]
+ * @param {AbortSignal} [opciones.signal] - para cancelar el pedido.
+ * @returns {Promise<object[]>} los eventos del historial; `[]` si no hay.
+ * @throws {DOMException} `AbortError` si se canceló el pedido (se deja propagar).
+ * @throws {ErrorDeApi} si el backend falla (400, 500, sin conexión).
+ */
+export async function obtenerHistorialCarga(id, opciones = {}) {
+  let respuesta;
+  try {
+    respuesta = await fetch(`${URL_API}/cargas/${encodeURIComponent(id)}/historial`, {
+      headers: { ...headersDeAuth() },
+      signal: opciones.signal,
+    });
+  } catch (error) {
+    if (error?.name === 'AbortError') throw error;
+    throw new ErrorDeApi(
+      'No se pudo conectar con el servidor. Verificá que el sistema esté encendido e intentá de nuevo.',
+      null,
+      0,
+    );
+  }
+
+  let cuerpo = null;
+  try {
+    cuerpo = await respuesta.json();
+  } catch {
+    cuerpo = null;
+  }
+
+  if (!respuesta.ok) {
+    // Un 401 significa que el token falta, vencio o dejo de servir:
+    // se limpia la sesion y se vuelve al login.
+    manejarNoAutorizado(respuesta.status);
+    const mensaje =
+      cuerpo?.message ??
+      cuerpo?.error ??
+      `Ocurrió un error inesperado (código ${respuesta.status}).`;
+    throw new ErrorDeApi(mensaje, null, respuesta.status);
+  }
+
+  return Array.isArray(cuerpo) ? cuerpo : [];
+}

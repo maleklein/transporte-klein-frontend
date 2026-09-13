@@ -32,6 +32,26 @@ export function formatearFecha(fechaIso) {
 }
 
 /**
+ * Pasa una marca de tiempo ISO 8601 ("2026-08-31T01:44:08.552Z", lo que
+ * devuelve `GET /cargas/:id/historial`) a "31/08/2026, 01:44" en hora local
+ * del navegador. A diferencia de `formatearFecha`, acá sí conviene construir
+ * un `Date`: el valor trae hora y zona horaria, así que la conversión a local
+ * es justamente lo que se quiere mostrar.
+ *
+ * @param {string} marcaTiempoIso - timestamp ISO con Z (UTC).
+ * @returns {string} fecha y hora listas para mostrar, o el valor original si no es una fecha válida.
+ */
+export function formatearFechaHora(marcaTiempoIso) {
+  const fecha = new Date(marcaTiempoIso);
+  if (Number.isNaN(fecha.getTime())) return marcaTiempoIso ?? '';
+
+  const dosDigitos = (numero) => String(numero).padStart(2, '0');
+  const diaMesAnio = `${dosDigitos(fecha.getDate())}/${dosDigitos(fecha.getMonth() + 1)}/${fecha.getFullYear()}`;
+  const horaMinuto = `${dosDigitos(fecha.getHours())}:${dosDigitos(fecha.getMinutes())}`;
+  return `${diaMesAnio}, ${horaMinuto}`;
+}
+
+/**
  * Primera letra en mayúscula, para mostrar el estado de la carga
  * ("disponible" -> "Disponible"). El resto del texto queda como viene.
  *
