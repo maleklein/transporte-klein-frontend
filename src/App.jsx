@@ -7,6 +7,7 @@ import DetalleUsuario from './pages/DetalleUsuario';
 import AltaCarga from './pages/AltaCarga';
 import Cargas from './pages/Cargas';
 import DetalleCarga from './pages/DetalleCarga';
+import Postulaciones from './pages/Postulaciones';
 
 /**
  * Enrutador raíz de la aplicación.
@@ -30,6 +31,8 @@ function App() {
       {/* HU 2.5 — Consulta de cargas */}
       <Route path="/cargas" element={<Cargas />} />
       <Route path="/cargas/:id" element={<DetalleCarga />} />
+      {/* HU 4 — Mis postulaciones del Camionero */}
+      <Route path="/mis-postulaciones" element={<Postulaciones />} />
     </Routes>
   );
 }

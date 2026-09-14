@@ -13,7 +13,8 @@ import {
 } from '../components/Iconos';
 import EstadoCarga from '../components/EstadoCarga';
 import HistorialCarga from '../components/HistorialCarga';
-import { obtenerCarga } from '../api/cargas';
+// NUEVO: Agregamos postularACarga junto a obtenerCarga
+import { obtenerCarga, postularACarga } from '../api/cargas'; 
 import { ErrorDeApi } from '../api/usuarios';
 import { formatearFecha, formatearPeso } from '../utils/carga';
 import './DetalleCarga.css';
@@ -42,6 +43,11 @@ export default function DetalleCarga() {
   const [estadoPantalla, setEstadoPantalla] = useState('cargando');
   const [mensajeError, setMensajeError] = useState('');
 
+  // Estados para manejar la ventana modal y la carga de la postulación
+  const [modalAbierto, setModalAbierto] = useState(false);
+  const [procesandoPostulacion, setProcesandoPostulacion] = useState(false);
+  const [mensajeModal, setMensajeModal] = useState({ texto: '', tipo: '' }); // tipo: 'exito' | 'error'
+
   useEffect(() => {
     const controlador = new AbortController();
     setEstadoPantalla('cargando');
@@ -68,6 +74,28 @@ export default function DetalleCarga() {
 
     return () => controlador.abort();
   }, [id]);
+
+  // Función que se ejecuta al confirmar en el modal
+  const handleConfirmarPostulacion = async () => {
+    setProcesandoPostulacion(true);
+    setMensajeModal({ texto: '', tipo: '' });
+
+    try {
+      await postularACarga(id);
+      setMensajeModal({ texto: '¡Te postulaste con éxito a esta carga!', tipo: 'exito' });
+      // Cerramos el modal automáticamente después de 2 segundos
+      setTimeout(() => {
+        setModalAbierto(false);
+      }, 2000);
+    } catch (error) {
+      setMensajeModal({
+        texto: error instanceof ErrorDeApi ? error.message : 'Error al postularse',
+        tipo: 'error'
+      });
+    } finally {
+      setProcesandoPostulacion(false);
+    }
+  };
 
   const descripcion =
     carga && typeof carga.observaciones === 'string' && carga.observaciones.trim()
@@ -115,7 +143,20 @@ export default function DetalleCarga() {
             </header>
 
             <section className="dc-card">
-              <h2 className="dc-card__titulo">Información de la carga</h2>
+              {/* NUEVO: Contenedor flex para alinear el título y el botón juntos */}
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <h2 className="dc-card__titulo">Información de la carga</h2>
+                
+                {carga.estado_actual === 'disponible' && (
+                  <button 
+                    className="dc-btn-postular" 
+                    onClick={() => setModalAbierto(true)}
+                    style={{ backgroundColor: '#28a745', color: 'white', padding: '10px 20px', border: 'none', borderRadius: '5px', cursor: 'pointer', fontWeight: 'bold' }}
+                  >
+                    Postularse
+                  </button>
+                )}
+              </div>
 
               <p className="dc-ruta">
                 <IconoUbicacion width={18} height={18} />
@@ -160,6 +201,39 @@ export default function DetalleCarga() {
             </section>
 
             <HistorialCarga idCarga={carga.id_carga} />
+
+            {/* Ventana Modal de Confirmación*/}
+            {modalAbierto && (
+              <div className="modal-overlay" style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(0,0,0,0.5)', display: 'flex', justifyContent: 'center', alignItems: 'center', zIndex: 1000 }}>
+                <div className="modal-content" style={{ backgroundColor: 'white', padding: '30px', borderRadius: '8px', maxWidth: '400px', width: '90%' }}>
+                  <h3>Confirmar Postulación</h3>
+                  <p>¿Estás seguro que deseás postularte para transportar esta carga desde <strong>{carga.origen}</strong> hasta <strong>{carga.destino}</strong>?</p>
+
+                  {mensajeModal.texto && (
+                    <p style={{ color: mensajeModal.tipo === 'exito' ? 'green' : 'red', fontWeight: 'bold' }}>
+                      {mensajeModal.texto}
+                    </p>
+                  )}
+
+                  <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px', marginTop: '20px' }}>
+                    <button
+                      onClick={() => setModalAbierto(false)}
+                      disabled={procesandoPostulacion}
+                      style={{ padding: '8px 16px', cursor: 'pointer' }}
+                    >
+                      Cancelar
+                    </button>
+                    <button
+                      onClick={handleConfirmarPostulacion}
+                      disabled={procesandoPostulacion}
+                      style={{ backgroundColor: '#28a745', color: 'white', padding: '8px 16px', border: 'none', cursor: 'pointer' }}
+                    >
+                      {procesandoPostulacion ? 'Procesando...' : 'Sí, postularme'}
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
           </>
         )}
       </main>

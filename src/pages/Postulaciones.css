@@ -1,0 +1,94 @@
+
+.pos-contenido {
+  padding: 20px;
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+.pos-titulo {
+  margin-top: 20px;
+  margin-bottom: 20px;
+  color: #1a365d;
+  font-size: 1.8rem;
+}
+
+.pos-mensaje-cargando {
+  color: #4a5568;
+}
+
+.pos-aviso-error {
+  color: #e53e3e;
+  font-weight: bold;
+}
+
+.pos-mensaje-vacio {
+  font-size: 1.1rem;
+  color: #718096;
+}
+
+.pos-lista {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.pos-card {
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  padding: 20px;
+  background-color: white;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+}
+
+.pos-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 15px;
+}
+
+.pos-card-tipo {
+  font-size: 1.2rem;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #2d3748;
+}
+
+/* Clases dinámicas para los estados de la postulación */
+.pos-badge {
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-weight: bold;
+  font-size: 0.9rem;
+  text-transform: uppercase;
+}
+
+.pos-badge--pendiente {
+  background-color: #fef3c7;
+  color: #92400e;
+}
+
+.pos-badge--aceptada {
+  background-color: #d1fae5;
+  color: #065f46;
+}
+
+.pos-badge--rechazada {
+  background-color: #fee2e2;
+  color: #991b1b;
+}
+
+.pos-card-body {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  color: #4a5568;
+}
+
+.pos-card-dato {
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
