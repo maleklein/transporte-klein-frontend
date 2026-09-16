@@ -303,3 +303,54 @@ export async function obtenerHistorialCarga(id, opciones = {}) {
 
   return Array.isArray(cuerpo) ? cuerpo : [];
 }
+
+/**
+ * PATCH /cargas/:id/estado (HU 7) — lleva una carga a otro estado.
+ *
+ * El backend valida la transición contra la máquina de estados y deja el
+ * cambio asentado en la bitácora con el administrador responsable. Si la
+ * transición no está permitida responde 409 con un mensaje que explica a qué
+ * estados sí se puede pasar, pensado para mostrarse tal cual al usuario.
+ *
+ * @param {number|string} id - `id_carga` de la carga.
+ * @param {string} estado - estado destino (uno de `ESTADOS` en `utils/estadosCarga`).
+ * @returns {Promise<object>} la carga ya actualizada que devuelve el backend (200).
+ * @throws {ErrorDeApi} si la carga no existe (404), la transición no está
+ *   permitida (409), el estado pedido es inválido (400), o para el resto de
+ *   los errores (401, 403, 500, sin conexión).
+ */
+export async function cambiarEstadoCarga(id, estado) {
+  let respuesta;
+
+  try {
+    respuesta = await fetch(`${URL_API}/cargas/${encodeURIComponent(id)}/estado`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json', ...headersDeAuth() },
+      body: JSON.stringify({ estado }),
+    });
+  } catch {
+    throw new ErrorDeApi(
+      'No se pudo conectar con el servidor. Verificá que el sistema esté encendido e intentá de nuevo.',
+      null,
+      0,
+    );
+  }
+
+  let cuerpo = null;
+  try {
+    cuerpo = await respuesta.json();
+  } catch {
+    cuerpo = null;
+  }
+
+  if (!respuesta.ok) {
+    manejarNoAutorizado(respuesta.status);
+    const mensaje =
+      cuerpo?.message ??
+      cuerpo?.error ??
+      `Ocurrió un error inesperado (código ${respuesta.status}).`;
+    throw new ErrorDeApi(mensaje, null, respuesta.status);
+  }
+
+  return cuerpo;
+}

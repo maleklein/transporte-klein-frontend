@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { listarCargas } from '../api/cargas';
 import { ErrorDeApi } from '../api/usuarios';
+import { usuarioActual } from '../api/sesion';
 import {
   IconoAlerta,
   IconoCalendario,
@@ -12,7 +13,8 @@ import {
   IconoUbicacion,
 } from '../components/Iconos';
 import EstadoCarga from '../components/EstadoCarga';
-import { capitalizarEstado, formatearFecha, formatearPeso } from '../utils/carga';
+import { formatearFecha, formatearPeso } from '../utils/carga';
+import { etiquetaEstado } from '../utils/estadosCarga';
 import './Cargas.css';
 
 /**
@@ -61,6 +63,12 @@ export default function Cargas() {
   // <datalist> del input de destino: son sólo sugerencias, el campo sigue siendo
   // texto libre y el backend hace la coincidencia parcial.
   const [destinosSugeridos, setDestinosSugeridos] = useState([]);
+
+  // HU 3: al camionero el backend le devuelve sólo las cargas en "disponible",
+  // que son a las que se puede postular. Como para él todas tienen el mismo
+  // estado, el filtro por estado no le aporta nada y se oculta; le quedan los
+  // de fecha y destino, que son los que sí le sirven para elegir un viaje.
+  const esCamionero = usuarioActual()?.rol === 'camionero';
 
   const hayFiltrosAplicados = Boolean(filtros.estado || filtros.fecha || filtros.destino);
 
@@ -147,31 +155,41 @@ export default function Cargas() {
 
       <main className="us-contenido">
         <div className="us-encabezado">
-          <h1>Gestión de Cargas</h1>
+          <h1>{esCamionero ? 'Cargas disponibles' : 'Gestión de Cargas'}</h1>
         </div>
+
+        {esCamionero && (
+          <p className="cg-intro">
+            Estas son las cargas disponibles para tomar. Usá los filtros para encontrar
+            la que te sirva por fecha o destino.
+          </p>
+        )}
 
         {/* Filtros: combinables entre sí. Cada cambio vuelve a pedir GET /cargas. */}
         <div className="cg-filtros">
-          <div className="cg-filtro">
-            <label className="ds-campo__label" htmlFor="cg-estado">
-              Estado
-            </label>
-            <select
-              id="cg-estado"
-              className="ds-campo__input"
-              value={filtros.estado}
-              onChange={(evento) =>
-                setFiltros((previos) => ({ ...previos, estado: evento.target.value }))
-              }
-            >
-              <option value="">Todos los estados</option>
-              {estadosDisponibles.map((estado) => (
-                <option key={estado} value={estado}>
-                  {capitalizarEstado(estado)}
-                </option>
-              ))}
-            </select>
-          </div>
+          {/* El filtro por estado es sólo para el administrador (ver `esCamionero`). */}
+          {!esCamionero && (
+            <div className="cg-filtro">
+              <label className="ds-campo__label" htmlFor="cg-estado">
+                Estado
+              </label>
+              <select
+                id="cg-estado"
+                className="ds-campo__input"
+                value={filtros.estado}
+                onChange={(evento) =>
+                  setFiltros((previos) => ({ ...previos, estado: evento.target.value }))
+                }
+              >
+                <option value="">Todos los estados</option>
+                {estadosDisponibles.map((estado) => (
+                  <option key={estado} value={estado}>
+                    {etiquetaEstado(estado)}
+                  </option>
+                ))}
+              </select>
+            </div>
+          )}
 
           <div className="cg-filtro">
             <label className="ds-campo__label" htmlFor="cg-fecha">

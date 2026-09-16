@@ -1,0 +1,59 @@
+/* Diálogo de confirmación para acciones irreversibles.
+   El <dialog> nativo ya centra y bloquea el fondo; acá sólo va lo visual. */
+
+.dg-dialogo {
+  padding: 0;
+  max-width: 440px;
+  width: calc(100% - 32px);
+  border: none;
+  border-radius: var(--radio);
+  box-shadow: var(--sombra-modal);
+  color: var(--color-texto);
+  background: var(--color-fondo);
+  /* El `<dialog>` se centra solo con su `margin: auto` del navegador, pero el
+     reset global de index.css (`* { margin: 0 }`) se lo pisa. Se repone acá. */
+  margin: auto;
+}
+
+.dg-dialogo::backdrop {
+  background: rgba(0, 0, 0, 0.45);
+}
+
+.dg-contenido {
+  padding: 24px;
+}
+
+.dg-titulo {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 0 0 10px;
+  font-size: var(--texto-titulo);
+  color: var(--color-primario);
+}
+
+.dg-mensaje {
+  margin: 0 0 22px;
+  color: var(--color-texto-suave);
+  line-height: 1.5;
+}
+
+.dg-acciones {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+/* En pantallas chicas los botones van uno arriba del otro y ocupan todo el
+   ancho, que es más fácil de acertar con el dedo. El de confirmar queda
+   abajo a propósito: cuesta un poco más llegar a él que al de volver. */
+@media (max-width: 480px) {
+  .dg-acciones {
+    flex-direction: column-reverse;
+  }
+
+  .dg-acciones .ds-boton {
+    width: 100%;
+    justify-content: center;
+  }
+}

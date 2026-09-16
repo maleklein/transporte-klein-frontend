@@ -1,0 +1,106 @@
+/* Recorrido del ciclo de vida de una carga (HU 7).
+   Los pasos se reparten a lo ancho y se unen con una línea, que se pinta
+   según el paso ya esté cumplido o falte. */
+
+.pg-pasos {
+  display: flex;
+  margin: 0 0 20px;
+  padding: 0;
+  list-style: none;
+  counter-reset: paso;
+}
+
+.pg-paso {
+  position: relative;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  text-align: center;
+}
+
+/* La línea que une un paso con el siguiente. Va detrás de las marcas
+   (z-index) y arranca desde el centro del círculo hacia la derecha. */
+.pg-paso:not(:last-child)::after {
+  content: '';
+  position: absolute;
+  top: 14px;
+  left: 50%;
+  width: 100%;
+  height: 3px;
+  background: var(--color-borde-suave);
+}
+
+/* El tramo hasta un paso cumplido ya está recorrido. */
+.pg-paso--cumplido:not(:last-child)::after {
+  background: var(--color-confirmar);
+}
+
+.pg-paso__marca {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  border: 3px solid var(--color-borde-suave);
+  background: var(--color-fondo);
+  font-size: var(--texto-ayuda);
+  font-weight: 700;
+  color: var(--color-texto-suave);
+}
+
+.pg-paso--cumplido .pg-paso__marca {
+  border-color: var(--color-confirmar);
+  background: var(--color-confirmar);
+  color: #fff;
+}
+
+.pg-paso--actual .pg-paso__marca {
+  border-color: var(--color-primario);
+  background: var(--color-primario);
+  color: #fff;
+  /* Halo para que el paso actual se distinga aun sin color (daltonismo). */
+  box-shadow: 0 0 0 4px var(--color-primario-claro);
+}
+
+.pg-paso__nombre {
+  font-size: var(--texto-ayuda);
+  color: var(--color-texto-suave);
+}
+
+.pg-paso--actual .pg-paso__nombre {
+  font-weight: 700;
+  color: var(--color-primario);
+}
+
+.pg-cancelada {
+  margin: 0 0 20px;
+  padding: 12px 14px;
+  border: 2px solid var(--color-peligro);
+  border-radius: var(--radio-chico);
+  background: var(--color-peligro-claro);
+  color: var(--color-peligro-oscuro);
+}
+
+/* En pantallas chicas los nombres no entran uno al lado del otro: se deja
+   sólo el del paso actual, que es el dato que importa. */
+@media (max-width: 560px) {
+  .pg-paso__nombre {
+    display: none;
+  }
+
+  .pg-paso--actual .pg-paso__nombre {
+    display: block;
+    position: absolute;
+    top: 38px;
+    white-space: nowrap;
+  }
+
+  .pg-pasos {
+    margin-bottom: 40px;
+  }
+}

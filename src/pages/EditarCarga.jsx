@@ -14,17 +14,10 @@ import {
 import Campo from '../components/Campo';
 import { evitarFoco } from '../utils/formulario';
 import { LARGOS_MAXIMOS, validar, armarPayload } from '../utils/validarCarga';
-import { ESTADOS_BLOQUEADOS_EDICION, capitalizarEstado } from '../utils/carga';
+import { ESTADOS_BLOQUEADOS_EDICION } from '../utils/carga';
+import { etiquetaEstado, motivoEdicionBloqueada } from '../utils/estadosCarga';
 import './AltaCarga.css';
 import './EditarCarga.css';
-
-/**
- * Motivo por el que una carga en viaje o entregada ya no admite edición.
- * Mismo criterio que el 409 de `PUT /cargas/:id` en el backend
- * (`cargaControllers.js`).
- */
-const MOTIVO_BLOQUEO =
-  'Una vez en viaje o entregada, sus datos quedan como registro de lo que pasó y ya no se pueden modificar.';
 
 /**
  * Arma los valores del formulario a partir de la carga que devuelve
@@ -107,7 +100,7 @@ export default function EditarCarga() {
       .then((datos) => {
         if (ESTADOS_BLOQUEADOS_EDICION.includes(datos.estado_actual)) {
           setMensajeBloqueo(
-            `No se puede editar esta carga: está en estado "${capitalizarEstado(datos.estado_actual)}". ${MOTIVO_BLOQUEO}`,
+            `No se puede editar esta carga: está en estado "${etiquetaEstado(datos.estado_actual)}". ${motivoEdicionBloqueada(datos.estado_actual)}`,
           );
         } else {
           setValores(valoresDesdeCarga(datos));
