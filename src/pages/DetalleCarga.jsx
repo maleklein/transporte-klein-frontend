@@ -213,8 +213,15 @@ export default function DetalleCarga() {
               </div>
 
               <div className="dc-encabezado__acciones">
-                <EstadoCarga estado={carga.estado_actual} />
-                {!ESTADOS_BLOQUEADOS_EDICION.includes(carga.estado_actual) && (
+                {/*
+                  El badge sólo aparece cuando no se muestra el progreso. Si el
+                  progreso está, ya nombra el estado actual y encima lo resalta,
+                  así que repetirlo acá sería decir dos veces lo mismo a 400px
+                  de distancia. Al camionero, que no ve el progreso, el badge le
+                  queda como único indicador.
+                */}
+                {!esAdministrador && <EstadoCarga estado={carga.estado_actual} />}
+                {esAdministrador && !ESTADOS_BLOQUEADOS_EDICION.includes(carga.estado_actual) && (
                   <button
                     type="button"
                     className="ds-boton ds-boton--secundario"
@@ -231,10 +238,15 @@ export default function DetalleCarga() {
             {/*
               Cuando no se puede editar se explica por qué, en vez de dejar un
               botón apagado: un control que nunca se va a habilitar en este
-              estado no aporta nada más que ruido.
+              estado no aporta nada más que ruido. Va como nota contenida y en
+              tono neutro, no como alerta: no es un problema a resolver, es una
+              aclaración sobre por qué falta el botón.
             */}
-            {ESTADOS_BLOQUEADOS_EDICION.includes(carga.estado_actual) && (
-              <p className="dc-acciones__motivo">{MOTIVO_EDICION_BLOQUEADA}</p>
+            {esAdministrador && ESTADOS_BLOQUEADOS_EDICION.includes(carga.estado_actual) && (
+              <p className="dc-nota">
+                <IconoAlerta width={16} height={16} />
+                <span>{MOTIVO_EDICION_BLOQUEADA}</span>
+              </p>
             )}
 
             <section className="dc-card">
