@@ -139,3 +139,25 @@ export function esCorreccion(estadoActual, estadoNuevo) {
 export function requiereConfirmacion(estadoNuevo) {
   return ESTADOS_FINALES.includes(estadoNuevo);
 }
+
+/**
+ * Explica por qué una carga no se puede editar en su estado actual.
+ *
+ * Los dos casos no son lo mismo y por eso el texto cambia: una carga en viaje
+ * está bloqueada *mientras* esté en ese estado, y si hace falta corregir algo
+ * se la puede volver a "Aceptada"; una entregada está bloqueada para siempre,
+ * porque es un estado final del que ya no se vuelve (RN-01). Decir "ya no se
+ * pueden modificar" en los dos casos era falso para el primero.
+ *
+ * @param {string} estadoActual - estado en el que está la carga.
+ * @returns {string} el motivo, o cadena vacía si en ese estado sí se puede editar.
+ */
+export function motivoEdicionBloqueada(estadoActual) {
+  if (estadoActual === ESTADOS.EN_VIAJE) {
+    return 'Mientras la carga está en viaje no se pueden modificar sus datos. Si necesitás corregir algo, volvé a pasarla a "Aceptada" primero.';
+  }
+  if (estadoActual === ESTADOS.ENTREGADA) {
+    return 'La carga ya fue entregada: sus datos quedan como registro de lo que pasó y no se pueden modificar.';
+  }
+  return '';
+}

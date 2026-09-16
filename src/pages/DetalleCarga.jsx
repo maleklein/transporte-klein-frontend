@@ -30,14 +30,6 @@ import {
 import './DetalleCarga.css';
 
 /**
- * Motivo por el que una carga en viaje o entregada ya no admite edición.
- * Mismo criterio que el 409 de `PUT /cargas/:id` en el backend
- * (`cargaControllers.js`) y que `EditarCarga.jsx`.
- */
-const MOTIVO_EDICION_BLOQUEADA =
-  'Una vez en viaje o entregada, sus datos quedan como registro de lo que pasó y ya no se pueden modificar.';
-
-/**
  * Detalle de una carga (HU 2.5), en la ruta /cargas/:id.
  *
  * Replica el bloque "Información de la carga" del mockup: título con el badge de
@@ -234,20 +226,6 @@ export default function DetalleCarga() {
                 )}
               </div>
             </header>
-
-            {/*
-              Cuando no se puede editar se explica por qué, en vez de dejar un
-              botón apagado: un control que nunca se va a habilitar en este
-              estado no aporta nada más que ruido. Va como nota contenida y en
-              tono neutro, no como alerta: no es un problema a resolver, es una
-              aclaración sobre por qué falta el botón.
-            */}
-            {esAdministrador && ESTADOS_BLOQUEADOS_EDICION.includes(carga.estado_actual) && (
-              <p className="dc-nota">
-                <IconoAlerta width={16} height={16} />
-                <span>{MOTIVO_EDICION_BLOQUEADA}</span>
-              </p>
-            )}
 
             <section className="dc-card">
               <h2 className="dc-card__titulo">Información de la carga</h2>

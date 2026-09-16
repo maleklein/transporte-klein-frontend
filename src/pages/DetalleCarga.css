@@ -99,26 +99,6 @@
   margin-bottom: 20px;
 }
 
-/* Nota informativa: aclara algo del contexto, no pide una accion. Por eso
-   va en gris y no en el rojo de los avisos de error, y contenida en vez de
-   suelta entre bloques. */
-.dc-nota {
-  display: flex;
-  align-items: flex-start;
-  gap: 10px;
-  margin: 0 0 4px;
-  padding: 12px 14px;
-  border-left: 3px solid var(--color-borde);
-  border-radius: 0 var(--radio-chico) var(--radio-chico) 0;
-  background: var(--color-fondo-alt);
-  font-size: var(--texto-ayuda);
-  color: var(--color-texto-suave);
-}
-
-.dc-nota svg {
-  flex-shrink: 0;
-  margin-top: 1px;
-}
 
 .dc-card {
   padding: 22px 24px;
