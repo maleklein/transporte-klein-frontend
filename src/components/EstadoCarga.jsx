@@ -1,25 +1,15 @@
-import { capitalizarEstado } from '../utils/carga';
+import { etiquetaEstado, sufijoEstado } from '../utils/estadosCarga';
 
 /**
- * Sufijo de color por estado ("en viaje" -> "en-viaje"). Los estados no
- * contemplados caen en "neutro", así un estado nuevo del backend no rompe la
- * pantalla. Se exporta para que otras pantallas (p. ej. el historial de
- * estados, HU 8) puedan pintar con la misma paleta sin duplicar el mapeo.
- */
-const SUFIJOS = {
-  disponible: 'disponible',
-  publicada: 'publicada',
-  'en viaje': 'en-viaje',
-  entregada: 'entregada',
-  cancelada: 'cancelada',
-};
-
-/**
+ * Sufijo de color por estado. Se reexporta desde `utils/estadosCarga` para no
+ * duplicar el mapeo: otras pantallas (el historial de estados, HU 8) pintan
+ * con la misma paleta.
+ *
  * @param {string} estado - valor de `estado_actual` / `estado_nuevo`.
  * @returns {string} sufijo de clase ("disponible", "en-viaje", ..., "neutro").
  */
 export function sufijoEstadoCarga(estado) {
-  return SUFIJOS[estado] ?? 'neutro';
+  return sufijoEstado(estado);
 }
 
 /**
@@ -32,8 +22,8 @@ export function sufijoEstadoCarga(estado) {
  */
 export default function EstadoCarga({ estado }) {
   return (
-    <span className={`ds-estado-carga ds-estado-carga--${sufijoEstadoCarga(estado)}`}>
-      {capitalizarEstado(estado)}
+    <span className={`ds-estado-carga ds-estado-carga--${sufijoEstado(estado)}`}>
+      {etiquetaEstado(estado)}
     </span>
   );
 }

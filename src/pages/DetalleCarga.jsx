@@ -14,10 +14,12 @@ import {
 } from '../components/Iconos';
 import EstadoCarga from '../components/EstadoCarga';
 import HistorialCarga from '../components/HistorialCarga';
-import { obtenerCarga } from '../api/cargas';
+import { cambiarEstadoCarga, obtenerCarga } from '../api/cargas';
 import { ErrorDeApi } from '../api/usuarios';
+import { usuarioActual } from '../api/sesion';
 import { evitarFoco } from '../utils/formulario';
 import { ESTADOS_BLOQUEADOS_EDICION, formatearFecha, formatearPeso } from '../utils/carga';
+import { etiquetaEstado, transicionesDesde } from '../utils/estadosCarga';
 import './DetalleCarga.css';
 
 /**
@@ -51,6 +53,52 @@ export default function DetalleCarga() {
   // 'cargando' | 'ok' | 'no-encontrada' | 'error'
   const [estadoPantalla, setEstadoPantalla] = useState('cargando');
   const [mensajeError, setMensajeError] = useState('');
+
+  // Cambio de estado (HU 7): qué transición está en curso, el error si la
+  // rechazó el backend, y el aviso de éxito. `cambiandoA` guarda el estado
+  // destino en vez de un booleano, para poder mostrar el spinner sólo en el
+  // botón que se apretó y no en todos.
+  const [cambiandoA, setCambiandoA] = useState(null);
+  const [errorEstado, setErrorEstado] = useState('');
+  const [avisoEstado, setAvisoEstado] = useState('');
+
+  // Sólo el administrador cambia estados; al camionero no se le muestran los
+  // botones. El backend igual lo exige con requireRol, así que esto es
+  // presentación, no seguridad.
+  const esAdministrador = usuarioActual()?.rol === 'administrador';
+
+  // Historial: se refresca junto con la carga, para que la bitácora muestre el
+  // asiento que acaba de generar el cambio de estado.
+  const [versionHistorial, setVersionHistorial] = useState(0);
+
+  /**
+   * Lleva la carga a otro estado y refresca la pantalla con lo que devuelve el
+   * backend. Si la transición se rechaza (409), muestra el mensaje del
+   * servidor, que ya explica a qué estados sí se puede pasar.
+   *
+   * @param {string} estadoNuevo - estado destino.
+   * @returns {Promise<void>}
+   */
+  const alCambiarEstado = async (estadoNuevo) => {
+    setCambiandoA(estadoNuevo);
+    setErrorEstado('');
+    setAvisoEstado('');
+
+    try {
+      const actualizada = await cambiarEstadoCarga(carga.id_carga, estadoNuevo);
+      setCarga(actualizada);
+      setAvisoEstado(`La carga pasó a "${etiquetaEstado(actualizada.estado_actual)}".`);
+      setVersionHistorial((version) => version + 1);
+    } catch (error) {
+      setErrorEstado(
+        error instanceof ErrorDeApi
+          ? error.message
+          : 'Ocurrió un error inesperado al cambiar el estado.',
+      );
+    } finally {
+      setCambiandoA(null);
+    }
+  };
 
   useEffect(() => {
     const controlador = new AbortController();
@@ -140,6 +188,62 @@ export default function DetalleCarga() {
               )}
             </div>
 
+            {/*
+              Cambio de estado (HU 7). Se muestra un botón por cada transición
+              permitida desde el estado actual, en vez de un selector con todos
+              los estados: así el usuario no puede siquiera elegir una
+              transición inválida, y no hace falta explicarle por qué falló.
+            */}
+            {esAdministrador && (
+              <section className="dc-estados">
+                <h2 className="dc-estados__titulo">Estado de la carga</h2>
+
+                {avisoEstado && (
+                  <p className="dc-estados__aviso dc-estados__aviso--exito" role="status">
+                    {avisoEstado}
+                  </p>
+                )}
+
+                {errorEstado && (
+                  <p className="dc-estados__aviso dc-estados__aviso--error" role="alert">
+                    <IconoAlerta width={18} height={18} />
+                    {errorEstado}
+                  </p>
+                )}
+
+                {transicionesDesde(carga.estado_actual).length === 0 ? (
+                  <p className="dc-estados__final">
+                    La carga está <strong>{etiquetaEstado(carga.estado_actual).toLowerCase()}</strong>:
+                    es un estado final y ya no admite más cambios.
+                  </p>
+                ) : (
+                  <>
+                    <p className="dc-estados__ayuda">Pasar la carga a:</p>
+                    <div className="dc-estados__botones">
+                      {transicionesDesde(carga.estado_actual).map((estadoDestino) => (
+                        <button
+                          key={estadoDestino}
+                          type="button"
+                          className={`ds-boton ${
+                            estadoDestino === 'cancelada'
+                              ? 'ds-boton--cancelar'
+                              : 'ds-boton--primario'
+                          }`}
+                          onClick={() => alCambiarEstado(estadoDestino)}
+                          onMouseDown={evitarFoco}
+                          disabled={cambiandoA !== null}
+                        >
+                          {cambiandoA === estadoDestino
+                            ? 'Cambiando...'
+                            : etiquetaEstado(estadoDestino)}
+                        </button>
+                      ))}
+                    </div>
+                  </>
+                )}
+              </section>
+            )}
+
             <section className="dc-card">
               <h2 className="dc-card__titulo">Información de la carga</h2>
 
@@ -185,7 +289,13 @@ export default function DetalleCarga() {
               </div>
             </section>
 
-            <HistorialCarga idCarga={carga.id_carga} />
+            {/*
+              El `key` cambia con cada cambio de estado: eso remonta el
+              componente y vuelve a pedir la bitácora, así el asiento nuevo
+              aparece sin recargar la página. Se hace desde acá para no tener
+              que agregarle un prop de refresco a `HistorialCarga` (HU 8).
+            */}
+            <HistorialCarga key={versionHistorial} idCarga={carga.id_carga} />
           </>
         )}
       </main>

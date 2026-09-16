@@ -173,3 +173,10 @@
 }
 
 /* El badge de estado (.ds-estado-carga) vive en index.css: se comparte con el detalle. */
+
+/* Bajada de la pantalla en la vista del camionero (HU 3), que explica qué
+   son estas cargas. El administrador no la ve: para él el título alcanza. */
+.cg-intro {
+  margin: -6px 0 18px;
+  color: var(--color-texto-suave);
+}
