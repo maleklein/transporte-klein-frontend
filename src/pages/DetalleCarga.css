@@ -69,6 +69,20 @@
   color: var(--color-primario);
 }
 
+.dc-acciones {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 6px;
+  margin-bottom: 20px;
+}
+
+.dc-acciones__motivo {
+  margin: 0;
+  font-size: var(--texto-ayuda);
+  color: var(--color-texto-suave);
+}
+
 .dc-card {
   padding: 22px 24px;
   border: 2px solid var(--color-borde-suave);

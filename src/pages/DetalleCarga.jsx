@@ -6,6 +6,7 @@ import {
   IconoCalendario,
   IconoCamion,
   IconoDocumento,
+  IconoEditar,
   IconoEtiqueta,
   IconoFlechaAtras,
   IconoPeso,
@@ -15,8 +16,17 @@ import EstadoCarga from '../components/EstadoCarga';
 import HistorialCarga from '../components/HistorialCarga';
 import { obtenerCarga } from '../api/cargas';
 import { ErrorDeApi } from '../api/usuarios';
-import { formatearFecha, formatearPeso } from '../utils/carga';
+import { evitarFoco } from '../utils/formulario';
+import { ESTADOS_BLOQUEADOS_EDICION, formatearFecha, formatearPeso } from '../utils/carga';
 import './DetalleCarga.css';
+
+/**
+ * Motivo por el que una carga en viaje o entregada ya no admite edición.
+ * Mismo criterio que el 409 de `PUT /cargas/:id` en el backend
+ * (`cargaControllers.js`) y que `EditarCarga.jsx`.
+ */
+const MOTIVO_EDICION_BLOQUEADA =
+  'Una vez en viaje o entregada, sus datos quedan como registro de lo que pasó y ya no se pueden modificar.';
 
 /**
  * Detalle de una carga (HU 2.5), en la ruta /cargas/:id.
@@ -113,6 +123,22 @@ export default function DetalleCarga() {
               </h1>
               <EstadoCarga estado={carga.estado_actual} />
             </header>
+
+            <div className="dc-acciones">
+              <button
+                type="button"
+                className="ds-boton ds-boton--secundario"
+                onClick={() => navigate(`/cargas/${carga.id_carga}/editar`)}
+                onMouseDown={evitarFoco}
+                disabled={ESTADOS_BLOQUEADOS_EDICION.includes(carga.estado_actual)}
+              >
+                <IconoEditar />
+                Editar
+              </button>
+              {ESTADOS_BLOQUEADOS_EDICION.includes(carga.estado_actual) && (
+                <p className="dc-acciones__motivo">{MOTIVO_EDICION_BLOQUEADA}</p>
+              )}
+            </div>
 
             <section className="dc-card">
               <h2 className="dc-card__titulo">Información de la carga</h2>

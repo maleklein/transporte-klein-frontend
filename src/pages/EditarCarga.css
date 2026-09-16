@@ -1,0 +1,27 @@
+/* ==========================================================================
+   Edición de carga (HU 2.2). Reusa el formulario y layout de AltaCarga.css
+   (.ac-contenido, .ac-titulo, .ac-formulario, .ac-aviso, etc.) — acá van sólo
+   los estados propios de esta pantalla: cargando y bloqueada.
+   ========================================================================== */
+
+.ec-mensaje {
+  margin: 0;
+  padding: 40px 24px;
+  border: 2px solid var(--color-borde-suave);
+  border-radius: var(--radio);
+  text-align: center;
+  color: var(--color-texto-suave);
+  font-size: var(--texto-base);
+}
+
+/* Reemplaza al formulario cuando la carga ya no admite edición. */
+.ec-bloqueo {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 4px;
+}
+
+.ec-bloqueo .ac-aviso {
+  width: 100%;
+}

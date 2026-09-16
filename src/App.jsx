@@ -5,6 +5,7 @@ import AltaUsuario from './pages/AltaUsuario';
 import EditarUsuario from './pages/EditarUsuario';
 import DetalleUsuario from './pages/DetalleUsuario';
 import AltaCarga from './pages/AltaCarga';
+import EditarCarga from './pages/EditarCarga';
 import Cargas from './pages/Cargas';
 import DetalleCarga from './pages/DetalleCarga';
 
@@ -27,6 +28,8 @@ function App() {
       <Route path="/usuarios/detalle" element={<DetalleUsuario />} />
       {/* HU 2.1 + 2.1.1 — Alta de cargas */}
       <Route path="/cargas/nueva" element={<AltaCarga />} />
+      {/* HU 2.2 — Modificación de carga */}
+      <Route path="/cargas/:id/editar" element={<EditarCarga />} />
       {/* HU 2.5 — Consulta de cargas */}
       <Route path="/cargas" element={<Cargas />} />
       <Route path="/cargas/:id" element={<DetalleCarga />} />

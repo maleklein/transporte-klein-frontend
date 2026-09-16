@@ -61,3 +61,14 @@ export function formatearFechaHora(marcaTiempoIso) {
 export function capitalizarEstado(estado) {
   return estado ? estado[0].toUpperCase() + estado.slice(1) : (estado ?? '');
 }
+
+/**
+ * Estados desde los que ya no se puede editar una carga (HU 2.2), mismo
+ * criterio que `ESTADOS_BLOQUEADOS_EDICION` en el backend
+ * (`src/controllers/cargaControllers.js`): una vez en viaje o entregada, sus
+ * datos pasan a ser el registro de lo que efectivamente pasó, no un borrador.
+ * Usado tanto por `DetalleCarga.jsx` (para deshabilitar el botón "Editar")
+ * como por `EditarCarga.jsx` (para bloquear el formulario si se entra por
+ * URL directa a una carga que ya no admite edición).
+ */
+export const ESTADOS_BLOQUEADOS_EDICION = ['en_viaje', 'entregada'];
