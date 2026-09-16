@@ -7,26 +7,18 @@ import {
   IconoCamion,
   IconoDocumento,
   IconoEditar,
-  IconoEtiqueta,
   IconoFlechaAtras,
   IconoPeso,
   IconoUbicacion,
 } from '../components/Iconos';
 import EstadoCarga from '../components/EstadoCarga';
 import HistorialCarga from '../components/HistorialCarga';
-import { cambiarEstadoCarga, obtenerCarga } from '../api/cargas';
+import ProgresoCarga from '../components/ProgresoCarga';
+import { cambiarEstadoCarga, obtenerCarga, obtenerHistorialCarga } from '../api/cargas';
 import { ErrorDeApi } from '../api/usuarios';
 import { usuarioActual } from '../api/sesion';
 import { evitarFoco } from '../utils/formulario';
 import { ESTADOS_BLOQUEADOS_EDICION, formatearFecha, formatearPeso } from '../utils/carga';
-import DialogoConfirmacion from '../components/DialogoConfirmacion';
-import ProgresoCarga from '../components/ProgresoCarga';
-import {
-  esCorreccion,
-  etiquetaEstado,
-  requiereConfirmacion,
-  transicionesDesde,
-} from '../utils/estadosCarga';
 import './DetalleCarga.css';
 
 /**
@@ -34,13 +26,18 @@ import './DetalleCarga.css';
  *
  * Replica el bloque "Información de la carga" del mockup: título con el badge de
  * estado, la ruta origen → destino, fecha de retiro, peso, tipo y la descripción
- * (`observaciones`). Debajo va el historial de estados (HU 8, `HistorialCarga`).
- * Los bloques de camioneros / asignación son de otras HU (Sprint 2) y no van acá.
+ * (`observaciones`). Debajo van el progreso de la carga (HU 7, `ProgresoCarga`)
+ * y el historial de estados (HU 8, `HistorialCarga`). Los bloques de camioneros
+ * / asignación son de otras HU (Sprint 2) y no van acá.
  *
  * El `id_carga` se lee de la URL y la carga se pide con `GET /cargas/:id` al
  * entrar. Funciona igual llegando desde el listado (click en una tarjeta) o
  * escribiendo la dirección a mano / refrescando. Mientras espera muestra
  * "Cargando…"; si la carga no existe (404) muestra un mensaje claro.
+ *
+ * La bitácora se pide acá y no dentro de cada componente porque la usan dos:
+ * el historial la muestra entera y el progreso saca de ella cuándo se llegó a
+ * cada paso. Pedirla una sola vez además los deja siempre en sincronía.
  *
  * @returns {JSX.Element}
  */
@@ -53,77 +50,45 @@ export default function DetalleCarga() {
   const [estadoPantalla, setEstadoPantalla] = useState('cargando');
   const [mensajeError, setMensajeError] = useState('');
 
-  // Cambio de estado (HU 7): qué transición está en curso, el error si la
-  // rechazó el backend, y el aviso de éxito. `cambiandoA` guarda el estado
-  // destino en vez de un booleano, para poder mostrar el spinner sólo en el
-  // botón que se apretó y no en todos.
-  const [cambiandoA, setCambiandoA] = useState(null);
-  const [errorEstado, setErrorEstado] = useState('');
-  const [avisoEstado, setAvisoEstado] = useState('');
-
-  // Estado destino esperando confirmación, o null si el diálogo está cerrado.
-  // Sólo se llena para las transiciones irreversibles (ver `pedirCambio`).
-  const [confirmando, setConfirmando] = useState(null);
-
-  // Sólo el administrador cambia estados; al camionero no se le muestran los
-  // botones. El backend igual lo exige con requireRol, así que esto es
-  // presentación, no seguridad.
-  const esAdministrador = usuarioActual()?.rol === 'administrador';
-
-  // Historial: se refresca junto con la carga, para que la bitácora muestre el
-  // asiento que acaba de generar el cambio de estado.
+  // Bitácora de cambios de estado (HU 8), en orden cronológico tal como la
+  // devuelve el backend. `versionHistorial` se incrementa después de cada
+  // cambio de estado para volver a pedirla.
+  const [eventos, setEventos] = useState([]);
+  // 'cargando' | 'ok' | 'error'
+  const [estadoHistorial, setEstadoHistorial] = useState('cargando');
+  const [errorHistorial, setErrorHistorial] = useState('');
   const [versionHistorial, setVersionHistorial] = useState(0);
 
-  /**
-   * Lleva la carga a otro estado y refresca la pantalla con lo que devuelve el
-   * backend. Si la transición se rechaza (409), muestra el mensaje del
-   * servidor, que ya explica a qué estados sí se puede pasar.
-   *
-   * @param {string} estadoNuevo - estado destino.
-   * @returns {Promise<void>}
-   */
-  const alCambiarEstado = async (estadoNuevo) => {
-    setCambiandoA(estadoNuevo);
-    setErrorEstado('');
-    setAvisoEstado('');
-
-    try {
-      const actualizada = await cambiarEstadoCarga(carga.id_carga, estadoNuevo);
-      setCarga(actualizada);
-      setAvisoEstado(`La carga pasó a "${etiquetaEstado(actualizada.estado_actual)}".`);
-      setVersionHistorial((version) => version + 1);
-    } catch (error) {
-      setErrorEstado(
-        error instanceof ErrorDeApi
-          ? error.message
-          : 'Ocurrió un error inesperado al cambiar el estado.',
-      );
-    } finally {
-      setCambiandoA(null);
-      setConfirmando(null);
-    }
-  };
+  // Sólo el administrador cambia estados; al camionero no se le muestra el
+  // bloque de progreso. El backend igual lo exige con requireRol, así que esto
+  // es presentación, no seguridad.
+  const esAdministrador = usuarioActual()?.rol === 'administrador';
 
   /**
-   * Punto de entrada de los botones de estado. Las transiciones que se pueden
-   * deshacer se aplican directo; las que llevan a un estado final abren el
-   * diálogo de confirmación primero, que es lo que pide HU 2.4 para cancelar.
+   * Lleva la carga a otro estado y deja la pantalla al día con lo que devuelve
+   * el backend. Los errores se dejan propagar: los muestra `ProgresoCarga`,
+   * que es donde está el botón que los provocó.
    *
    * @param {string} estadoNuevo - estado destino.
-   * @returns {void}
+   * @returns {Promise<object>} la carga ya actualizada.
+   * @throws {ErrorDeApi} si el backend rechaza la transición (409) o falla.
    */
-  const pedirCambio = (estadoNuevo) => {
-    if (requiereConfirmacion(estadoNuevo)) {
-      setConfirmando(estadoNuevo);
-      return;
-    }
-    alCambiarEstado(estadoNuevo);
+  const cambiarEstado = async (estadoNuevo) => {
+    const actualizada = await cambiarEstadoCarga(carga.id_carga, estadoNuevo);
+    setCarga(actualizada);
+    setVersionHistorial((version) => version + 1);
+    return actualizada;
   };
 
   useEffect(() => {
     const controlador = new AbortController();
     setEstadoPantalla('cargando');
     setMensajeError('');
+    // Se limpia lo de la carga anterior para no mostrar por un instante la
+    // bitácora de una carga distinta.
+    setEventos([]);
+    setEstadoHistorial('cargando');
+    setVersionHistorial(0);
 
     obtenerCarga(id, { signal: controlador.signal })
       .then((datos) => {
@@ -146,6 +111,36 @@ export default function DetalleCarga() {
 
     return () => controlador.abort();
   }, [id]);
+
+  const hayCarga = estadoPantalla === 'ok';
+
+  // Bitácora: se pide cuando la carga ya está, y de nuevo después de cada
+  // cambio de estado. En esas recargas no se vuelve a "Cargando...": se deja a
+  // la vista lo anterior y se reemplaza al llegar lo nuevo, para que el bloque
+  // no parpadee en cada cambio.
+  useEffect(() => {
+    if (!hayCarga) return undefined;
+
+    const controlador = new AbortController();
+    setErrorHistorial('');
+
+    obtenerHistorialCarga(id, { signal: controlador.signal })
+      .then((datos) => {
+        setEventos(datos);
+        setEstadoHistorial('ok');
+      })
+      .catch((error) => {
+        if (error?.name === 'AbortError') return;
+        setErrorHistorial(
+          error instanceof ErrorDeApi
+            ? error.message
+            : 'No se pudo cargar el historial de la carga. Intentá de nuevo.',
+        );
+        setEstadoHistorial('error');
+      });
+
+    return () => controlador.abort();
+  }, [id, hayCarga, versionHistorial]);
 
   const descripcion =
     carga && typeof carga.observaciones === 'string' && carga.observaciones.trim()
@@ -271,148 +266,32 @@ export default function DetalleCarga() {
             </section>
 
             {/*
-              Cambio de estado (HU 7). Se muestra un botón por cada transición
-              permitida desde el estado actual, en vez de un selector con todos
-              los estados: así el usuario no puede siquiera elegir una
-              transición inválida, y no hace falta explicarle por qué falló.
+              Progreso y cambio de estado (HU 7). El componente resuelve solo
+              qué acciones ofrecer a partir de la máquina de estados, y usa el
+              historial para mostrar cuándo se llegó a cada paso.
             */}
             {esAdministrador && (
-              <section className="dc-estados">
-                <h2 className="dc-card__titulo">Progreso de la carga</h2>
-
-                <ProgresoCarga estado={carga.estado_actual} />
-
-                {avisoEstado && (
-                  <p className="dc-estados__aviso dc-estados__aviso--exito" role="status">
-                    {avisoEstado}
-                  </p>
-                )}
-
-                {errorEstado && (
-                  <p className="dc-estados__aviso dc-estados__aviso--error" role="alert">
-                    <IconoAlerta width={18} height={18} />
-                    {errorEstado}
-                  </p>
-                )}
-
-                {transicionesDesde(carga.estado_actual).length === 0 ? (
-                  <p className="dc-estados__final">
-                    La carga está <strong>{etiquetaEstado(carga.estado_actual).toLowerCase()}</strong>:
-                    es un estado final y ya no admite más cambios.
-                  </p>
-                ) : (
-                  (() => {
-                    // Se separan en tres grupos para que se lea qué hace cada
-                    // botón: avanzar el ciclo, volver atrás para corregir un
-                    // error, o cancelar la carga (que no tiene vuelta).
-                    const posibles = transicionesDesde(carga.estado_actual);
-                    const avanzar = posibles.filter(
-                      (destino) =>
-                        destino !== 'cancelada' && !esCorreccion(carga.estado_actual, destino),
-                    );
-                    const corregir = posibles.filter((destino) =>
-                      esCorreccion(carga.estado_actual, destino),
-                    );
-                    const cancelar = posibles.filter((destino) => destino === 'cancelada');
-
-                    // Los botones dicen la acción, no el nombre del estado:
-                    // leídos sueltos, "Pendiente" es un sustantivo y "Marcar
-                    // como pendiente" dice qué va a pasar al apretarlo.
-                    const boton = (estadoDestino, clase, verbo) => (
-                      <button
-                        key={estadoDestino}
-                        type="button"
-                        className={`ds-boton ${clase}`}
-                        onClick={() => pedirCambio(estadoDestino)}
-                        onMouseDown={evitarFoco}
-                        disabled={cambiandoA !== null}
-                      >
-                        {cambiandoA === estadoDestino ? 'Cambiando...' : verbo}
-                      </button>
-                    );
-
-                    return (
-                      <>
-                        {avanzar.length > 0 && (
-                          <div className="dc-estados__botones">
-                            {avanzar.map((destino) =>
-                              boton(
-                                destino,
-                                'ds-boton--primario',
-                                `Marcar como ${etiquetaEstado(destino).toLowerCase()}`,
-                              ),
-                            )}
-                          </div>
-                        )}
-
-                        {(corregir.length > 0 || cancelar.length > 0) && (
-                          <div className="dc-estados__secundarias">
-                            {corregir.length > 0 && (
-                              <div className="dc-estados__grupo">
-                                <p className="dc-estados__ayuda">¿Te equivocaste?</p>
-                                <div className="dc-estados__botones">
-                                  {corregir.map((destino) =>
-                                    boton(
-                                      destino,
-                                      'ds-boton--secundario',
-                                      `Volver a ${etiquetaEstado(destino).toLowerCase()}`,
-                                    ),
-                                  )}
-                                </div>
-                              </div>
-                            )}
-
-                            {cancelar.length > 0 && (
-                              <div className="dc-estados__grupo">
-                                {cancelar.map((destino) =>
-                                  boton(destino, 'ds-boton--cancelar', 'Cancelar carga'),
-                                )}
-                              </div>
-                            )}
-                          </div>
-                        )}
-                      </>
-                    );
-                  })()
-                )}
-              </section>
+              <ProgresoCarga
+                estado={carga.estado_actual}
+                eventos={eventos}
+                alCambiarEstado={cambiarEstado}
+              />
             )}
 
             {/*
               Se muestran los últimos cambios y el resto queda detrás de un
-              "Ver todos": con muchas transiciones la bitácora ocupaba más que
+              "Ver más": con muchas transiciones la bitácora ocupaba más que
               todo el resto de la pantalla junto.
-              El `key` cambia con cada cambio de estado, lo que remonta el
-              componente y vuelve a pedir el historial, así el asiento nuevo
-              aparece sin recargar la página.
             */}
-            <HistorialCarga key={versionHistorial} idCarga={carga.id_carga} maximoVisible={4} />
+            <HistorialCarga
+              eventos={eventos}
+              estadoPedido={estadoHistorial}
+              mensajeError={errorHistorial}
+              maximoVisible={4}
+            />
           </>
         )}
       </main>
-
-      {/*
-        Confirmación de las transiciones que no se pueden deshacer. HU 2.4 la
-        pide explícitamente para cancelar; se aplica igual a "entregada", que
-        por RN-01 tampoco tiene vuelta.
-      */}
-      <DialogoConfirmacion
-        abierto={confirmando !== null}
-        peligroso={confirmando === 'cancelada'}
-        ocupado={cambiandoA !== null}
-        titulo={
-          confirmando === 'cancelada' ? '¿Cancelar esta carga?' : '¿Marcarla como entregada?'
-        }
-        mensaje={
-          confirmando === 'cancelada'
-            ? 'La carga deja de estar disponible para los camioneros y no se puede reactivar. Si hiciera falta, habría que darla de alta de nuevo.'
-            : 'Una vez entregada, la carga no vuelve a estados anteriores y sus datos quedan como registro de lo que pasó.'
-        }
-        textoConfirmar={confirmando === 'cancelada' ? 'Sí, cancelar' : 'Sí, marcar entregada'}
-        textoCancelar="Volver"
-        alConfirmar={() => alCambiarEstado(confirmando)}
-        alCancelar={() => setConfirmando(null)}
-      />
     </>
   );
 }

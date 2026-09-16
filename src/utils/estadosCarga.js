@@ -116,6 +116,23 @@ export function esEstadoFinal(estadoActual) {
 }
 
 /**
+ * Indica si una transición puntual está permitida. Espejo de la función del
+ * mismo nombre en el backend.
+ *
+ * La pantalla la usa para saber si un cambio se puede deshacer: sólo ofrece
+ * "Deshacer" cuando la transición inversa también es válida. Como `entregada`
+ * y `cancelada` son finales, llegar ahí nunca ofrece vuelta atrás, y por eso
+ * esos dos cambios se confirman antes de aplicarse.
+ *
+ * @param {string} estadoActual - estado en el que está la carga.
+ * @param {string} estadoNuevo - estado al que se la quiere llevar.
+ * @returns {boolean} true si la transición está permitida.
+ */
+export function puedeTransicionar(estadoActual, estadoNuevo) {
+  return transicionesDesde(estadoActual).includes(estadoNuevo);
+}
+
+/**
  * Indica si la transición retrocede en el flujo, o sea, si corrige un cambio
  * anterior en vez de avanzar el ciclo de vida. La pantalla las separa para que
  * se vea claro que "Pendiente" desde "Aceptada" es volver atrás, no seguir.
