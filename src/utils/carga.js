@@ -51,6 +51,74 @@ export function formatearFechaHora(marcaTiempoIso) {
   return `${diaMesAnio}, ${horaMinuto}`;
 }
 
+/** Meses abreviados para las marcas del recorrido: minúscula y sin punto. */
+const MESES_CORTOS = [
+  'ene', 'feb', 'mar', 'abr', 'may', 'jun',
+  'jul', 'ago', 'sep', 'oct', 'nov', 'dic',
+];
+
+/** Meses completos, para la fecha larga del panel de carga cancelada. */
+const MESES_LARGOS = [
+  'enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio',
+  'julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre',
+];
+
+/**
+ * Hora en formato de 24 horas con cero adelante ("09:05").
+ *
+ * @param {Date} fecha - fecha ya construida y válida.
+ * @returns {string}
+ */
+function horaDe(fecha) {
+  const dosDigitos = (numero) => String(numero).padStart(2, '0');
+  return `${dosDigitos(fecha.getHours())}:${dosDigitos(fecha.getMinutes())}`;
+}
+
+/**
+ * Indica si una fecha cae en el día de hoy, en hora local del navegador.
+ *
+ * @param {Date} fecha - fecha ya construida y válida.
+ * @returns {boolean}
+ */
+function esDeHoy(fecha) {
+  return fecha.toDateString() === new Date().toDateString();
+}
+
+/**
+ * Marca de tiempo corta para cada paso del recorrido de la carga (HU 7):
+ * "Hoy, 15:20" si es del día, o "14 sep, 10:32" si no.
+ *
+ * Se usa debajo de cada paso del recorrido, donde entra poco texto y lo que
+ * importa es ubicar el cambio en el tiempo de un vistazo. Para la bitácora
+ * completa está `formatearFechaHora`, que sí muestra el año.
+ *
+ * @param {string} marcaTiempoIso - timestamp ISO con Z (UTC), como lo devuelve el historial.
+ * @returns {string} la marca lista para mostrar, o cadena vacía si no es una fecha válida.
+ */
+export function formatearMarcaCorta(marcaTiempoIso) {
+  const fecha = new Date(marcaTiempoIso);
+  if (Number.isNaN(fecha.getTime())) return '';
+  const dia = esDeHoy(fecha) ? 'Hoy' : `${fecha.getDate()} ${MESES_CORTOS[fecha.getMonth()]}`;
+  return `${dia}, ${horaDe(fecha)}`;
+}
+
+/**
+ * Fecha larga para redactarla dentro de una oración: "hoy a las 15:45" o
+ * "el 14 de septiembre a las 15:45". Se usa en el panel de una carga
+ * cancelada, que cuenta cuándo pasó en vez de mostrar una etiqueta suelta.
+ *
+ * @param {string} marcaTiempoIso - timestamp ISO con Z (UTC).
+ * @returns {string} la fecha lista para intercalar, o cadena vacía si no es válida.
+ */
+export function formatearFechaLarga(marcaTiempoIso) {
+  const fecha = new Date(marcaTiempoIso);
+  if (Number.isNaN(fecha.getTime())) return '';
+  const dia = esDeHoy(fecha)
+    ? 'hoy'
+    : `el ${fecha.getDate()} de ${MESES_LARGOS[fecha.getMonth()]}`;
+  return `${dia} a las ${horaDe(fecha)}`;
+}
+
 /**
  * Primera letra en mayúscula, para mostrar el estado de la carga
  * ("disponible" -> "Disponible"). El resto del texto queda como viene.

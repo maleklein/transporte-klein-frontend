@@ -1,64 +1,68 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import EstadoCarga, { sufijoEstadoCarga } from './EstadoCarga';
 import { IconoAlerta } from './Iconos';
-import { obtenerHistorialCarga } from '../api/cargas';
-import { ErrorDeApi } from '../api/usuarios';
 import { formatearFechaHora } from '../utils/carga';
+import { evitarFoco } from '../utils/formulario';
 
 /**
  * Bitácora de cambios de estado de una carga (HU 8), en una línea de tiempo
- * vertical. Se usa dentro de `DetalleCarga.jsx`, debajo de "Información de
- * la carga".
+ * vertical. Se usa dentro de `DetalleCarga.jsx`, debajo del progreso.
  *
- * Pide `GET /cargas/:id/historial` al montarse (y de nuevo si cambia
- * `idCarga`). Cada evento se pinta con los mismos colores por estado que ya
- * usa el badge de `EstadoCarga` (vía `sufijoEstadoCarga`), para que el punto
- * de la línea de tiempo y el estado se lean como lo mismo. El primer evento
- * de cada carga llega con `estado_anterior: null` (todavía no había estado
- * antes del alta) y se muestra como "Carga creada" en vez de "null → X".
+ * No pide los datos: los recibe ya resueltos de `DetalleCarga`, que es quien
+ * llama a `GET /cargas/:id/historial`. Están compartidos con `ProgresoCarga`,
+ * que saca de la misma bitácora cuándo se llegó a cada paso del recorrido;
+ * pedirlos una sola vez evita dos llamadas al mismo endpoint y que los dos
+ * bloques muestren cosas distintas por un instante.
  *
- * Con `colapsable` se muestra plegado, con el total de cambios en el
- * encabezado. Sirve para que no domine la pantalla cuando la carga acumuló
- * muchos movimientos: la bitácora es información de consulta, no lo primero
- * que se mira. Se usa el `<details>` nativo, que ya trae el plegado accesible
- * y el foco por teclado sin JavaScript.
+ * Cada evento se pinta con los mismos colores por estado que ya usa el badge
+ * de `EstadoCarga` (vía `sufijoEstadoCarga`), para que el punto de la línea de
+ * tiempo y el estado se lean como lo mismo. El primer evento de cada carga
+ * llega con `estado_anterior: null` (todavía no había estado antes del alta) y
+ * se muestra como "Carga creada" en vez de "null → X".
+ *
+ * Los eventos se muestran del más reciente al más viejo, que es la convención
+ * de los seguimientos de envío: lo último que pasó es lo que se quiere ver
+ * primero. El endpoint los devuelve en orden cronológico, así que se invierten
+ * acá — es una decisión de presentación y no cambia el contrato de la API.
+ *
+ * Con `maximoVisible` sólo se muestran los primeros N y aparece un "Ver los N
+ * cambios" para desplegar el resto. Recortar tiene sentido justamente porque
+ * el orden es del más nuevo al más viejo: lo que queda a la vista es lo reciente.
  *
  * @param {object} props
- * @param {number|string} props.idCarga - `id_carga` de la carga.
- * @param {boolean} [props.colapsable=false] - si se muestra plegado tras un encabezado desplegable.
+ * @param {object[]} props.eventos - filas del historial en orden cronológico (más viejas primero).
+ * @param {string} [props.estadoPedido='ok'] - 'cargando' | 'ok' | 'error', cómo viene el pedido en `DetalleCarga`.
+ * @param {string} [props.mensajeError] - qué mostrar cuando `estadoPedido` es 'error'.
+ * @param {number} [props.maximoVisible] - cuántos eventos mostrar antes de "Ver los N cambios". Sin valor, se muestran todos.
  * @returns {JSX.Element}
  */
-export default function HistorialCarga({ idCarga, colapsable = false }) {
-  const [eventos, setEventos] = useState([]);
-  // 'cargando' | 'ok' | 'error'
-  const [estadoPedido, setEstadoPedido] = useState('cargando');
-  const [mensajeError, setMensajeError] = useState('');
+export default function HistorialCarga({
+  eventos = [],
+  estadoPedido = 'ok',
+  mensajeError = '',
+  maximoVisible,
+}) {
+  const [mostrandoTodos, setMostrandoTodos] = useState(false);
 
-  useEffect(() => {
-    const controlador = new AbortController();
-    setEstadoPedido('cargando');
-    setMensajeError('');
+  // Del más reciente al más viejo (el endpoint los manda cronológicos).
+  const ordenados = [...eventos].reverse();
 
-    obtenerHistorialCarga(idCarga, { signal: controlador.signal })
-      .then((datos) => {
-        setEventos(datos);
-        setEstadoPedido('ok');
-      })
-      .catch((error) => {
-        if (error?.name === 'AbortError') return;
-        setMensajeError(
-          error instanceof ErrorDeApi
-            ? error.message
-            : 'No se pudo cargar el historial de la carga. Intentá de nuevo.',
-        );
-        setEstadoPedido('error');
-      });
+  // Si no se pidió recorte, o ya se desplegó, se muestran todos.
+  const recorta = Number.isInteger(maximoVisible) && maximoVisible > 0;
+  const visibles = recorta && !mostrandoTodos ? ordenados.slice(0, maximoVisible) : ordenados;
+  const ocultos = ordenados.length - visibles.length;
 
-    return () => controlador.abort();
-  }, [idCarga]);
+  return (
+    <section className="dc-card">
+      <h2 className="dc-card__titulo">
+        Historial de estados
+        {estadoPedido === 'ok' && ordenados.length > 0 && (
+          <span className="hc-contador">
+            {ordenados.length} {ordenados.length === 1 ? 'cambio' : 'cambios'}
+          </span>
+        )}
+      </h2>
 
-  const cuerpo = (
-    <>
       {estadoPedido === 'cargando' && <p className="dc-mensaje">Cargando historial...</p>}
 
       {estadoPedido === 'error' && (
@@ -68,13 +72,13 @@ export default function HistorialCarga({ idCarga, colapsable = false }) {
         </div>
       )}
 
-      {estadoPedido === 'ok' && eventos.length === 0 && (
+      {estadoPedido === 'ok' && ordenados.length === 0 && (
         <p className="dc-mensaje">Esta carga todavía no tiene cambios de estado registrados.</p>
       )}
 
-      {estadoPedido === 'ok' && eventos.length > 0 && (
+      {estadoPedido === 'ok' && ordenados.length > 0 && (
         <ol className="dc-historial">
-          {eventos.map((evento) => (
+          {visibles.map((evento) => (
             <li key={evento.id_estado_carga} className="dc-historial__item">
               <span
                 className={`dc-historial__punto dc-historial__punto--${sufijoEstadoCarga(evento.estado_nuevo)}`}
@@ -103,29 +107,17 @@ export default function HistorialCarga({ idCarga, colapsable = false }) {
           ))}
         </ol>
       )}
-    </>
-  );
 
-  if (!colapsable) {
-    return (
-      <section className="dc-card">
-        <h2 className="dc-card__titulo">Historial de estados</h2>
-        {cuerpo}
-      </section>
-    );
-  }
-
-  return (
-    <details className="dc-card hc-plegable">
-      <summary className="hc-resumen">
-        <span className="dc-card__titulo">Historial de estados</span>
-        {estadoPedido === 'ok' && eventos.length > 0 && (
-          <span className="hc-contador">
-            {eventos.length} {eventos.length === 1 ? 'cambio' : 'cambios'}
-          </span>
-        )}
-      </summary>
-      <div className="hc-cuerpo">{cuerpo}</div>
-    </details>
+      {(ocultos > 0 || mostrandoTodos) && (
+        <button
+          type="button"
+          className="hc-ver-mas"
+          onClick={() => setMostrandoTodos((previo) => !previo)}
+          onMouseDown={evitarFoco}
+        >
+          {mostrandoTodos ? 'Ver menos' : `Ver los ${ordenados.length} cambios`}
+        </button>
+      )}
+    </section>
   );
 }
