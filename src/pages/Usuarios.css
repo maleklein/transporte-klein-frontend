@@ -13,7 +13,7 @@
 }
 
 .us-contenido {
-  max-width: 1000px;
+  max-width: 1320px;
   margin: 0 auto;
   padding: 28px;
 }
@@ -96,14 +96,14 @@
   background: var(--color-primario-claro);
   color: var(--color-primario);
   text-align: left;
-  font-size: var(--texto-label);
-  padding: 14px 16px;
+  font-size: var(--texto-base);
+  padding: 12px 12px;
   border-bottom: 2px solid var(--color-borde-suave);
   white-space: nowrap;
 }
 
 .us-tabla td {
-  padding: 14px 16px;
+  padding: 10px 12px;
   border-bottom: 1px solid var(--color-borde-suave);
   color: var(--color-texto);
 }
@@ -118,15 +118,15 @@
 }
 
 .us-boton-accion {
-  padding: 8px 16px;
-  min-height: 40px;
+  padding: 8px 12px;
+  min-height: 36px;
   white-space: nowrap;
 }
 
 .us-acciones {
   display: flex;
-  gap: 8px;
-  flex-wrap: wrap;
+  gap: 6px;
+  flex-wrap: nowrap;
 }
 
 /* Encabezado de la columna de acciones: sin texto visible, solo para lectores de pantalla. */
