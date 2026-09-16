@@ -228,15 +228,22 @@ export default function Cargas() {
             </datalist>
           </div>
 
-          <button
-            type="button"
-            className="ds-boton ds-boton--secundario cg-limpiar"
-            onClick={limpiarFiltros}
-            disabled={!hayAlgunFiltro}
-          >
-            <IconoCerrar />
-            Limpiar filtros
-          </button>
+          {/*
+            El botón aparece sólo cuando hay algo que limpiar. Deshabilitado no
+            aportaba nada: ocupaba lugar en la barra de filtros sin poder
+            hacer nada, y en la vista del camionero —que tiene un filtro menos—
+            quedaba especialmente fuera de lugar.
+          */}
+          {hayAlgunFiltro && (
+            <button
+              type="button"
+              className="ds-boton ds-boton--secundario cg-limpiar"
+              onClick={limpiarFiltros}
+            >
+              <IconoCerrar />
+              Limpiar filtros
+            </button>
+          )}
         </div>
 
         {estadoPantalla === 'ok' && cargas.length > 0 && (

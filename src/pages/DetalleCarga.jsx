@@ -379,13 +379,14 @@ export default function DetalleCarga() {
             )}
 
             {/*
-              La bitácora va plegada: es información de consulta, y con muchas
-              transiciones ocupaba más que todo el resto de la pantalla junto.
+              Se muestran los últimos cambios y el resto queda detrás de un
+              "Ver todos": con muchas transiciones la bitácora ocupaba más que
+              todo el resto de la pantalla junto.
               El `key` cambia con cada cambio de estado, lo que remonta el
               componente y vuelve a pedir el historial, así el asiento nuevo
               aparece sin recargar la página.
             */}
-            <HistorialCarga key={versionHistorial} idCarga={carga.id_carga} colapsable />
+            <HistorialCarga key={versionHistorial} idCarga={carga.id_carga} maximoVisible={4} />
           </>
         )}
       </main>

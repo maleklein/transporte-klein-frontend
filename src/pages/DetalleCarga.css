@@ -391,53 +391,34 @@
   color: var(--color-texto-suave);
 }
 
+
 /* ------------------------------------------------------------------
-   Historial plegable (HU 8, usado desde el detalle con `colapsable`).
+   Historial de estados: contador en el titulo y boton de "ver mas".
    ------------------------------------------------------------------ */
 
-.hc-plegable {
-  padding: 0;
-}
-
-.hc-resumen {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 18px 24px;
-  cursor: pointer;
-  list-style: none;
-}
-
-/* El triángulo por defecto de Safari y el de Chrome se sacan distinto. */
-.hc-resumen::-webkit-details-marker {
-  display: none;
-}
-
-/* Flecha propia, que rota al abrirse. */
-.hc-resumen::before {
-  content: '▸';
-  color: var(--color-texto-suave);
-  transition: transform 0.15s ease;
-}
-
-.hc-plegable[open] .hc-resumen::before {
-  transform: rotate(90deg);
-}
-
-.hc-resumen .dc-card__titulo {
-  margin: 0;
-}
-
 .hc-contador {
-  font-size: var(--texto-ayuda);
+  margin-left: 8px;
+  font-weight: 400;
   color: var(--color-texto-suave);
 }
 
-.hc-resumen:focus-visible {
-  outline: var(--foco);
-  outline-offset: -2px;
+.hc-ver-mas {
+  margin-top: 14px;
+  padding: 6px 2px;
+  background: none;
+  border: none;
+  border-radius: var(--radio-chico);
+  font-family: var(--fuente);
+  font-size: var(--texto-ayuda);
+  font-weight: 700;
+  color: var(--color-primario);
+  cursor: pointer;
 }
 
-.hc-cuerpo {
-  padding: 0 24px 22px;
+.hc-ver-mas:hover {
+  text-decoration: underline;
+}
+
+.hc-ver-mas:focus-visible {
+  outline: var(--foco);
 }
