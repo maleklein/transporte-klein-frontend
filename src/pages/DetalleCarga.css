@@ -52,11 +52,33 @@
 
 .dc-encabezado {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   justify-content: space-between;
   flex-wrap: wrap;
-  gap: 12px;
+  gap: 16px;
   margin-bottom: 24px;
+}
+
+.dc-encabezado__identidad {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+}
+
+/* La ruta sube al encabezado: junto al tipo de carga es lo que identifica
+   a una carga de un vistazo, antes de entrar en los datos. */
+.dc-encabezado__ruta {
+  margin: 0;
+  font-size: var(--texto-label);
+  color: var(--color-texto-suave);
+}
+
+.dc-encabezado__acciones {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-shrink: 0;
 }
 
 .dc-titulo {
@@ -346,16 +368,78 @@
   border-color: var(--color-peligro);
 }
 
-/* La ayuda de "volver a" se separa un poco del grupo de arriba, para que se
-   lea como un bloque distinto y no como más opciones de avanzar. */
-.dc-estados__ayuda--corregir {
-  margin-top: 16px;
-}
-
-/* Cancelar va al final y separado por una línea: es la única acción de este
-   bloque que saca la carga del circuito. */
-.dc-estados__cancelar {
-  margin-top: 18px;
+/* Las acciones que no son "el siguiente paso" (corregir y cancelar) van
+   juntas, debajo de una línea y con menos peso visual: son salidas, no el
+   camino esperado. */
+.dc-estados__secundarias {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 24px;
+  margin-top: 20px;
   padding-top: 16px;
   border-top: 1px solid var(--color-borde-suave);
+}
+
+.dc-estados__grupo {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.dc-estados__ayuda {
+  margin: 0;
+  font-size: var(--texto-ayuda);
+  color: var(--color-texto-suave);
+}
+
+/* ------------------------------------------------------------------
+   Historial plegable (HU 8, usado desde el detalle con `colapsable`).
+   ------------------------------------------------------------------ */
+
+.hc-plegable {
+  padding: 0;
+}
+
+.hc-resumen {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 18px 24px;
+  cursor: pointer;
+  list-style: none;
+}
+
+/* El triángulo por defecto de Safari y el de Chrome se sacan distinto. */
+.hc-resumen::-webkit-details-marker {
+  display: none;
+}
+
+/* Flecha propia, que rota al abrirse. */
+.hc-resumen::before {
+  content: '▸';
+  color: var(--color-texto-suave);
+  transition: transform 0.15s ease;
+}
+
+.hc-plegable[open] .hc-resumen::before {
+  transform: rotate(90deg);
+}
+
+.hc-resumen .dc-card__titulo {
+  margin: 0;
+}
+
+.hc-contador {
+  font-size: var(--texto-ayuda);
+  color: var(--color-texto-suave);
+}
+
+.hc-resumen:focus-visible {
+  outline: var(--foco);
+  outline-offset: -2px;
+}
+
+.hc-cuerpo {
+  padding: 0 24px 22px;
 }

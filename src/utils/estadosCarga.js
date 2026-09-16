@@ -23,7 +23,7 @@ export const ESTADOS = Object.freeze({
  * Orden natural del ciclo de vida, para distinguir avanzar de corregir.
  * `cancelada` queda afuera: no es un paso del flujo, es una salida.
  */
-const FLUJO = Object.freeze([
+export const FLUJO = Object.freeze([
   ESTADOS.DISPONIBLE,
   ESTADOS.PENDIENTE,
   ESTADOS.ACEPTADA,

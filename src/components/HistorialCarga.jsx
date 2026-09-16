@@ -17,11 +17,18 @@ import { formatearFechaHora } from '../utils/carga';
  * de cada carga llega con `estado_anterior: null` (todavía no había estado
  * antes del alta) y se muestra como "Carga creada" en vez de "null → X".
  *
+ * Con `colapsable` se muestra plegado, con el total de cambios en el
+ * encabezado. Sirve para que no domine la pantalla cuando la carga acumuló
+ * muchos movimientos: la bitácora es información de consulta, no lo primero
+ * que se mira. Se usa el `<details>` nativo, que ya trae el plegado accesible
+ * y el foco por teclado sin JavaScript.
+ *
  * @param {object} props
  * @param {number|string} props.idCarga - `id_carga` de la carga.
+ * @param {boolean} [props.colapsable=false] - si se muestra plegado tras un encabezado desplegable.
  * @returns {JSX.Element}
  */
-export default function HistorialCarga({ idCarga }) {
+export default function HistorialCarga({ idCarga, colapsable = false }) {
   const [eventos, setEventos] = useState([]);
   // 'cargando' | 'ok' | 'error'
   const [estadoPedido, setEstadoPedido] = useState('cargando');
@@ -50,10 +57,8 @@ export default function HistorialCarga({ idCarga }) {
     return () => controlador.abort();
   }, [idCarga]);
 
-  return (
-    <section className="dc-card">
-      <h2 className="dc-card__titulo">Historial de estados</h2>
-
+  const cuerpo = (
+    <>
       {estadoPedido === 'cargando' && <p className="dc-mensaje">Cargando historial...</p>}
 
       {estadoPedido === 'error' && (
@@ -98,6 +103,29 @@ export default function HistorialCarga({ idCarga }) {
           ))}
         </ol>
       )}
-    </section>
+    </>
+  );
+
+  if (!colapsable) {
+    return (
+      <section className="dc-card">
+        <h2 className="dc-card__titulo">Historial de estados</h2>
+        {cuerpo}
+      </section>
+    );
+  }
+
+  return (
+    <details className="dc-card hc-plegable">
+      <summary className="hc-resumen">
+        <span className="dc-card__titulo">Historial de estados</span>
+        {estadoPedido === 'ok' && eventos.length > 0 && (
+          <span className="hc-contador">
+            {eventos.length} {eventos.length === 1 ? 'cambio' : 'cambios'}
+          </span>
+        )}
+      </summary>
+      <div className="hc-cuerpo">{cuerpo}</div>
+    </details>
   );
 }

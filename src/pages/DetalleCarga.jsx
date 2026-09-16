@@ -20,6 +20,7 @@ import { usuarioActual } from '../api/sesion';
 import { evitarFoco } from '../utils/formulario';
 import { ESTADOS_BLOQUEADOS_EDICION, formatearFecha, formatearPeso } from '../utils/carga';
 import DialogoConfirmacion from '../components/DialogoConfirmacion';
+import ProgresoCarga from '../components/ProgresoCarga';
 import {
   esCorreccion,
   etiquetaEstado,
@@ -191,29 +192,93 @@ export default function DetalleCarga() {
 
         {estadoPantalla === 'ok' && carga && (
           <>
+            {/*
+              El encabezado junta las tres cosas que identifican a la carga —
+              qué es, a dónde va y en qué estado está — con la acción que se
+              ejerce sobre ella. "Editar" vive acá y no en un bloque aparte
+              porque actúa sobre el objeto que se está mirando, no sobre su
+              ciclo de vida.
+            */}
             <header className="dc-encabezado">
-              <h1 className="dc-titulo">
-                <IconoCaja width={26} height={26} />
-                {carga.tipo_carga}
-              </h1>
-              <EstadoCarga estado={carga.estado_actual} />
+              <div className="dc-encabezado__identidad">
+                <h1 className="dc-titulo">
+                  <IconoCaja width={26} height={26} />
+                  {carga.tipo_carga}
+                </h1>
+                <p className="dc-encabezado__ruta">
+                  {carga.origen}
+                  <span aria-hidden="true"> → </span>
+                  {carga.destino}
+                </p>
+              </div>
+
+              <div className="dc-encabezado__acciones">
+                <EstadoCarga estado={carga.estado_actual} />
+                {!ESTADOS_BLOQUEADOS_EDICION.includes(carga.estado_actual) && (
+                  <button
+                    type="button"
+                    className="ds-boton ds-boton--secundario"
+                    onClick={() => navigate(`/cargas/${carga.id_carga}/editar`)}
+                    onMouseDown={evitarFoco}
+                  >
+                    <IconoEditar />
+                    Editar
+                  </button>
+                )}
+              </div>
             </header>
 
-            <div className="dc-acciones">
-              <button
-                type="button"
-                className="ds-boton ds-boton--secundario"
-                onClick={() => navigate(`/cargas/${carga.id_carga}/editar`)}
-                onMouseDown={evitarFoco}
-                disabled={ESTADOS_BLOQUEADOS_EDICION.includes(carga.estado_actual)}
-              >
-                <IconoEditar />
-                Editar
-              </button>
-              {ESTADOS_BLOQUEADOS_EDICION.includes(carga.estado_actual) && (
-                <p className="dc-acciones__motivo">{MOTIVO_EDICION_BLOQUEADA}</p>
-              )}
-            </div>
+            {/*
+              Cuando no se puede editar se explica por qué, en vez de dejar un
+              botón apagado: un control que nunca se va a habilitar en este
+              estado no aporta nada más que ruido.
+            */}
+            {ESTADOS_BLOQUEADOS_EDICION.includes(carga.estado_actual) && (
+              <p className="dc-acciones__motivo">{MOTIVO_EDICION_BLOQUEADA}</p>
+            )}
+
+            <section className="dc-card">
+              <h2 className="dc-card__titulo">Información de la carga</h2>
+
+              <dl className="dc-datos">
+                <div className="dc-dato">
+                  <dt>
+                    <IconoUbicacion width={15} height={15} />
+                    Origen
+                  </dt>
+                  <dd>{carga.origen}</dd>
+                </div>
+                <div className="dc-dato">
+                  <dt>
+                    <IconoUbicacion width={15} height={15} />
+                    Destino
+                  </dt>
+                  <dd>{carga.destino}</dd>
+                </div>
+                <div className="dc-dato">
+                  <dt>
+                    <IconoCalendario width={15} height={15} />
+                    Fecha de retiro
+                  </dt>
+                  <dd>{formatearFecha(carga.fecha)}</dd>
+                </div>
+                <div className="dc-dato">
+                  <dt>
+                    <IconoPeso width={15} height={15} />
+                    Peso
+                  </dt>
+                  <dd>{formatearPeso(carga.peso_kg)}</dd>
+                </div>
+              </dl>
+
+              <div className="dc-descripcion">
+                <h3 className="dc-descripcion__titulo">
+                  <IconoDocumento width={16} height={16} />
+                  Descripción
+                </h3>
+                <p className="dc-descripcion__texto">{descripcion}</p>
+              </div>
+            </section>
 
             {/*
               Cambio de estado (HU 7). Se muestra un botón por cada transición
@@ -223,7 +288,9 @@ export default function DetalleCarga() {
             */}
             {esAdministrador && (
               <section className="dc-estados">
-                <h2 className="dc-estados__titulo">Estado de la carga</h2>
+                <h2 className="dc-card__titulo">Progreso de la carga</h2>
+
+                <ProgresoCarga estado={carga.estado_actual} />
 
                 {avisoEstado && (
                   <p className="dc-estados__aviso dc-estados__aviso--exito" role="status">
@@ -258,7 +325,10 @@ export default function DetalleCarga() {
                     );
                     const cancelar = posibles.filter((destino) => destino === 'cancelada');
 
-                    const boton = (estadoDestino, clase) => (
+                    // Los botones dicen la acción, no el nombre del estado:
+                    // leídos sueltos, "Pendiente" es un sustantivo y "Marcar
+                    // como pendiente" dice qué va a pasar al apretarlo.
+                    const boton = (estadoDestino, clase, verbo) => (
                       <button
                         key={estadoDestino}
                         type="button"
@@ -267,37 +337,48 @@ export default function DetalleCarga() {
                         onMouseDown={evitarFoco}
                         disabled={cambiandoA !== null}
                       >
-                        {cambiandoA === estadoDestino
-                          ? 'Cambiando...'
-                          : etiquetaEstado(estadoDestino)}
+                        {cambiandoA === estadoDestino ? 'Cambiando...' : verbo}
                       </button>
                     );
 
                     return (
                       <>
                         {avanzar.length > 0 && (
-                          <>
-                            <p className="dc-estados__ayuda">Pasar la carga a:</p>
-                            <div className="dc-estados__botones">
-                              {avanzar.map((destino) => boton(destino, 'ds-boton--primario'))}
-                            </div>
-                          </>
+                          <div className="dc-estados__botones">
+                            {avanzar.map((destino) =>
+                              boton(
+                                destino,
+                                'ds-boton--primario',
+                                `Marcar como ${etiquetaEstado(destino).toLowerCase()}`,
+                              ),
+                            )}
+                          </div>
                         )}
 
-                        {corregir.length > 0 && (
-                          <>
-                            <p className="dc-estados__ayuda dc-estados__ayuda--corregir">
-                              ¿Te equivocaste? Volver a:
-                            </p>
-                            <div className="dc-estados__botones">
-                              {corregir.map((destino) => boton(destino, 'ds-boton--secundario'))}
-                            </div>
-                          </>
-                        )}
+                        {(corregir.length > 0 || cancelar.length > 0) && (
+                          <div className="dc-estados__secundarias">
+                            {corregir.length > 0 && (
+                              <div className="dc-estados__grupo">
+                                <p className="dc-estados__ayuda">¿Te equivocaste?</p>
+                                <div className="dc-estados__botones">
+                                  {corregir.map((destino) =>
+                                    boton(
+                                      destino,
+                                      'ds-boton--secundario',
+                                      `Volver a ${etiquetaEstado(destino).toLowerCase()}`,
+                                    ),
+                                  )}
+                                </div>
+                              </div>
+                            )}
 
-                        {cancelar.length > 0 && (
-                          <div className="dc-estados__cancelar">
-                            {cancelar.map((destino) => boton(destino, 'ds-boton--cancelar'))}
+                            {cancelar.length > 0 && (
+                              <div className="dc-estados__grupo">
+                                {cancelar.map((destino) =>
+                                  boton(destino, 'ds-boton--cancelar', 'Cancelar carga'),
+                                )}
+                              </div>
+                            )}
                           </div>
                         )}
                       </>
@@ -307,58 +388,14 @@ export default function DetalleCarga() {
               </section>
             )}
 
-            <section className="dc-card">
-              <h2 className="dc-card__titulo">Información de la carga</h2>
-
-              <p className="dc-ruta">
-                <IconoUbicacion width={18} height={18} />
-                <span>{carga.origen}</span>
-                <span className="dc-ruta__flecha" aria-hidden="true">
-                  →
-                </span>
-                <span>{carga.destino}</span>
-              </p>
-
-              <dl className="dc-datos">
-                <div className="dc-dato">
-                  <dt>
-                    <IconoCalendario width={15} height={15} />
-                    Fecha de retiro
-                  </dt>
-                  <dd>{formatearFecha(carga.fecha)}</dd>
-                </div>
-                <div className="dc-dato">
-                  <dt>
-                    <IconoPeso width={15} height={15} />
-                    Peso
-                  </dt>
-                  <dd>{formatearPeso(carga.peso_kg)}</dd>
-                </div>
-                <div className="dc-dato">
-                  <dt>
-                    <IconoEtiqueta width={15} height={15} />
-                    Tipo
-                  </dt>
-                  <dd>{carga.tipo_carga}</dd>
-                </div>
-              </dl>
-
-              <div className="dc-descripcion">
-                <h3 className="dc-descripcion__titulo">
-                  <IconoDocumento width={16} height={16} />
-                  Descripción
-                </h3>
-                <p className="dc-descripcion__texto">{descripcion}</p>
-              </div>
-            </section>
-
             {/*
-              El `key` cambia con cada cambio de estado: eso remonta el
-              componente y vuelve a pedir la bitácora, así el asiento nuevo
-              aparece sin recargar la página. Se hace desde acá para no tener
-              que agregarle un prop de refresco a `HistorialCarga` (HU 8).
+              La bitácora va plegada: es información de consulta, y con muchas
+              transiciones ocupaba más que todo el resto de la pantalla junto.
+              El `key` cambia con cada cambio de estado, lo que remonta el
+              componente y vuelve a pedir el historial, así el asiento nuevo
+              aparece sin recargar la página.
             */}
-            <HistorialCarga key={versionHistorial} idCarga={carga.id_carga} />
+            <HistorialCarga key={versionHistorial} idCarga={carga.id_carga} colapsable />
           </>
         )}
       </main>
