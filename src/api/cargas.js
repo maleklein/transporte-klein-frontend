@@ -141,13 +141,12 @@ export async function editarCarga(id, datos) {
  * GET /cargas (HU 2.5 - GIANNA) — lista las cargas registradas.
  *
  * Los tres filtros son opcionales y combinables entre sí. El que llega vacío no
- * se manda como query param. El backend interpreta `destino` como coincidencia
- * parcial (no hace falta el nombre exacto).
+ * se manda como query param.
  *
  * @param {object} [filtros]
  * @param {string} [filtros.estado]  - `estado_actual` exacto ("disponible", "publicada", ...).
  * @param {string} [filtros.fecha]   - fecha exacta en formato AAAA-MM-DD.
- * @param {string} [filtros.destino] - texto a buscar dentro del destino.
+ * @param {string} [filtros.destino_provincia] - id de provincia de destino (2 dígitos).
  * @param {object} [opciones]
  * @param {AbortSignal} [opciones.signal] - para cancelar el pedido si se dispara otro antes.
  * @returns {Promise<object[]>} las cargas que cumplen los filtros; `[]` si ninguna coincide.
@@ -156,7 +155,7 @@ export async function editarCarga(id, datos) {
  */
 export async function listarCargas(filtros = {}, opciones = {}) {
   const params = new URLSearchParams();
-  for (const clave of ['estado', 'fecha', 'destino']) {
+  for (const clave of ['estado', 'fecha', 'destino_provincia']) {
     const valor = String(filtros[clave] ?? '').trim();
     if (valor) params.set(clave, valor);
   }

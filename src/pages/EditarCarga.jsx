@@ -12,6 +12,7 @@ import {
   IconoGuardar,
 } from '../components/Iconos';
 import Campo from '../components/Campo';
+import SelectorUbicacion from '../components/SelectorUbicacion';
 import { evitarFoco } from '../utils/formulario';
 import { LARGOS_MAXIMOS, validar, armarPayload } from '../utils/validarCarga';
 import { ESTADOS_BLOQUEADOS_EDICION } from '../utils/carga';
@@ -28,8 +29,12 @@ import './EditarCarga.css';
  */
 function valoresDesdeCarga(carga) {
   return {
-    origen: carga.origen ?? '',
-    destino: carga.destino ?? '',
+    // El backend devuelve la provincia y la localidad ya separadas, así que la
+    // precarga es directa: no hay que deducir la provincia a partir del nombre.
+    origen_provincia: carga.origen_provincia_id ?? '',
+    origen_id: carga.origen_id ?? '',
+    destino_provincia: carga.destino_provincia_id ?? '',
+    destino_id: carga.destino_id ?? '',
     tipo_carga: carga.tipo_carga ?? '',
     peso: String(carga.peso_kg ?? ''),
     fecha: carga.fecha ?? '',
@@ -141,24 +146,39 @@ export default function EditarCarga() {
   const cancelar = () => navigate(`/cargas/${id}`);
 
   /**
+   * Aplica varios campos de una sola vez y limpia sus errores del backend.
+   *
+   * Existe porque el selector de ubicación cambia dos campos juntos: al elegir
+   * otra provincia hay que borrar la localidad, que ya no pertenece a ella.
+   * Hacerlo en dos llamadas separadas dejaría un render intermedio con una
+   * localidad de la provincia anterior.
+   *
+   * @param {object} cambios - campos a actualizar, `{ campo: valor }`.
+   * @returns {void}
+   */
+  const alCambiarCampos = (cambios) => {
+    setValores((previos) => ({ ...previos, ...cambios }));
+
+    // Al corregir un campo, el error del backend deja de aplicar.
+    setErroresBackend((previos) => {
+      const claves = Object.keys(cambios).filter((campo) => previos[campo]);
+      if (claves.length === 0) return previos;
+      const siguientes = { ...previos };
+      for (const campo of claves) delete siguientes[campo];
+      return siguientes;
+    });
+
+    setErrorGeneral('');
+  };
+
+  /**
    * Crea el manejador `onChange` de un campo del formulario.
    *
    * @param {string} campo - nombre del campo a actualizar.
    * @returns {function(evento: Event): void}
    */
   const alCambiar = (campo) => (evento) => {
-    const { value } = evento.target;
-
-    setValores((previos) => ({ ...previos, [campo]: value }));
-
-    setErroresBackend((previos) => {
-      if (!previos[campo]) return previos;
-      const siguientes = { ...previos };
-      delete siguientes[campo];
-      return siguientes;
-    });
-
-    setErrorGeneral('');
+    alCambiarCampos({ [campo]: evento.target.value });
   };
 
   /**
@@ -291,31 +311,26 @@ export default function EditarCarga() {
                 </div>
               )}
 
-              <div className="ds-fila-2">
-                <Campo
-                  id="ec-origen"
+                <SelectorUbicacion
+                  prefijo="ec"
+                  nombre="origen"
                   etiqueta="Origen"
-                  error={errorDe('origen')}
-                  refInput={refPrimerCampo}
-                  type="text"
-                  maxLength={LARGOS_MAXIMOS.origen}
-                  placeholder="Ej: Paraná, Entre Ríos"
-                  value={valores.origen}
-                  onChange={alCambiar('origen')}
-                  onBlur={alSalirDelCampo('origen')}
+                  valores={valores}
+                  errorDe={errorDe}
+                  alCambiarCampos={alCambiarCampos}
+                  alSalirDelCampo={alSalirDelCampo}
+                  refProvincia={refPrimerCampo}
                 />
-                <Campo
-                  id="ec-destino"
+
+                <SelectorUbicacion
+                  prefijo="ec"
+                  nombre="destino"
                   etiqueta="Destino"
-                  error={errorDe('destino')}
-                  type="text"
-                  maxLength={LARGOS_MAXIMOS.destino}
-                  placeholder="Ej: Rosario, Santa Fe"
-                  value={valores.destino}
-                  onChange={alCambiar('destino')}
-                  onBlur={alSalirDelCampo('destino')}
+                  valores={valores}
+                  errorDe={errorDe}
+                  alCambiarCampos={alCambiarCampos}
+                  alSalirDelCampo={alSalirDelCampo}
                 />
-              </div>
 
               <div className="ds-fila-2">
                 <Campo
