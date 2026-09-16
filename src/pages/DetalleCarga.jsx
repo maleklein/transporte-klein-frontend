@@ -19,7 +19,13 @@ import { ErrorDeApi } from '../api/usuarios';
 import { usuarioActual } from '../api/sesion';
 import { evitarFoco } from '../utils/formulario';
 import { ESTADOS_BLOQUEADOS_EDICION, formatearFecha, formatearPeso } from '../utils/carga';
-import { etiquetaEstado, transicionesDesde } from '../utils/estadosCarga';
+import DialogoConfirmacion from '../components/DialogoConfirmacion';
+import {
+  esCorreccion,
+  etiquetaEstado,
+  requiereConfirmacion,
+  transicionesDesde,
+} from '../utils/estadosCarga';
 import './DetalleCarga.css';
 
 /**
@@ -62,6 +68,10 @@ export default function DetalleCarga() {
   const [errorEstado, setErrorEstado] = useState('');
   const [avisoEstado, setAvisoEstado] = useState('');
 
+  // Estado destino esperando confirmación, o null si el diálogo está cerrado.
+  // Sólo se llena para las transiciones irreversibles (ver `pedirCambio`).
+  const [confirmando, setConfirmando] = useState(null);
+
   // Sólo el administrador cambia estados; al camionero no se le muestran los
   // botones. El backend igual lo exige con requireRol, así que esto es
   // presentación, no seguridad.
@@ -97,7 +107,24 @@ export default function DetalleCarga() {
       );
     } finally {
       setCambiandoA(null);
+      setConfirmando(null);
     }
+  };
+
+  /**
+   * Punto de entrada de los botones de estado. Las transiciones que se pueden
+   * deshacer se aplican directo; las que llevan a un estado final abren el
+   * diálogo de confirmación primero, que es lo que pide HU 2.4 para cancelar.
+   *
+   * @param {string} estadoNuevo - estado destino.
+   * @returns {void}
+   */
+  const pedirCambio = (estadoNuevo) => {
+    if (requiereConfirmacion(estadoNuevo)) {
+      setConfirmando(estadoNuevo);
+      return;
+    }
+    alCambiarEstado(estadoNuevo);
   };
 
   useEffect(() => {
@@ -217,29 +244,65 @@ export default function DetalleCarga() {
                     es un estado final y ya no admite más cambios.
                   </p>
                 ) : (
-                  <>
-                    <p className="dc-estados__ayuda">Pasar la carga a:</p>
-                    <div className="dc-estados__botones">
-                      {transicionesDesde(carga.estado_actual).map((estadoDestino) => (
-                        <button
-                          key={estadoDestino}
-                          type="button"
-                          className={`ds-boton ${
-                            estadoDestino === 'cancelada'
-                              ? 'ds-boton--cancelar'
-                              : 'ds-boton--primario'
-                          }`}
-                          onClick={() => alCambiarEstado(estadoDestino)}
-                          onMouseDown={evitarFoco}
-                          disabled={cambiandoA !== null}
-                        >
-                          {cambiandoA === estadoDestino
-                            ? 'Cambiando...'
-                            : etiquetaEstado(estadoDestino)}
-                        </button>
-                      ))}
-                    </div>
-                  </>
+                  (() => {
+                    // Se separan en tres grupos para que se lea qué hace cada
+                    // botón: avanzar el ciclo, volver atrás para corregir un
+                    // error, o cancelar la carga (que no tiene vuelta).
+                    const posibles = transicionesDesde(carga.estado_actual);
+                    const avanzar = posibles.filter(
+                      (destino) =>
+                        destino !== 'cancelada' && !esCorreccion(carga.estado_actual, destino),
+                    );
+                    const corregir = posibles.filter((destino) =>
+                      esCorreccion(carga.estado_actual, destino),
+                    );
+                    const cancelar = posibles.filter((destino) => destino === 'cancelada');
+
+                    const boton = (estadoDestino, clase) => (
+                      <button
+                        key={estadoDestino}
+                        type="button"
+                        className={`ds-boton ${clase}`}
+                        onClick={() => pedirCambio(estadoDestino)}
+                        onMouseDown={evitarFoco}
+                        disabled={cambiandoA !== null}
+                      >
+                        {cambiandoA === estadoDestino
+                          ? 'Cambiando...'
+                          : etiquetaEstado(estadoDestino)}
+                      </button>
+                    );
+
+                    return (
+                      <>
+                        {avanzar.length > 0 && (
+                          <>
+                            <p className="dc-estados__ayuda">Pasar la carga a:</p>
+                            <div className="dc-estados__botones">
+                              {avanzar.map((destino) => boton(destino, 'ds-boton--primario'))}
+                            </div>
+                          </>
+                        )}
+
+                        {corregir.length > 0 && (
+                          <>
+                            <p className="dc-estados__ayuda dc-estados__ayuda--corregir">
+                              ¿Te equivocaste? Volver a:
+                            </p>
+                            <div className="dc-estados__botones">
+                              {corregir.map((destino) => boton(destino, 'ds-boton--secundario'))}
+                            </div>
+                          </>
+                        )}
+
+                        {cancelar.length > 0 && (
+                          <div className="dc-estados__cancelar">
+                            {cancelar.map((destino) => boton(destino, 'ds-boton--cancelar'))}
+                          </div>
+                        )}
+                      </>
+                    );
+                  })()
                 )}
               </section>
             )}
@@ -299,6 +362,29 @@ export default function DetalleCarga() {
           </>
         )}
       </main>
+
+      {/*
+        Confirmación de las transiciones que no se pueden deshacer. HU 2.4 la
+        pide explícitamente para cancelar; se aplica igual a "entregada", que
+        por RN-01 tampoco tiene vuelta.
+      */}
+      <DialogoConfirmacion
+        abierto={confirmando !== null}
+        peligroso={confirmando === 'cancelada'}
+        ocupado={cambiandoA !== null}
+        titulo={
+          confirmando === 'cancelada' ? '¿Cancelar esta carga?' : '¿Marcarla como entregada?'
+        }
+        mensaje={
+          confirmando === 'cancelada'
+            ? 'La carga deja de estar disponible para los camioneros y no se puede reactivar. Si hiciera falta, habría que darla de alta de nuevo.'
+            : 'Una vez entregada, la carga no vuelve a estados anteriores y sus datos quedan como registro de lo que pasó.'
+        }
+        textoConfirmar={confirmando === 'cancelada' ? 'Sí, cancelar' : 'Sí, marcar entregada'}
+        textoCancelar="Volver"
+        alConfirmar={() => alCambiarEstado(confirmando)}
+        alCancelar={() => setConfirmando(null)}
+      />
     </>
   );
 }

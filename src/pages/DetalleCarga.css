@@ -345,3 +345,17 @@
   color: var(--color-peligro-oscuro);
   border-color: var(--color-peligro);
 }
+
+/* La ayuda de "volver a" se separa un poco del grupo de arriba, para que se
+   lea como un bloque distinto y no como más opciones de avanzar. */
+.dc-estados__ayuda--corregir {
+  margin-top: 16px;
+}
+
+/* Cancelar va al final y separado por una línea: es la única acción de este
+   bloque que saca la carga del circuito. */
+.dc-estados__cancelar {
+  margin-top: 18px;
+  padding-top: 16px;
+  border-top: 1px solid var(--color-borde-suave);
+}

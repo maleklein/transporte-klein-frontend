@@ -20,18 +20,36 @@ export const ESTADOS = Object.freeze({
 });
 
 /**
- * Transiciones permitidas desde cada estado. Igual que en el backend:
- * `entregada` y `cancelada` son terminales, y cancelar sólo se puede desde
- * `disponible` o `pendiente` (HU 2.4).
+ * Orden natural del ciclo de vida, para distinguir avanzar de corregir.
+ * `cancelada` queda afuera: no es un paso del flujo, es una salida.
+ */
+const FLUJO = Object.freeze([
+  ESTADOS.DISPONIBLE,
+  ESTADOS.PENDIENTE,
+  ESTADOS.ACEPTADA,
+  ESTADOS.EN_VIAJE,
+  ESTADOS.ENTREGADA,
+]);
+
+/**
+ * Transiciones permitidas desde cada estado. Igual que en el backend: además
+ * de avanzar se puede retroceder un paso, para corregir un clic equivocado.
+ * `entregada` es terminal por RN-01 y `cancelada` por decisión del equipo.
  */
 export const TRANSICIONES = Object.freeze({
   [ESTADOS.DISPONIBLE]: [ESTADOS.PENDIENTE, ESTADOS.CANCELADA],
-  [ESTADOS.PENDIENTE]: [ESTADOS.ACEPTADA, ESTADOS.CANCELADA],
-  [ESTADOS.ACEPTADA]: [ESTADOS.EN_VIAJE],
-  [ESTADOS.EN_VIAJE]: [ESTADOS.ENTREGADA],
+  [ESTADOS.PENDIENTE]: [ESTADOS.ACEPTADA, ESTADOS.DISPONIBLE, ESTADOS.CANCELADA],
+  [ESTADOS.ACEPTADA]: [ESTADOS.EN_VIAJE, ESTADOS.PENDIENTE],
+  [ESTADOS.EN_VIAJE]: [ESTADOS.ENTREGADA, ESTADOS.ACEPTADA],
   [ESTADOS.ENTREGADA]: [],
   [ESTADOS.CANCELADA]: [],
 });
+
+/**
+ * Estados de los que ya no se vuelve. Pasar a uno de ellos es irreversible,
+ * así que la pantalla pide confirmación antes (HU 2.4 lo exige para cancelar).
+ */
+export const ESTADOS_FINALES = Object.freeze([ESTADOS.ENTREGADA, ESTADOS.CANCELADA]);
 
 /**
  * Texto para mostrar de cada estado. Hace falta porque en la base se guarda
@@ -95,4 +113,29 @@ export function transicionesDesde(estadoActual) {
  */
 export function esEstadoFinal(estadoActual) {
   return transicionesDesde(estadoActual).length === 0;
+}
+
+/**
+ * Indica si la transición retrocede en el flujo, o sea, si corrige un cambio
+ * anterior en vez de avanzar el ciclo de vida. La pantalla las separa para que
+ * se vea claro que "Pendiente" desde "Aceptada" es volver atrás, no seguir.
+ *
+ * @param {string} estadoActual - estado en el que está la carga.
+ * @param {string} estadoNuevo - estado al que se la quiere llevar.
+ * @returns {boolean} true si el destino está antes en el flujo.
+ */
+export function esCorreccion(estadoActual, estadoNuevo) {
+  const desde = FLUJO.indexOf(estadoActual);
+  const hasta = FLUJO.indexOf(estadoNuevo);
+  return desde !== -1 && hasta !== -1 && hasta < desde;
+}
+
+/**
+ * Indica si pasar a este estado es irreversible y hay que confirmarlo antes.
+ *
+ * @param {string} estadoNuevo - estado destino.
+ * @returns {boolean} true si el destino es un estado final.
+ */
+export function requiereConfirmacion(estadoNuevo) {
+  return ESTADOS_FINALES.includes(estadoNuevo);
 }
