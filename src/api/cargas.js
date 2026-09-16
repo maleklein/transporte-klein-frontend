@@ -77,6 +77,67 @@ export async function crearCarga(datos) {
 }
 
 /**
+ * PUT /cargas/:id (HU 2.2) — modifica los seis campos de una carga existente.
+ *
+ * Usa las mismas validaciones que `POST /cargas`, así que un campo inválido
+ * da el mismo `ErrorDeValidacion` que `crearCarga`. Además puede rechazar el
+ * pedido con 409 si la carga ya está en un estado que no admite edición
+ * ('en_viaje' o 'entregada') — ese caso no trae `errores` por campo, así que
+ * queda como un `ErrorDeApi` general con `estado === 409`, para que la
+ * pantalla lo distinga y no deje reintentar el guardado.
+ *
+ * @param {number|string} id - `id_carga` de la carga a modificar.
+ * @param {object} datos - payload del formulario ya normalizado (mismos seis campos que `crearCarga`).
+ * @returns {Promise<object>} la carga actualizada que devuelve el backend (200).
+ * @throws {ErrorDeValidacion} si el backend rechazó campos puntuales (400).
+ * @throws {ErrorDeApi} si la carga no existe (404), no admite edición (409),
+ *   o para el resto de los errores (401, 403, 500, sin conexión).
+ */
+export async function editarCarga(id, datos) {
+  let respuesta;
+
+  try {
+    respuesta = await fetch(`${URL_API}/cargas/${encodeURIComponent(id)}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json', ...headersDeAuth() },
+      body: JSON.stringify(datos),
+    });
+  } catch {
+    // El servidor no respondió (apagado, sin red, CORS bloqueado).
+    throw new ErrorDeApi(
+      'No se pudo conectar con el servidor. Verificá que el sistema esté encendido e intentá de nuevo.',
+      null,
+      0,
+    );
+  }
+
+  let cuerpo = null;
+  try {
+    cuerpo = await respuesta.json();
+  } catch {
+    cuerpo = null;
+  }
+
+  if (!respuesta.ok) {
+    // Un 401 significa que el token falta, vencio o dejo de servir:
+    // se limpia la sesion y se vuelve al login.
+    manejarNoAutorizado(respuesta.status);
+    const mensaje =
+      cuerpo?.message ??
+      cuerpo?.error ??
+      `Ocurrió un error inesperado (código ${respuesta.status}).`;
+
+    if (cuerpo?.errores && typeof cuerpo.errores === 'object') {
+      throw new ErrorDeValidacion(mensaje, cuerpo.errores, respuesta.status);
+    }
+
+    throw new ErrorDeApi(mensaje, null, respuesta.status);
+  }
+
+  return cuerpo;
+}
+
+/**
  * GET /cargas (HU 2.5 - GIANNA) — lista las cargas registradas.
  *
  * Los tres filtros son opcionales y combinables entre sí. El que llega vacío no
