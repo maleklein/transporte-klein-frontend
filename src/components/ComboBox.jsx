@@ -99,6 +99,21 @@ export default function ComboBox({
   }, [todas, busqueda, abierto]);
 
   /**
+   * Índice realmente resaltado, acotado a lo que hay en pantalla.
+   *
+   * `resaltado` puede quedar apuntando a una opción que ya no existe: al abrir
+   * la localidad sin provincia elegida, al filtrar sin coincidencias, o cuando
+   * la lista se achica sola. En esos casos `aria-activedescendant` señalaba un
+   * id que no está en el DOM y el combobox quedaba inválido para un lector de
+   * pantalla, que es justamente lo que este componente tiene que hacer bien.
+   *
+   * Se calcula en vez de corregirse con otro efecto: así no hay un render
+   * intermedio con el valor viejo ni dos fuentes de verdad que se puedan
+   * desfasar.
+   */
+  const resaltadoVisible = resaltado >= 0 && resaltado < visibles.length ? resaltado : -1;
+
+  /**
    * Abre la lista dejando resaltada la opción que ya estaba elegida, para que
    * las flechas arranquen desde donde el usuario está parado. Si todavía no
    * hay nada elegido, resalta la primera: así se puede abrir con la flecha y
@@ -166,12 +181,13 @@ export default function ComboBox({
    */
   const mover = (paso) => {
     if (visibles.length === 0) return;
-    setResaltado((previo) => {
-      const siguiente = previo + paso;
-      if (siguiente < 0) return visibles.length - 1;
-      if (siguiente >= visibles.length) return 0;
-      return siguiente;
-    });
+
+    // Se parte del índice acotado, no del guardado: si el guardado quedó fuera
+    // de rango, sumarle uno daría otro valor fuera de rango.
+    const siguiente = resaltadoVisible + paso;
+    if (siguiente < 0) setResaltado(visibles.length - 1);
+    else if (siguiente >= visibles.length) setResaltado(0);
+    else setResaltado(siguiente);
   };
 
   /**
@@ -206,7 +222,7 @@ export default function ComboBox({
         // Sin esto, el Enter que elige una opción manda el formulario entero.
         if (abierto) {
           evento.preventDefault();
-          if (resaltado >= 0 && visibles[resaltado]) elegir(visibles[resaltado]);
+          if (resaltadoVisible >= 0) elegir(visibles[resaltadoVisible]);
         }
         break;
       case 'Escape':
@@ -221,7 +237,36 @@ export default function ComboBox({
         // Tab sale del campo: se cierra sin elegir, como cualquier desplegable.
         if (abierto) cerrar();
         break;
+      case 'Backspace':
+      case 'Delete':
+        // Con la lista cerrada, el input muestra la etiqueta de lo elegido.
+        // Borrar ahí estaría editando ese texto, no buscando: se abre con la
+        // búsqueda en blanco, que es lo que el gesto quiere decir.
+        if (!abierto) {
+          evento.preventDefault();
+          setAbierto(true);
+          setBusqueda('');
+          setResaltado(-1);
+        }
+        break;
       default:
+        // Un carácter imprimible con la lista cerrada arranca una búsqueda
+        // nueva. Sin esto, el navegador lo insertaba dentro de la etiqueta que
+        // se estaba mostrando —"Paraná" + "r" = "Paranár"— y el filtro no
+        // encontraba nada. Se nota sobre todo al editar una carga, donde los
+        // campos vienen con valor y se llega a ellos con Tab.
+        if (
+          !abierto &&
+          evento.key.length === 1 &&
+          !evento.ctrlKey &&
+          !evento.metaKey &&
+          !evento.altKey
+        ) {
+          evento.preventDefault();
+          setAbierto(true);
+          setBusqueda(evento.key);
+          setResaltado(0);
+        }
         break;
     }
   };
@@ -242,10 +287,10 @@ export default function ComboBox({
   // Mantiene visible la opción resaltada al navegar con las flechas: con 642
   // localidades, el resaltado se va de pantalla enseguida.
   useEffect(() => {
-    if (!abierto || resaltado < 0) return;
-    const elemento = refLista.current?.children[resaltado];
+    if (!abierto || resaltadoVisible < 0) return;
+    const elemento = refLista.current?.children[resaltadoVisible];
     elemento?.scrollIntoView({ block: 'nearest' });
-  }, [abierto, resaltado]);
+  }, [abierto, resaltadoVisible]);
 
   return (
     <div className="cb" ref={refRaiz}>
@@ -259,7 +304,7 @@ export default function ComboBox({
         aria-controls={idLista}
         aria-autocomplete="list"
         aria-activedescendant={
-          abierto && resaltado >= 0 ? `${idLista}-opcion-${resaltado}` : undefined
+          abierto && resaltadoVisible >= 0 ? `${idLista}-opcion-${resaltadoVisible}` : undefined
         }
         aria-invalid={tieneError}
         aria-describedby={tieneError ? idError : undefined}
@@ -290,7 +335,7 @@ export default function ComboBox({
             id={`${idLista}-opcion-${indice}`}
             role="option"
             aria-selected={opcion.valor === valor}
-            className={`cb-opcion${indice === resaltado ? ' cb-opcion--resaltada' : ''}${
+            className={`cb-opcion${indice === resaltadoVisible ? ' cb-opcion--resaltada' : ''}${
               opcion.valor === '' ? ' cb-opcion--vacia' : ''
             }`}
             // El clic en una opción sacaría el foco del input y dispararía su
@@ -304,7 +349,11 @@ export default function ComboBox({
         ))}
 
         {visibles.length === 0 && (
-          <li className="cb-sin-resultados">No hay resultados para "{busqueda.trim()}"</li>
+          // `role="presentation"` porque no es una opción elegible: sin eso,
+          // un lector de pantalla lo contaría como una más de la lista.
+          <li className="cb-sin-resultados" role="presentation">
+            No hay resultados para "{busqueda.trim()}"
+          </li>
         )}
       </ul>
 
