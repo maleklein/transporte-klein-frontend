@@ -51,20 +51,24 @@ export default function SelectorUbicacion({
   const [provincias, setProvincias] = useState([]);
   const [localidades, setLocalidades] = useState([]);
   // 'cargando' | 'ok' | 'error'
+  const [estadoProvincias, setEstadoProvincias] = useState('cargando');
   const [estadoLocalidades, setEstadoLocalidades] = useState('ok');
-  const [errorCatalogo, setErrorCatalogo] = useState('');
 
   // Las provincias no cambian nunca: se piden una sola vez y el módulo de API
   // las cachea, así que montar origen y destino juntos dispara un solo pedido.
   useEffect(() => {
     let vigente = true;
 
+    setEstadoProvincias('cargando');
+
     listarProvincias()
       .then((datos) => {
-        if (vigente) setProvincias(datos);
+        if (!vigente) return;
+        setProvincias(datos);
+        setEstadoProvincias('ok');
       })
-      .catch((error) => {
-        if (vigente) setErrorCatalogo(error.message);
+      .catch(() => {
+        if (vigente) setEstadoProvincias('error');
       });
 
     return () => {
@@ -82,8 +86,13 @@ export default function SelectorUbicacion({
     }
 
     let vigente = true;
+    // Se vacía antes de pedir: mientras llegaba la respuesta, la lista seguía
+    // mostrando las localidades de la provincia anterior. Como el campo no se
+    // deshabilita, se podía elegir una de ellas y guardar una carga con una
+    // localidad que no pertenece a la provincia que se ve en pantalla. El
+    // backend no lo detecta, porque sólo recibe el id de la localidad.
+    setLocalidades([]);
     setEstadoLocalidades('cargando');
-    setErrorCatalogo('');
 
     listarLocalidades(idProvinciaElegida)
       .then((datos) => {
@@ -91,9 +100,8 @@ export default function SelectorUbicacion({
         setLocalidades(datos);
         setEstadoLocalidades('ok');
       })
-      .catch((error) => {
+      .catch(() => {
         if (!vigente) return;
-        setErrorCatalogo(error.message);
         setEstadoLocalidades('error');
       });
 
@@ -133,6 +141,26 @@ export default function SelectorUbicacion({
       : localidad.nombre;
 
   /**
+   * Texto que muestra el campo de provincia cuando no hay nada elegido.
+   *
+   * Si el catálogo no cargó, se dice acá adentro y no en un cartel aparte: el
+   * problema es de este campo, y un cartel se dibujaba dos veces (una por
+   * origen y otra por destino) repitiendo el mensaje genérico de la capa de
+   * API, que habla de encender el servidor y no le sirve a quien carga cargas.
+   *
+   * No hay botón de reintentar: si el catálogo no carga es porque el backend
+   * no está, y en ese caso tampoco cargó la pantalla. Recargar la página lo
+   * resuelve, y no hace falta maquinaria aparte para eso.
+   *
+   * @returns {string}
+   */
+  const textoMarcadorProvincia = () => {
+    if (estadoProvincias === 'cargando') return 'Cargando provincias...';
+    if (estadoProvincias === 'error') return 'No se pudieron cargar las provincias';
+    return 'Buscá o elegí la provincia';
+  };
+
+  /**
    * Texto que muestra el campo de localidad cuando todavía no hay nada
    * elegido. Cambia según el estado porque es lo que le explica al usuario por
    * qué la lista está vacía.
@@ -155,10 +183,17 @@ export default function SelectorUbicacion({
    * Al cambiar de provincia se borra la localidad elegida: un id de otra
    * provincia sería inválido y el backend lo rechazaría.
    *
+   * Sólo se borra si la provincia cambió de verdad. Al abrir la lista queda
+   * resaltada la que ya estaba elegida, así que confirmarla con Enter es el
+   * gesto de "no quería cambiar nada" — y borraba la localidad, que en la
+   * edición venía precargada.
+   *
    * @param {string} nuevaProvincia - id de la provincia elegida.
    * @returns {void}
    */
   const alElegirProvincia = (nuevaProvincia) => {
+    if (nuevaProvincia === idProvinciaElegida) return;
+
     alCambiarCampos({
       [campoProvincia]: nuevaProvincia,
       [campoLocalidad]: '',
@@ -168,12 +203,6 @@ export default function SelectorUbicacion({
   return (
     <fieldset className="su-grupo">
       <legend className="su-titulo">{etiqueta}</legend>
-
-      {errorCatalogo && (
-        <p className="su-error-catalogo" role="alert">
-          {errorCatalogo}
-        </p>
-      )}
 
       <div className="ds-fila-2">
         {/*
@@ -199,7 +228,7 @@ export default function SelectorUbicacion({
               }))}
               valor={valores[campoProvincia]}
               alElegir={alElegirProvincia}
-              marcador="Buscá o elegí la provincia"
+              marcador={textoMarcadorProvincia()}
               alSalir={alSalirDelCampo?.(campoProvincia)}
             />
           )}

@@ -221,7 +221,36 @@ export default function ComboBox({
         // Tab sale del campo: se cierra sin elegir, como cualquier desplegable.
         if (abierto) cerrar();
         break;
+      case 'Backspace':
+      case 'Delete':
+        // Con la lista cerrada, el input muestra la etiqueta de lo elegido.
+        // Borrar ahí estaría editando ese texto, no buscando: se abre con la
+        // búsqueda en blanco, que es lo que el gesto quiere decir.
+        if (!abierto) {
+          evento.preventDefault();
+          setAbierto(true);
+          setBusqueda('');
+          setResaltado(-1);
+        }
+        break;
       default:
+        // Un carácter imprimible con la lista cerrada arranca una búsqueda
+        // nueva. Sin esto, el navegador lo insertaba dentro de la etiqueta que
+        // se estaba mostrando —"Paraná" + "r" = "Paranár"— y el filtro no
+        // encontraba nada. Se nota sobre todo al editar una carga, donde los
+        // campos vienen con valor y se llega a ellos con Tab.
+        if (
+          !abierto &&
+          evento.key.length === 1 &&
+          !evento.ctrlKey &&
+          !evento.metaKey &&
+          !evento.altKey
+        ) {
+          evento.preventDefault();
+          setAbierto(true);
+          setBusqueda(evento.key);
+          setResaltado(0);
+        }
         break;
     }
   };
@@ -304,7 +333,11 @@ export default function ComboBox({
         ))}
 
         {visibles.length === 0 && (
-          <li className="cb-sin-resultados">No hay resultados para "{busqueda.trim()}"</li>
+          // `role="presentation"` porque no es una opción elegible: sin eso,
+          // un lector de pantalla lo contaría como una más de la lista.
+          <li className="cb-sin-resultados" role="presentation">
+            No hay resultados para "{busqueda.trim()}"
+          </li>
         )}
       </ul>
 
