@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import Campo from './Campo';
+import ComboBox from './ComboBox';
 import { listarLocalidades, listarProvincias } from '../api/geografia';
 import './SelectorUbicacion.css';
 
@@ -15,12 +16,12 @@ import './SelectorUbicacion.css';
  * El segundo es el que se manda; el primero existe sólo para encadenar los
  * selectores y por eso el backend nunca devuelve errores para él.
  *
- * Son `<select>` nativos y no un buscador con autocompletado. Buenos Aires
- * tiene 642 localidades, que es mucho, pero el select nativo ya trae búsqueda
- * por tecleo, navegación por teclado y lectura correcta en lectores de
- * pantalla, y en celular abre el selector del sistema. Un combobox hecho a mano
- * a medio terminar sería peor, sobre todo para el público al que apunta el
- * sistema de diseño (ver `index.css`).
+ * Los dos campos son `ComboBox`: se escribe para filtrar y se elige de la
+ * lista. Empezaron siendo `<select>` nativos, pero con 642 localidades en
+ * Buenos Aires la búsqueda por tecleo del navegador no alcanza, sobre todo
+ * porque compara el texto tal cual: "cordoba" no encuentra "Córdoba". El
+ * `ComboBox` ignora acentos y mayúsculas y busca en cualquier parte del
+ * nombre, así que "bariloche" encuentra "San Carlos de Bariloche".
  *
  * @param {object} props
  * @param {string} props.prefijo - prefijo de los ids del formulario ('nc' en el alta, 'ec' en la edición).
@@ -132,43 +133,36 @@ export default function SelectorUbicacion({
       : localidad.nombre;
 
   /**
-   * Texto de la opción vacía de localidad. Cambia según el estado porque es lo
-   * que le explica al usuario por qué la lista está vacía.
+   * Texto que muestra el campo de localidad cuando todavía no hay nada
+   * elegido. Cambia según el estado porque es lo que le explica al usuario por
+   * qué la lista está vacía.
    *
-   * El select NO se deshabilita mientras no haya provincia: un control
+   * El campo NO se deshabilita mientras no haya provincia: un control
    * deshabilitado no recibe foco, y la pantalla enfoca el primer campo con
    * error al intentar enviar. Si estuviera deshabilitado, el foco caería al
    * vacío y no se entendería por qué el formulario no avanza.
    *
    * @returns {string}
    */
-  const textoOpcionVacia = () => {
+  const textoMarcadorLocalidad = () => {
     if (!idProvinciaElegida) return `Elegí primero la provincia de ${etiqueta.toLowerCase()}`;
     if (estadoLocalidades === 'cargando') return 'Cargando localidades...';
     if (estadoLocalidades === 'error') return 'No se pudieron cargar las localidades';
-    return 'Seleccionar localidad...';
+    return 'Buscá o elegí la localidad';
   };
 
   /**
    * Al cambiar de provincia se borra la localidad elegida: un id de otra
    * provincia sería inválido y el backend lo rechazaría.
    *
-   * @param {import('react').ChangeEvent} evento
+   * @param {string} nuevaProvincia - id de la provincia elegida.
    * @returns {void}
    */
-  const alCambiarProvincia = (evento) => {
+  const alElegirProvincia = (nuevaProvincia) => {
     alCambiarCampos({
-      [campoProvincia]: evento.target.value,
+      [campoProvincia]: nuevaProvincia,
       [campoLocalidad]: '',
     });
-  };
-
-  /**
-   * @param {import('react').ChangeEvent} evento
-   * @returns {void}
-   */
-  const alCambiarLocalidad = (evento) => {
-    alCambiarCampos({ [campoLocalidad]: evento.target.value });
   };
 
   return (
@@ -194,23 +188,20 @@ export default function SelectorUbicacion({
           error={errorDe(campoProvincia)}
         >
           {({ id, idError, tieneError }) => (
-            <select
+            <ComboBox
               id={id}
-              ref={refProvincia}
-              className={`ds-campo__input${tieneError ? ' ds-campo__input--error' : ''}`}
-              aria-invalid={tieneError}
-              aria-describedby={tieneError ? idError : undefined}
-              value={valores[campoProvincia]}
-              onChange={alCambiarProvincia}
-              onBlur={alSalirDelCampo?.(campoProvincia)}
-            >
-              <option value="">Seleccionar provincia...</option>
-              {provincias.map((provincia) => (
-                <option key={provincia.id} value={provincia.id}>
-                  {provincia.nombre}
-                </option>
-              ))}
-            </select>
+              idError={idError}
+              tieneError={tieneError}
+              refInput={refProvincia}
+              opciones={provincias.map((provincia) => ({
+                valor: provincia.id,
+                etiqueta: provincia.nombre,
+              }))}
+              valor={valores[campoProvincia]}
+              alElegir={alElegirProvincia}
+              marcador="Buscá o elegí la provincia"
+              alSalir={alSalirDelCampo?.(campoProvincia)}
+            />
           )}
         </Campo>
 
@@ -220,22 +211,19 @@ export default function SelectorUbicacion({
           error={errorDe(campoLocalidad)}
         >
           {({ id, idError, tieneError }) => (
-            <select
+            <ComboBox
               id={id}
-              className={`ds-campo__input${tieneError ? ' ds-campo__input--error' : ''}`}
-              aria-invalid={tieneError}
-              aria-describedby={tieneError ? idError : undefined}
-              value={valores[campoLocalidad]}
-              onChange={alCambiarLocalidad}
-              onBlur={alSalirDelCampo?.(campoLocalidad)}
-            >
-              <option value="">{textoOpcionVacia()}</option>
-              {localidades.map((localidad) => (
-                <option key={localidad.id} value={localidad.id}>
-                  {textoLocalidad(localidad)}
-                </option>
-              ))}
-            </select>
+              idError={idError}
+              tieneError={tieneError}
+              opciones={localidades.map((localidad) => ({
+                valor: localidad.id,
+                etiqueta: textoLocalidad(localidad),
+              }))}
+              valor={valores[campoLocalidad]}
+              alElegir={(nuevoValor) => alCambiarCampos({ [campoLocalidad]: nuevoValor })}
+              marcador={textoMarcadorLocalidad()}
+              alSalir={alSalirDelCampo?.(campoLocalidad)}
+            />
           )}
         </Campo>
       </div>

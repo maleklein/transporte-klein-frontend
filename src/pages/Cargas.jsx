@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { listarCargas } from '../api/cargas';
 import { listarProvincias } from '../api/geografia';
+import ComboBox from '../components/ComboBox';
 import { ErrorDeApi } from '../api/usuarios';
 import { usuarioActual } from '../api/sesion';
 import {
@@ -193,28 +194,26 @@ export default function Cargas() {
           {/*
             Antes era un input de texto libre con sugerencias: buscaba por
             coincidencia parcial y no encontraba la misma ciudad escrita de
-            otra forma. Ahora se filtra por provincia, que además es la
-            granularidad útil ("qué viajes hay hacia el litoral").
+            otra forma. Ahora se filtra por provincia del catálogo, que además
+            es la granularidad útil ("qué viajes hay hacia el litoral").
           */}
           <div className="cg-filtro">
             <label className="ds-campo__label" htmlFor="cg-destino-provincia">
               Provincia de destino
             </label>
-            <select
+            <ComboBox
               id="cg-destino-provincia"
-              className="ds-campo__input"
-              value={filtros.destino_provincia}
-              onChange={(evento) =>
-                setFiltros((previos) => ({ ...previos, destino_provincia: evento.target.value }))
+              opciones={provincias.map((provincia) => ({
+                valor: provincia.id,
+                etiqueta: provincia.nombre,
+              }))}
+              valor={filtros.destino_provincia}
+              alElegir={(nuevoValor) =>
+                setFiltros((previos) => ({ ...previos, destino_provincia: nuevoValor }))
               }
-            >
-              <option value="">Todas las provincias</option>
-              {provincias.map((provincia) => (
-                <option key={provincia.id} value={provincia.id}>
-                  {provincia.nombre}
-                </option>
-              ))}
-            </select>
+              marcador="Todas las provincias"
+              textoOpcionVacia="Todas las provincias"
+            />
           </div>
 
           {/*
