@@ -1,0 +1,39 @@
+/* ==========================================================================
+   Selector de ubicación (provincia + localidad).
+
+   Va en un <fieldset> para que los dos selects se lean como una sola cosa:
+   sin eso, un lector de pantalla anuncia cuatro campos sueltos y no queda
+   claro cuál pertenece al origen y cuál al destino.
+
+   El navegador le pone al fieldset un borde y un padding propios que no
+   encajan con el resto del formulario, así que se resetean.
+   ========================================================================== */
+
+.su-grupo {
+  margin: 0 0 4px;
+  padding: 0;
+  border: none;
+  min-width: 0;
+}
+
+.su-titulo {
+  padding: 0;
+  margin-bottom: 8px;
+  font-size: var(--texto-label);
+  font-weight: 700;
+  color: var(--color-primario);
+}
+
+/* Error de la API del catálogo (sin conexión, backend caído). Es distinto de
+   un error de validación: no lo causó el usuario y no lo puede corregir
+   cambiando lo que escribió, así que no va debajo de un campo puntual. */
+.su-error-catalogo {
+  margin: 0 0 12px;
+  padding: 10px 14px;
+  border: 2px solid var(--color-peligro);
+  border-radius: var(--radio-chico);
+  background: var(--color-peligro-claro);
+  color: var(--color-peligro-oscuro);
+  font-size: var(--texto-ayuda);
+  font-weight: 600;
+}

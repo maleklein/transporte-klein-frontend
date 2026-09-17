@@ -1,6 +1,8 @@
 import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { listarCargas } from '../api/cargas';
+import { listarProvincias } from '../api/geografia';
+import ComboBox from '../components/ComboBox';
 import { ErrorDeApi } from '../api/usuarios';
 import { usuarioActual } from '../api/sesion';
 import {
@@ -21,13 +23,7 @@ import './Cargas.css';
  * Filtros en blanco. Sirve para inicializar el estado y para el botón
  * "Limpiar filtros".
  */
-const FILTROS_VACIOS = { estado: '', fecha: '', destino: '' };
-
-/**
- * Espera antes de aplicar lo que se escribió en el filtro de destino, para no
- * pegarle al backend en cada tecla.
- */
-const RETRASO_DESTINO_MS = 350;
+const FILTROS_VACIOS = { estado: '', fecha: '', destino_provincia: '' };
 
 /**
  * Pantalla de consulta de cargas (HU 2.5), en la ruta /cargas.
@@ -43,11 +39,10 @@ const RETRASO_DESTINO_MS = 350;
 export default function Cargas() {
   const navigate = useNavigate();
 
-  // `filtros` son los filtros ya aplicados (los que disparan el pedido).
-  // `destinoTexto` es lo que hay escrito en el input de destino ahora mismo;
-  // se vuelca a `filtros.destino` con un pequeño retraso.
+  // Los tres filtros son discretos (se eligen de una lista o de un calendario),
+  // así que cada cambio dispara un único pedido y no hace falta esperar a que
+  // el usuario termine de escribir.
   const [filtros, setFiltros] = useState(FILTROS_VACIOS);
-  const [destinoTexto, setDestinoTexto] = useState('');
 
   const [cargas, setCargas] = useState([]);
   // 'cargando' | 'ok' | 'error'
@@ -59,10 +54,10 @@ export default function Cargas() {
   const estadosVistosRef = useRef(new Set());
   const [estadosDisponibles, setEstadosDisponibles] = useState([]);
 
-  // Destinos únicos del listado completo (respuesta sin filtros). Alimentan el
-  // <datalist> del input de destino: son sólo sugerencias, el campo sigue siendo
-  // texto libre y el backend hace la coincidencia parcial.
-  const [destinosSugeridos, setDestinosSugeridos] = useState([]);
+  // Provincias del catálogo, para el filtro por destino. Se piden una vez y la
+  // capa de API las cachea, así que compartir la lista con el formulario de
+  // alta no cuesta un pedido más.
+  const [provincias, setProvincias] = useState([]);
 
   // HU 3: al camionero el backend le devuelve sólo las cargas en "disponible",
   // que son a las que se puede postular. Como para él todas tienen el mismo
@@ -70,23 +65,26 @@ export default function Cargas() {
   // de fecha y destino, que son los que sí le sirven para elegir un viaje.
   const esCamionero = usuarioActual()?.rol === 'camionero';
 
-  const hayFiltrosAplicados = Boolean(filtros.estado || filtros.fecha || filtros.destino);
+  const hayAlgunFiltro = Boolean(filtros.estado || filtros.fecha || filtros.destino_provincia);
 
-  // Vuelca el texto de destino a los filtros aplicados, con debounce.
   useEffect(() => {
-    const id = setTimeout(() => {
-      setFiltros((previos) =>
-        previos.destino === destinoTexto ? previos : { ...previos, destino: destinoTexto },
-      );
-    }, RETRASO_DESTINO_MS);
-    return () => clearTimeout(id);
-  }, [destinoTexto]);
+    let vigente = true;
+    listarProvincias()
+      .then((datos) => {
+        if (vigente) setProvincias(datos);
+      })
+      // Si el catálogo no carga, el filtro de destino queda vacío pero el
+      // listado sigue andando: no vale la pena romper toda la pantalla.
+      .catch(() => {});
+    return () => {
+      vigente = false;
+    };
+  }, []);
 
   // Pide las cargas cada vez que cambian los filtros aplicados. Si llega un
   // cambio antes de que responda el pedido anterior, lo cancela (gana el último).
   useEffect(() => {
     const controlador = new AbortController();
-    const sinFiltros = !filtros.estado && !filtros.fecha && !filtros.destino;
     setEstadoPantalla('cargando');
     setMensajeError('');
 
@@ -96,15 +94,6 @@ export default function Cargas() {
           if (carga.estado_actual) estadosVistosRef.current.add(carga.estado_actual);
         }
         setEstadosDisponibles([...estadosVistosRef.current].sort());
-
-        // El listado completo (sin filtros) es la fuente de las sugerencias de
-        // destino. Con filtros activos la respuesta está recortada y no sirve.
-        if (sinFiltros) {
-          const destinos = [...new Set(datos.map((fila) => fila.destino).filter(Boolean))];
-          destinos.sort((a, b) => a.localeCompare(b, 'es'));
-          setDestinosSugeridos(destinos);
-        }
-
         setCargas(datos);
         setEstadoPantalla('ok');
       })
@@ -128,7 +117,6 @@ export default function Cargas() {
    * @returns {void}
    */
   const limpiarFiltros = () => {
-    setDestinoTexto('');
     setFiltros(FILTROS_VACIOS);
   };
 
@@ -142,9 +130,6 @@ export default function Cargas() {
   const irAlDetalle = (carga) => {
     navigate(`/cargas/${carga.id_carga}`);
   };
-
-  // Incluye lo tipeado en destino aunque el debounce todavía no lo haya aplicado.
-  const hayAlgunFiltro = hayFiltrosAplicados || destinoTexto.trim() !== '';
 
   return (
     <>
@@ -206,26 +191,29 @@ export default function Cargas() {
             />
           </div>
 
+          {/*
+            Antes era un input de texto libre con sugerencias: buscaba por
+            coincidencia parcial y no encontraba la misma ciudad escrita de
+            otra forma. Ahora se filtra por provincia del catálogo, que además
+            es la granularidad útil ("qué viajes hay hacia el litoral").
+          */}
           <div className="cg-filtro">
-            <label className="ds-campo__label" htmlFor="cg-destino">
-              Destino
+            <label className="ds-campo__label" htmlFor="cg-destino-provincia">
+              Provincia de destino
             </label>
-            <input
-              id="cg-destino"
-              type="text"
-              className="ds-campo__input"
-              placeholder="Ej: Rosario"
-              list="cg-destinos"
-              autoComplete="off"
-              value={destinoTexto}
-              onChange={(evento) => setDestinoTexto(evento.target.value)}
+            <ComboBox
+              id="cg-destino-provincia"
+              opciones={provincias.map((provincia) => ({
+                valor: provincia.id,
+                etiqueta: provincia.nombre,
+              }))}
+              valor={filtros.destino_provincia}
+              alElegir={(nuevoValor) =>
+                setFiltros((previos) => ({ ...previos, destino_provincia: nuevoValor }))
+              }
+              marcador="Todas las provincias"
+              textoOpcionVacia="Todas las provincias"
             />
-            {/* Sugerencias: el usuario puede elegir una o seguir escribiendo libre. */}
-            <datalist id="cg-destinos">
-              {destinosSugeridos.map((destino) => (
-                <option key={destino} value={destino} />
-              ))}
-            </datalist>
           </div>
 
           {/*
@@ -271,9 +259,9 @@ export default function Cargas() {
 
         {estadoPantalla === 'ok' && cargas.length > 0 && (
           <div className="cg-grilla">
-            {cargas.map((carga, indice) => (
+            {cargas.map((carga) => (
               <article
-                key={`${carga.origen}|${carga.destino}|${carga.fecha}|${carga.tipo_carga}|${indice}`}
+                key={carga.id_carga}
                 className="cg-card"
               >
                 <div className="cg-card__top">

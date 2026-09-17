@@ -11,6 +11,7 @@ import {
   IconoGuardar,
 } from '../components/Iconos';
 import Campo from '../components/Campo';
+import SelectorUbicacion from '../components/SelectorUbicacion';
 import { evitarFoco } from '../utils/formulario';
 import { VALORES_INICIALES, LARGOS_MAXIMOS, validar, armarPayload } from '../utils/validarCarga';
 import './AltaCarga.css';
@@ -90,20 +91,34 @@ export default function AltaCarga() {
    * @param {string} campo - nombre del campo a actualizar.
    * @returns {function(evento: Event): void}
    */
-  const alCambiar = (campo) => (evento) => {
-    const { value } = evento.target;
+  /**
+   * Aplica varios campos de una sola vez y limpia sus errores del backend.
+   *
+   * Existe porque el selector de ubicación cambia dos campos juntos: al elegir
+   * otra provincia hay que borrar la localidad, que ya no pertenece a ella.
+   * Hacerlo en dos llamadas separadas dejaría un render intermedio con una
+   * localidad de la provincia anterior.
+   *
+   * @param {object} cambios - campos a actualizar, `{ campo: valor }`.
+   * @returns {void}
+   */
+  const alCambiarCampos = (cambios) => {
+    setValores((previos) => ({ ...previos, ...cambios }));
 
-    setValores((previos) => ({ ...previos, [campo]: value }));
-
-    // Al corregir el campo, el error del backend deja de aplicar.
+    // Al corregir un campo, el error del backend deja de aplicar.
     setErroresBackend((previos) => {
-      if (!previos[campo]) return previos;
+      const claves = Object.keys(cambios).filter((campo) => previos[campo]);
+      if (claves.length === 0) return previos;
       const siguientes = { ...previos };
-      delete siguientes[campo];
+      for (const campo of claves) delete siguientes[campo];
       return siguientes;
     });
 
     setErrorGeneral('');
+  };
+
+  const alCambiar = (campo) => (evento) => {
+    alCambiarCampos({ [campo]: evento.target.value });
   };
 
   /**
@@ -195,31 +210,26 @@ export default function AltaCarga() {
               </div>
             )}
 
-            <div className="ds-fila-2">
-              <Campo
-                id="nc-origen"
-                etiqueta="Origen"
-                error={errorDe('origen')}
-                refInput={refPrimerCampo}
-                type="text"
-                maxLength={LARGOS_MAXIMOS.origen}
-                placeholder="Ej: Paraná, Entre Ríos"
-                value={valores.origen}
-                onChange={alCambiar('origen')}
-                onBlur={alSalirDelCampo('origen')}
-              />
-              <Campo
-                id="nc-destino"
-                etiqueta="Destino"
-                error={errorDe('destino')}
-                type="text"
-                maxLength={LARGOS_MAXIMOS.destino}
-                placeholder="Ej: Rosario, Santa Fe"
-                value={valores.destino}
-                onChange={alCambiar('destino')}
-                onBlur={alSalirDelCampo('destino')}
-              />
-            </div>
+            <SelectorUbicacion
+              prefijo="nc"
+              nombre="origen"
+              etiqueta="Origen"
+              valores={valores}
+              errorDe={errorDe}
+              alCambiarCampos={alCambiarCampos}
+              alSalirDelCampo={alSalirDelCampo}
+              refProvincia={refPrimerCampo}
+            />
+
+            <SelectorUbicacion
+              prefijo="nc"
+              nombre="destino"
+              etiqueta="Destino"
+              valores={valores}
+              errorDe={errorDe}
+              alCambiarCampos={alCambiarCampos}
+              alSalirDelCampo={alSalirDelCampo}
+            />
 
             <div className="ds-fila-2">
               <Campo

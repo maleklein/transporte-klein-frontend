@@ -10,8 +10,13 @@
  * Valores con los que arranca el formulario de alta (todos los campos vacíos).
  */
 export const VALORES_INICIALES = {
-  origen: '',
-  destino: '',
+  // Origen y destino se eligen del catálogo (ver `SelectorUbicacion`). Los
+  // campos `_provincia` sólo encadenan los selectores y no viajan al backend;
+  // lo que se manda es el id de localidad.
+  origen_provincia: '',
+  origen_id: '',
+  destino_provincia: '',
+  destino_id: '',
   tipo_carga: '',
   peso: '',
   fecha: '',
@@ -22,10 +27,11 @@ export const VALORES_INICIALES = {
  * Largo máximo de cada campo de texto. Son los mismos números que valida el
  * backend, que a su vez salen del tamaño de las columnas en la tabla CARGA.
  * Se usan tanto para el `maxLength` del input como para el mensaje de error.
+ *
+ * Origen y destino ya no están: dejaron de ser texto libre. De paso se va una
+ * inconsistencia que había, porque acá decían 255 y el backend validaba 150.
  */
 export const LARGOS_MAXIMOS = {
-  origen: 255,
-  destino: 255,
   tipo_carga: 100,
   observaciones: 1000,
 };
@@ -61,16 +67,17 @@ export function parsearPeso(valor) {
 export function validar(valores) {
   const errores = {};
 
-  if (!valores.origen.trim()) {
-    errores.origen = 'Ingresá el origen de la carga.';
-  } else if (valores.origen.trim().length > LARGOS_MAXIMOS.origen) {
-    errores.origen = `El origen no puede superar los ${LARGOS_MAXIMOS.origen} caracteres.`;
-  }
-
-  if (!valores.destino.trim()) {
-    errores.destino = 'Ingresá el destino de la carga.';
-  } else if (valores.destino.trim().length > LARGOS_MAXIMOS.destino) {
-    errores.destino = `El destino no puede superar los ${LARGOS_MAXIMOS.destino} caracteres.`;
+  // Se valida la provincia además de la localidad para poder marcar el campo
+  // que realmente falta: si sólo se marcara la localidad, el usuario que no
+  // eligió provincia vería el error debajo de un selector que ni siquiera
+  // tiene opciones para elegir.
+  for (const [nombre, etiqueta] of [['origen', 'origen'], ['destino', 'destino']]) {
+    if (!valores[`${nombre}_provincia`]) {
+      errores[`${nombre}_provincia`] = `Elegí la provincia de ${etiqueta}.`;
+    }
+    if (!valores[`${nombre}_id`]) {
+      errores[`${nombre}_id`] = `Elegí la localidad de ${etiqueta}.`;
+    }
   }
 
   if (!valores.tipo_carga.trim()) {
@@ -123,8 +130,9 @@ export function validar(valores) {
  */
 export function armarPayload(valores) {
   return {
-    origen: valores.origen.trim(),
-    destino: valores.destino.trim(),
+    // Las provincias no se mandan: el backend las deduce de la localidad.
+    origen_id: valores.origen_id,
+    destino_id: valores.destino_id,
     tipo_carga: valores.tipo_carga.trim(),
     // Se manda como número para que el backend reciba el punto decimal aunque
     // el usuario haya escrito con coma.
