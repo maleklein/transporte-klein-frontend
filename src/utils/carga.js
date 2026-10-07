@@ -133,10 +133,12 @@ export function capitalizarEstado(estado) {
 /**
  * Estados desde los que ya no se puede editar una carga (HU 2.2), mismo
  * criterio que `ESTADOS_BLOQUEADOS_EDICION` en el backend
- * (`src/controllers/cargaControllers.js`): una vez en viaje o entregada, sus
- * datos pasan a ser el registro de lo que efectivamente pasó, no un borrador.
- * Usado tanto por `DetalleCarga.jsx` (para deshabilitar el botón "Editar")
- * como por `EditarCarga.jsx` (para bloquear el formulario si se entra por
- * URL directa a una carga que ya no admite edición).
+ * (`src/controllers/cargaControllers.js`): en viaje o entregada, sus datos
+ * pasan a ser el registro de lo que efectivamente pasó, no un borrador; y
+ * cancelada, porque ya no tiene sentido modificar los datos de un viaje que
+ * no va a salir. Usado tanto por `DetalleCarga.jsx` (para deshabilitar el
+ * botón "Editar", con el motivo a la vista) como por `EditarCarga.jsx` (para
+ * bloquear el formulario si se entra por URL directa a una carga que ya no
+ * admite edición).
  */
-export const ESTADOS_BLOQUEADOS_EDICION = ['en_viaje', 'entregada'];
+export const ESTADOS_BLOQUEADOS_EDICION = ['en_viaje', 'entregada', 'cancelada'];
