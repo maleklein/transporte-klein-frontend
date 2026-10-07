@@ -217,8 +217,13 @@ export default function EditarCarga() {
     try {
       const cargaActualizada = await editarCarga(id, armarPayload(valores));
 
+      // Si cambió la ruta y el servicio de mapas no respondió (HU 9), se avisa
+      // acá: el detalle al que se redirige ya muestra el botón Reintentar.
       setMensajeExito(
-        `La carga ${cargaActualizada.origen} → ${cargaActualizada.destino} se actualizó correctamente.`,
+        `La carga ${cargaActualizada.origen} → ${cargaActualizada.destino} se actualizó correctamente.` +
+          (cargaActualizada.estado_calculo_km === 'pendiente'
+            ? ' La distancia quedó pendiente: podés reintentar el cálculo desde el detalle.'
+            : ''),
       );
 
       refTemporizador.current = setTimeout(() => {

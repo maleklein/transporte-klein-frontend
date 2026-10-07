@@ -18,6 +18,22 @@ export function formatearPeso(pesoKg) {
 }
 
 /**
+ * Formatea los kilómetros estimados (HU 9), que llegan del backend como string
+ * decimal ("406.53"), a "407 km". Se redondea a kilómetros enteros a propósito:
+ * es una estimación para planificar, y los decimales sugerirían una precisión
+ * que no tiene.
+ *
+ * @param {string|number|null} km - valor de `kilometros_estimados` tal cual lo devuelve la API.
+ * @returns {string} la distancia lista para mostrar, o '—' si no hay valor.
+ */
+export function formatearKm(km) {
+  if (km === null || km === undefined || String(km).trim() === '') return '—';
+  const numero = Number(km);
+  if (!Number.isFinite(numero)) return `${km} km`;
+  return `${numero.toLocaleString('es-AR', { maximumFractionDigits: 0 })} km`;
+}
+
+/**
  * Pasa una fecha ISO ("2026-09-15") a "15/09/2026". No construye un `Date` a
  * propósito: hacerlo la correría un día según la zona horaria del navegador.
  *

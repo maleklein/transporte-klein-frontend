@@ -197,6 +197,48 @@
   }
 }
 
+/* ------------------------------------------------------------------
+   Distancia estimada (HU 9) — `DistanciaCarga.jsx`.
+   ------------------------------------------------------------------ */
+
+.dk-sin-calcular {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 8px;
+}
+
+.dk-estado {
+  display: inline-block;
+  padding: 2px 10px;
+  border-radius: 999px;
+  font-size: var(--texto-ayuda);
+  font-weight: 700;
+}
+
+/* Mismo ámbar que el badge "en viaje": algo que todavía no terminó. */
+.dk-estado--pendiente {
+  background: #FFF4E5;
+  color: #8A5300;
+}
+
+.dk-estado--error {
+  background: var(--color-peligro-claro);
+  color: var(--color-peligro-oscuro);
+}
+
+.dk-reintentar {
+  min-height: 36px;
+  padding: 6px 12px;
+  font-size: var(--texto-ayuda);
+}
+
+.dk-error {
+  font-size: var(--texto-ayuda);
+  font-weight: 600;
+  color: var(--color-peligro-oscuro);
+}
+
 /* ==========================================================================
    Historial de estados (HU 8) — línea de tiempo vertical, `HistorialCarga.jsx`.
    ========================================================================== */

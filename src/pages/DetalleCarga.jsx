@@ -11,10 +11,16 @@ import {
   IconoPeso,
   IconoUbicacion,
 } from '../components/Iconos';
+import DistanciaCarga from '../components/DistanciaCarga';
 import EstadoCarga from '../components/EstadoCarga';
 import HistorialCarga from '../components/HistorialCarga';
 import ProgresoCarga from '../components/ProgresoCarga';
-import { cambiarEstadoCarga, obtenerCarga, obtenerHistorialCarga } from '../api/cargas';
+import {
+  cambiarEstadoCarga,
+  obtenerCarga,
+  obtenerHistorialCarga,
+  recalcularKmCarga,
+} from '../api/cargas';
 import { ErrorDeApi } from '../api/usuarios';
 import { usuarioActual } from '../api/sesion';
 import { evitarFoco } from '../utils/formulario';
@@ -25,8 +31,8 @@ import './DetalleCarga.css';
  * Detalle de una carga (HU 2.5), en la ruta /cargas/:id.
  *
  * Replica el bloque "Información de la carga" del mockup: título con el badge de
- * estado, la ruta origen → destino, fecha de retiro, peso, tipo y la descripción
- * (`observaciones`). Debajo van el progreso de la carga (HU 7, `ProgresoCarga`)
+ * estado, la ruta origen → destino, fecha de retiro, peso, tipo, la distancia
+ * estimada (HU 9, `DistanciaCarga`) y la descripción (`observaciones`). Debajo van el progreso de la carga (HU 7, `ProgresoCarga`)
  * y el historial de estados (HU 8, `HistorialCarga`). Los bloques de camioneros
  * / asignación son de otras HU (Sprint 2) y no van acá.
  *
@@ -77,6 +83,21 @@ export default function DetalleCarga() {
     const actualizada = await cambiarEstadoCarga(carga.id_carga, estadoNuevo);
     setCarga(actualizada);
     setVersionHistorial((version) => version + 1);
+    return actualizada;
+  };
+
+  /**
+   * Reintenta el cálculo de kilómetros (HU 9) y deja la pantalla con la carga
+   * que devuelve el backend. No se vuelve a pedir el historial: recalcular la
+   * distancia no es un cambio de estado. Los errores los muestra
+   * `DistanciaCarga`, junto al botón que los provocó.
+   *
+   * @returns {Promise<object>} la carga ya actualizada.
+   * @throws {ErrorDeApi} si el servicio de mapas sigue sin responder (503) o el backend falla.
+   */
+  const recalcularKm = async () => {
+    const actualizada = await recalcularKmCarga(carga.id_carga);
+    setCarga(actualizada);
     return actualizada;
   };
 
@@ -254,6 +275,11 @@ export default function DetalleCarga() {
                   </dt>
                   <dd>{formatearPeso(carga.peso_kg)}</dd>
                 </div>
+                <DistanciaCarga
+                  carga={carga}
+                  puedeReintentar={esAdministrador}
+                  alRecalcular={recalcularKm}
+                />
               </dl>
 
               <div className="dc-descripcion">
