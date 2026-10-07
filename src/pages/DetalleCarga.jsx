@@ -14,80 +14,61 @@ import {
 import EstadoCarga from '../components/EstadoCarga';
 import HistorialCarga from '../components/HistorialCarga';
 import { obtenerCarga, postularACarga, obtenerMisPostulaciones } from '../api/cargas'; 
+import { asignarCargaACamionero } from '../api/asignaciones';
 import { ErrorDeApi } from '../api/usuarios';
 import { formatearFecha, formatearPeso } from '../utils/carga';
 import './DetalleCarga.css';
 
 /**
- * Detalle de una carga (HU 2.5 y HU 4), en la ruta /cargas/:id.
+ * Detalle de una carga (HU 2.5, HU 4 y HU 6), en la ruta /cargas/:id.
  *
- * Muestra la información completa de una carga específica (ruta, fecha, peso, etc.) 
- * y su historial de estados (HU 8). Además, implementa la lógica de postulación 
- * para los camioneros (HU 4).
- * 
- * Mejoras de UX implementadas:
- * - Se verifica al cargar la página si el usuario actual ya se postuló a este viaje.
- * - Si ya está postulado, el botón principal cambia de estado (gris) y se deshabilita 
- *   para evitar llamadas innecesarias al backend y confusiones en el usuario.
- *
- * @returns {JSX.Element} El componente renderizado del detalle de la carga.
+ * Muestra la información de la carga. Si el usuario es camionero, muestra el flujo de postulación.
+ * Si el usuario es administrador, muestra la lista de postulantes y permite la asignación (HU 6).
  */
 export default function DetalleCarga() {
   const navigate = useNavigate();
   const { id } = useParams();
 
-  // ============================================================================
-  // ESTADOS DEL COMPONENTE
-  // ============================================================================
-  
-  /** @type {[object|null, Function]} Datos de la carga obtenidos del backend */
+  // Estados generales
   const [carga, setCarga] = useState(null);
-  
-  /** @type {['cargando'|'ok'|'no-encontrada'|'error', Function]} Controla qué pantalla mostrar */
   const [estadoPantalla, setEstadoPantalla] = useState('cargando');
-  
-  /** @type {[string, Function]} Mensaje de error general de la página */
   const [mensajeError, setMensajeError] = useState('');
+  
+  // Simulamos obtener el rol del usuario logueado (Ajustar según cómo manejen la sesión en el proyecto)
+  const [rolUsuario, setRolUsuario] = useState(localStorage.getItem('rol') || 'camionero');
+  //const [rolUsuario, setRolUsuario] = useState('administrador');
 
-  /** @type {[boolean, Function]} Controla la visibilidad de la ventana modal de confirmación */
-  const [modalAbierto, setModalAbierto] = useState(false);
-  
-  /** @type {[boolean, Function]} Bloquea los botones mientras se hace la petición POST */
+  // Estados para Camionero (HU 4)
+  const [modalPostulacionAbierto, setModalPostulacionAbierto] = useState(false);
   const [procesandoPostulacion, setProcesandoPostulacion] = useState(false);
-  
-  /** @type {[{texto: string, tipo: string}, Function]} Mensaje de éxito o error dentro del modal */
-  const [mensajeModal, setMensajeModal] = useState({ texto: '', tipo: '' });
-  
-  /** @type {[boolean, Function]} Bandera que indica si el usuario logueado ya se postuló a esta carga */
   const [yaPostulado, setYaPostulado] = useState(false);
 
-  // ============================================================================
-  // EFECTOS (CARGA DE DATOS)
-  // ============================================================================
+  // Estados para Administrador (HU 6)
+  const [modalAsignacionAbierto, setModalAsignacionAbierto] = useState(false);
+  const [procesandoAsignacion, setProcesandoAsignacion] = useState(false);
+  const [camioneroSeleccionado, setCamioneroSeleccionado] = useState(null);
+  
+  const [mensajeModal, setMensajeModal] = useState({ texto: '', tipo: '' });
 
   useEffect(() => {
     const controlador = new AbortController();
     setEstadoPantalla('cargando');
     setMensajeError('');
 
-    // 1. Obtenemos los datos generales de la carga
     obtenerCarga(id, { signal: controlador.signal })
       .then(async (datosCarga) => {
         setCarga(datosCarga);
         
-        // 2. Verificamos si el usuario ya está postulado a esta carga (UX)
-        try {
-          // Pedimos el historial del usuario actual
-          const misPostulaciones = await obtenerMisPostulaciones({ signal: controlador.signal });
-          // Buscamos si el ID de la carga actual existe en sus postulaciones
-          const estaPostulado = misPostulaciones.some(p => String(p.id_carga) === String(id));
-          setYaPostulado(estaPostulado);
-        } catch (e) {
-          // Si ocurre un error (ej. el usuario es Administrador y no tiene permiso a esta ruta),
-          // capturamos el error silenciosamente y asumimos que no está postulado.
-          setYaPostulado(false);
+        // Verificamos historial solo si es camionero
+        if (rolUsuario === 'camionero') {
+          try {
+            const misPostulaciones = await obtenerMisPostulaciones({ signal: controlador.signal });
+            const estaPostulado = misPostulaciones.some(p => String(p.id_carga) === String(id));
+            setYaPostulado(estaPostulado);
+          } catch (e) {
+            setYaPostulado(false);
+          }
         }
-
         setEstadoPantalla('ok');
       })
       .catch((error) => {
@@ -96,62 +77,62 @@ export default function DetalleCarga() {
           setEstadoPantalla('no-encontrada');
           return;
         }
-        setMensajeError(
-          error instanceof ErrorDeApi
-            ? error.message
-            : 'No se pudo cargar el detalle de la carga. Intentá de nuevo.',
-        );
+        setMensajeError(error instanceof ErrorDeApi ? error.message : 'Error al cargar los datos.');
         setEstadoPantalla('error');
       });
 
     return () => controlador.abort();
-  }, [id]);
+  }, [id, rolUsuario]);
 
-  // ============================================================================
-  // MANEJADORES DE EVENTOS
-  // ============================================================================
-
-  /**
-   * Ejecuta la postulación del camionero a la carga actual.
-   * Se dispara al presionar "Sí, postularme" dentro del modal de confirmación.
-   */
+  // Manejador: Camionero se postula
   const handleConfirmarPostulacion = async () => {
     setProcesandoPostulacion(true);
     setMensajeModal({ texto: '', tipo: '' });
 
     try {
-      // Llamada al endpoint POST /cargas/:id/postulaciones
       await postularACarga(id);
-      
       setMensajeModal({ texto: '¡Te postulaste con éxito a esta carga!', tipo: 'exito' });
-      
-      // Actualizamos el estado local para que el botón principal cambie a gris 
-      // y se deshabilite sin necesidad de recargar toda la página web.
       setYaPostulado(true); 
-      
-      // Cerramos el modal automáticamente tras 2 segundos de mostrar el éxito
-      setTimeout(() => {
-        setModalAbierto(false);
-      }, 2000);
+      setTimeout(() => setModalPostulacionAbierto(false), 2000);
     } catch (error) {
-      setMensajeModal({
-        texto: error instanceof ErrorDeApi ? error.message : 'Error al postularse',
-        tipo: 'error'
-      });
+      setMensajeModal({ texto: error instanceof ErrorDeApi ? error.message : 'Error al postularse', tipo: 'error' });
     } finally {
       setProcesandoPostulacion(false);
     }
   };
 
-  // Preparamos la descripción para evitar errores si viene vacía
-  const descripcion =
-    carga && typeof carga.observaciones === 'string' && carga.observaciones.trim()
-      ? carga.observaciones
-      : 'Sin descripción.';
+  // Manejador: Administrador asigna la carga (HU 6)
+  const handleConfirmarAsignacion = async () => {
+    if (!camioneroSeleccionado) {
+      setMensajeModal({ texto: 'Por favor, seleccioná un camionero primero.', tipo: 'error' });
+      return;
+    }
 
-  // ============================================================================
-  // RENDERIZADO DEL COMPONENTE
-  // ============================================================================
+    setProcesandoAsignacion(true);
+    setMensajeModal({ texto: '', tipo: '' });
+
+    try {
+      await asignarCargaACamionero(id, camioneroSeleccionado);
+      setMensajeModal({ texto: '¡Carga asignada exitosamente!', tipo: 'exito' });
+      
+      // Actualizamos el estado visual de la carga para que desaparezcan los botones
+      setCarga(prev => ({ ...prev, estado_actual: 'aceptada', id_camionero_asignado: camioneroSeleccionado }));
+      
+      setTimeout(() => setModalAsignacionAbierto(false), 2000);
+    } catch (error) {
+      setMensajeModal({ texto: error instanceof ErrorDeApi ? error.message : 'Error al asignar', tipo: 'error' });
+    } finally {
+      setProcesandoAsignacion(false);
+    }
+  };
+
+  const descripcion = carga?.observaciones?.trim() ? carga.observaciones : 'Sin descripción.';
+
+  // Mock de postulantes para armar la interfaz visual requerida en el SRS. 
+  // En la vida real, esto vendría dentro de los datos de `carga`.
+  const postulantesMock = [
+    { id: 3, nombre: 'Roberto Maidana', vehiculo: 'Scania R450 + Carretón', patente: 'AD 482 KL', calificacion: '4.8' }
+  ];
 
   return (
     <>
@@ -166,24 +147,10 @@ export default function DetalleCarga() {
           Volver a Cargas
         </button>
 
-        {/* Pantallas de estado: Cargando, No Encontrada, Error */}
         {estadoPantalla === 'cargando' && <p className="dc-mensaje">Cargando carga...</p>}
+        {estadoPantalla === 'no-encontrada' && <div className="dc-aviso-error" role="alert">Carga no encontrada.</div>}
+        {estadoPantalla === 'error' && <div className="dc-aviso-error" role="alert">{mensajeError}</div>}
 
-        {estadoPantalla === 'no-encontrada' && (
-          <div className="dc-aviso-error" role="alert">
-            <IconoAlerta width={22} height={22} />
-            No encontramos la carga #{id}. Puede que se haya eliminado o que la dirección sea incorrecta.
-          </div>
-        )}
-
-        {estadoPantalla === 'error' && (
-          <div className="dc-aviso-error" role="alert">
-            <IconoAlerta width={22} height={22} />
-            {mensajeError}
-          </div>
-        )}
-
-        {/* Pantalla principal de Detalle de Carga */}
         {estadoPantalla === 'ok' && carga && (
           <>
             <header className="dc-encabezado">
@@ -198,21 +165,16 @@ export default function DetalleCarga() {
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <h2 className="dc-card__titulo">Información de la carga</h2>
                 
-                {/* Botón de Postulación: Solo se renderiza si la carga está disponible.
-                    Si el camionero ya se postuló, se desactiva y cambia a color gris. */}
-                {carga.estado_actual === 'disponible' && (
+                {/* Botón exclusivo para CAMIONEROS (HU 4) */}
+                {rolUsuario === 'camionero' && carga.estado_actual === 'disponible' && (
                   <button 
                     className="dc-btn-postular" 
-                    onClick={() => setModalAbierto(true)}
+                    onClick={() => setModalPostulacionAbierto(true)}
                     disabled={yaPostulado}
                     style={{ 
                       backgroundColor: yaPostulado ? '#a0aec0' : '#28a745', 
-                      color: 'white', 
-                      padding: '10px 20px', 
-                      border: 'none', 
-                      borderRadius: '5px', 
-                      cursor: yaPostulado ? 'not-allowed' : 'pointer', 
-                      fontWeight: 'bold' 
+                      color: 'white', padding: '10px 20px', border: 'none', borderRadius: '5px', 
+                      cursor: yaPostulado ? 'not-allowed' : 'pointer', fontWeight: 'bold' 
                     }}
                   >
                     {yaPostulado ? 'Postulado' : 'Postularse'}
@@ -229,57 +191,96 @@ export default function DetalleCarga() {
 
               <dl className="dc-datos">
                 <div className="dc-dato">
-                  <dt><IconoCalendario width={15} height={15} /> Fecha de retiro</dt>
+                  <dt><IconoCalendario width={15} height={15} /> Fecha</dt>
                   <dd>{formatearFecha(carga.fecha)}</dd>
                 </div>
                 <div className="dc-dato">
                   <dt><IconoPeso width={15} height={15} /> Peso</dt>
                   <dd>{formatearPeso(carga.peso_kg)}</dd>
                 </div>
-                <div className="dc-dato">
-                  <dt><IconoEtiqueta width={15} height={15} /> Tipo</dt>
-                  <dd>{carga.tipo_carga}</dd>
-                </div>
               </dl>
-
               <div className="dc-descripcion">
-                <h3 className="dc-descripcion__titulo">
-                  <IconoDocumento width={16} height={16} /> Descripción
-                </h3>
+                <h3 className="dc-descripcion__titulo"><IconoDocumento width={16} height={16} /> Descripción</h3>
                 <p className="dc-descripcion__texto">{descripcion}</p>
               </div>
             </section>
 
+            {/* SECCIÓN EXCLUSIVA ADMINISTRADOR (HU 6) */}
+            {rolUsuario === 'administrador' && carga.estado_actual === 'disponible' && (
+              <section className="dc-card" style={{ marginTop: '20px' }}>
+                <h2 className="dc-card__titulo">Camioneros postulados</h2>
+                <div style={{ padding: '15px', border: '1px solid #e2e8f0', borderRadius: '8px', marginBottom: '15px' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                    <strong>{postulantesMock[0].nombre}</strong>
+                    <span style={{ color: '#f59e0b' }}>⭐ {postulantesMock[0].calificacion}</span>
+                  </div>
+                  <p style={{ margin: '5px 0', fontSize: '14px', color: '#64748b' }}>
+                    <IconoCamion width={14} height={14} /> {postulantesMock[0].vehiculo} <br/>
+                    Patente: {postulantesMock[0].patente}
+                  </p>
+                </div>
+                
+                <button 
+                  onClick={() => setModalAsignacionAbierto(true)}
+                  style={{ width: '100%', padding: '12px', backgroundColor: '#1e3a8a', color: 'white', border: 'none', borderRadius: '5px', fontWeight: 'bold', cursor: 'pointer' }}
+                >
+                  Asignar Camionero
+                </button>
+              </section>
+            )}
+
             <HistorialCarga idCarga={carga.id_carga} />
 
-            {/* Ventana Modal de Confirmación de Postulación */}
-            {modalAbierto && (
+            {/* Modal Postulación Camionero (HU 4) */}
+            {modalPostulacionAbierto && (
               <div className="modal-overlay" style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(0,0,0,0.5)', display: 'flex', justifyContent: 'center', alignItems: 'center', zIndex: 1000 }}>
                 <div className="modal-content" style={{ backgroundColor: 'white', padding: '30px', borderRadius: '8px', maxWidth: '400px', width: '90%' }}>
                   <h3>Confirmar Postulación</h3>
-                  <p>¿Estás seguro que deseás postularte para transportar esta carga desde <strong>{carga.origen}</strong> hasta <strong>{carga.destino}</strong>?</p>
-
-                  {/* Mensaje de retroalimentación (éxito/error) del intento de postulación */}
-                  {mensajeModal.texto && (
-                    <p style={{ color: mensajeModal.tipo === 'exito' ? 'green' : 'red', fontWeight: 'bold' }}>
-                      {mensajeModal.texto}
-                    </p>
-                  )}
-
+                  <p>¿Postularte para transportar esta carga de <strong>{carga.origen}</strong> a <strong>{carga.destino}</strong>?</p>
+                  {mensajeModal.texto && <p style={{ color: mensajeModal.tipo === 'exito' ? 'green' : 'red', fontWeight: 'bold' }}>{mensajeModal.texto}</p>}
                   <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px', marginTop: '20px' }}>
-                    <button
-                      onClick={() => setModalAbierto(false)}
-                      disabled={procesandoPostulacion}
-                      style={{ padding: '8px 16px', cursor: 'pointer' }}
-                    >
-                      Cancelar
+                    <button onClick={() => setModalPostulacionAbierto(false)} disabled={procesandoPostulacion} style={{ padding: '8px 16px', cursor: 'pointer' }}>Cancelar</button>
+                    <button onClick={handleConfirmarPostulacion} disabled={procesandoPostulacion} style={{ backgroundColor: '#28a745', color: 'white', padding: '8px 16px', border: 'none', cursor: 'pointer' }}>Sí, postularme</button>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Modal Asignación Administrador (HU 6) */}
+            {modalAsignacionAbierto && (
+              <div className="modal-overlay" style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(0,0,0,0.5)', display: 'flex', justifyContent: 'center', alignItems: 'center', zIndex: 1000 }}>
+                <div className="modal-content" style={{ backgroundColor: 'white', padding: '30px', borderRadius: '8px', maxWidth: '450px', width: '90%' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid #eee', paddingBottom: '10px', marginBottom: '20px' }}>
+                    <h3 style={{ margin: 0 }}>Asignar Camionero</h3>
+                    <button onClick={() => setModalAsignacionAbierto(false)} style={{ background: 'none', border: 'none', fontSize: '20px', cursor: 'pointer' }}>×</button>
+                  </div>
+                  
+                  <p style={{ color: '#475569', marginBottom: '20px' }}>Seleccione un camionero de la lista de postulantes para asignar esta carga.</p>
+
+                  <div 
+                    onClick={() => setCamioneroSeleccionado(postulantesMock[0].id)}
+                    style={{ padding: '15px', border: camioneroSeleccionado === postulantesMock[0].id ? '2px solid #28a745' : '1px solid #e2e8f0', borderRadius: '8px', cursor: 'pointer', display: 'flex', gap: '15px' }}
+                  >
+                    <input type="radio" checked={camioneroSeleccionado === postulantesMock[0].id} readOnly style={{ marginTop: '5px' }} />
+                    <div style={{ width: '100%' }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                        <strong>{postulantesMock[0].nombre}</strong>
+                        <span style={{ color: '#f59e0b' }}>⭐ {postulantesMock[0].calificacion}</span>
+                      </div>
+                      <p style={{ margin: '5px 0 0 0', fontSize: '13px', color: '#64748b' }}>
+                        <IconoCamion width={12} height={12} /> {postulantesMock[0].vehiculo} | Patente: {postulantesMock[0].patente}
+                      </p>
+                    </div>
+                  </div>
+
+                  {mensajeModal.texto && <p style={{ color: mensajeModal.tipo === 'exito' ? 'green' : 'red', fontWeight: 'bold', marginTop: '15px' }}>{mensajeModal.texto}</p>}
+
+                  <div style={{ display: 'flex', justifyContent: 'center', gap: '15px', marginTop: '25px' }}>
+                    <button onClick={() => setModalAsignacionAbierto(false)} disabled={procesandoAsignacion} style={{ backgroundColor: '#dc3545', color: 'white', padding: '10px 20px', border: 'none', borderRadius: '5px', cursor: 'pointer', fontWeight: 'bold', width: '100%' }}>
+                      X Cancelar
                     </button>
-                    <button
-                      onClick={handleConfirmarPostulacion}
-                      disabled={procesandoPostulacion}
-                      style={{ backgroundColor: '#28a745', color: 'white', padding: '8px 16px', border: 'none', cursor: 'pointer' }}
-                    >
-                      {procesandoPostulacion ? 'Procesando...' : 'Sí, postularme'}
+                    <button onClick={handleConfirmarAsignacion} disabled={procesandoAsignacion} style={{ backgroundColor: '#28a745', color: 'white', padding: '10px 20px', border: 'none', borderRadius: '5px', cursor: 'pointer', fontWeight: 'bold', width: '100%' }}>
+                      ✓ Confirmar Asignación
                     </button>
                   </div>
                 </div>
