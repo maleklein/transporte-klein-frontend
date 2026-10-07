@@ -176,5 +176,44 @@ export function motivoEdicionBloqueada(estadoActual) {
   if (estadoActual === ESTADOS.ENTREGADA) {
     return 'La carga ya fue entregada: sus datos quedan como registro de lo que pasó y no se pueden modificar.';
   }
+  if (estadoActual === ESTADOS.CANCELADA) {
+    return 'La carga está cancelada: no tiene sentido modificar los datos de un viaje que no va a salir.';
+  }
+  return '';
+}
+
+/**
+ * Estados desde los que ya no se puede cancelar una carga (HU 2.4), mismo
+ * criterio que el backend (`cancelarCarga` en `cargaControllers.js`): en
+ * viaje, entregada, o ya cancelada. A diferencia de `TRANSICIONES`, acá se
+ * nombra "aceptada" aparte más abajo porque el backend le da un mensaje
+ * genérico distinto al de estos tres.
+ */
+export const ESTADOS_BLOQUEADOS_CANCELACION = Object.freeze([
+  ESTADOS.EN_VIAJE,
+  ESTADOS.ENTREGADA,
+  ESTADOS.CANCELADA,
+]);
+
+/**
+ * Explica por qué una carga no se puede cancelar en su estado actual. Mismo
+ * texto que devuelve el backend en el 409 de `PATCH /cargas/:id/cancelar`,
+ * para que el motivo sea igual tanto si se ve de entrada (botón
+ * deshabilitado) como si el estado cambió mientras la pantalla estaba abierta
+ * (409 reactivo).
+ *
+ * @param {string} estadoActual - estado en el que está la carga.
+ * @returns {string} el motivo, o cadena vacía si en ese estado sí se puede cancelar.
+ */
+export function motivoCancelacionBloqueada(estadoActual) {
+  if (estadoActual === ESTADOS.EN_VIAJE) {
+    return 'La carga ya está en viaje: no se puede cancelar, sólo registrar su entrega.';
+  }
+  if (estadoActual === ESTADOS.ENTREGADA) {
+    return 'La carga ya fue entregada: no se puede cancelar un hecho que ya ocurrió.';
+  }
+  if (estadoActual === ESTADOS.CANCELADA) {
+    return 'La carga ya está cancelada.';
+  }
   return '';
 }

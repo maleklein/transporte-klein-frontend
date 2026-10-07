@@ -195,8 +195,8 @@
 }
 
 /* --------------------------------------------------------------------------
-   Acciones con menos peso: volver atrás y cancelar.
-   Son enlaces y no botones para que no compitan con la acción principal.
+   Acción con menos peso: volver atrás.
+   Es un enlace y no un botón para que no compita con la acción principal.
    -------------------------------------------------------------------------- */
 
 .pg-enlace {
@@ -223,19 +223,8 @@
   cursor: not-allowed;
 }
 
-.pg-enlace--peligro {
-  color: var(--color-peligro);
-}
-
-.pg-pie {
-  display: flex;
-  justify-content: flex-end;
-  margin-top: 12px;
-  margin-bottom: -8px;
-}
-
 /* --------------------------------------------------------------------------
-   Confirmación de las transiciones que no se pueden deshacer.
+   Confirmación de la transición que no se puede deshacer (entregada).
    -------------------------------------------------------------------------- */
 
 .pg-confirmar {
@@ -244,10 +233,6 @@
   border: 2px solid var(--color-primario);
   border-radius: var(--radio);
   background: var(--color-fondo);
-}
-
-.pg-confirmar--peligro {
-  border-color: var(--color-peligro);
 }
 
 .pg-confirmar__titulo {
@@ -267,18 +252,6 @@
   display: flex;
   flex-wrap: wrap;
   gap: 10px;
-}
-
-/* Cancelar es la única acción destructiva del bloque, así que su botón de
-   confirmar va en rojo lleno: el `ds-boton--cancelar` del sistema es de
-   contorno y acá tiene que pesar más que "No, mantenerla". */
-.pg-boton-peligro {
-  background: var(--color-peligro);
-  color: #fff;
-}
-
-.pg-boton-peligro:hover:not(:disabled) {
-  background: var(--color-peligro-oscuro);
 }
 
 /* --------------------------------------------------------------------------
@@ -451,10 +424,6 @@
 
   .pg-ahora__acciones .pg-enlace {
     margin-inline: auto;
-  }
-
-  .pg-pie {
-    justify-content: center;
   }
 
   .pg-confirmar__acciones .ds-boton {

@@ -76,9 +76,66 @@
 
 .dc-encabezado__acciones {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   gap: 12px;
   flex-shrink: 0;
+}
+
+/* Botón "Editar" (HU 2.2) y, cuando está deshabilitado (en_viaje, entregada o
+   cancelada), el motivo a la vista debajo. Misma estructura que
+   `.dc-accion-cancelar`, en su propia celda de la fila para no empujar al
+   botón vecino. */
+.dc-accion-editar {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 6px;
+  max-width: 260px;
+}
+
+.dc-accion-editar__motivo {
+  margin: 0;
+  font-size: var(--texto-ayuda);
+  color: var(--color-texto-suave);
+}
+
+/* Botón "Cancelar carga" (HU 2.4) y, cuando está deshabilitado, el motivo a
+   la vista debajo. La columna evita que ese texto empuje al botón "Editar"
+   vecino, que queda en su propia celda de la fila. */
+.dc-accion-cancelar {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 6px;
+  max-width: 260px;
+}
+
+.dc-boton-peligro {
+  background: var(--color-peligro);
+  color: #fff;
+}
+
+.dc-boton-peligro:hover:not(:disabled) {
+  background: var(--color-peligro-oscuro);
+}
+
+.dc-accion-cancelar__motivo {
+  margin: 0;
+  font-size: var(--texto-ayuda);
+  color: var(--color-texto-suave);
+}
+
+.dc-aviso-exito {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 20px;
+  padding: 14px 16px;
+  border: 2px solid var(--color-confirmar);
+  border-radius: var(--radio-chico);
+  background: var(--color-confirmar-claro);
+  color: var(--color-confirmar-oscuro);
+  font-weight: 600;
 }
 
 .dc-titulo {
@@ -90,15 +147,6 @@
   font-weight: 700;
   color: var(--color-primario);
 }
-
-.dc-acciones {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: 6px;
-  margin-bottom: 20px;
-}
-
 
 .dc-card {
   padding: 22px 24px;
