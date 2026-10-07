@@ -65,37 +65,29 @@ const TEXTOS = Object.freeze({
     // El detalle se arma con la fecha real de la cancelación (ver `panel`).
     detalle: null,
     accion: null,
-    aviso: 'Carga cancelada',
+    // Desde acá no se cancela: lo hace el botón del encabezado de
+    // `DetalleCarga` (HU 2.4). Este bloque sólo muestra el resultado.
+    aviso: null,
   },
 });
 
 /**
- * Textos de las dos transiciones que no se pueden deshacer y por eso se
- * confirman antes de aplicarse.
+ * Textos de la única transición que no se puede deshacer y por eso se
+ * confirma antes de aplicarse: marcar como entregada.
  *
- * Están las dos que llevan a un estado final: cancelar (lo exige HU 2.4) y
- * marcar como entregada. La segunda no es destructiva pero sí definitiva —
- * `entregada` es terminal por RN-01 —, así que se pregunta igual, aunque sin
- * el rojo de una acción peligrosa.
+ * No es destructiva pero sí definitiva —`entregada` es terminal por RN-01—,
+ * así que se pregunta antes, en un recuadro dentro del mismo bloque.
  *
- * El texto de cancelar no menciona ningún aviso al transportista porque el
- * sistema todavía no manda notificaciones: sólo saca la carga del listado.
+ * Cancelar también es definitiva, pero no vive acá: tiene su propio botón en
+ * el encabezado de `DetalleCarga`, con su modal (HU 2.4).
  */
 const CONFIRMACIONES = Object.freeze({
-  [ESTADOS.CANCELADA]: {
-    titulo: '¿Cancelar esta carga?',
-    detalle: 'Deja de aparecer en el listado de cargas. No se puede deshacer.',
-    confirmar: 'Sí, cancelar carga',
-    volver: 'No, mantenerla',
-    peligroso: true,
-  },
   [ESTADOS.ENTREGADA]: {
     titulo: '¿Marcarla como entregada?',
     detalle:
       'Entregada es el último paso: la carga no vuelve a estados anteriores y sus datos quedan como registro de lo que pasó. No se puede deshacer.',
     confirmar: 'Sí, marcar entregada',
     volver: 'No, todavía no',
-    peligroso: false,
   },
 });
 
@@ -120,7 +112,6 @@ const FOCO = Object.freeze({
   deshacer: ['[data-accion="avanzar"]', '[data-accion="volver"]', '[data-foco="titulo"]'],
   titulo: ['[data-foco="titulo"]'],
   'confirmar-abrir': ['[data-accion="confirmar-no"]'],
-  'cerrar-cancelar': ['[data-accion="pedir-cancelar"]'],
   'cerrar-avance': ['[data-accion="avanzar"]'],
 });
 
@@ -153,9 +144,13 @@ function marcasPorEstado(eventos) {
  * ve el avance sin bajar hasta la bitácora.
  *
  * Las transiciones que se pueden deshacer (avanzar y volver) se aplican
- * directo y ofrecen "Deshacer" en un aviso temporal. Las que llevan a un
- * estado final —cancelar y entregar— piden confirmación en un recuadro dentro
- * del mismo componente y no ofrecen vuelta atrás, porque no la tienen.
+ * directo y ofrecen "Deshacer" en un aviso temporal. Marcar como entregada,
+ * que lleva a un estado final, pide confirmación en un recuadro dentro del
+ * mismo componente y no ofrece vuelta atrás, porque no la tiene.
+ *
+ * Cancelar la carga no se hace desde acá sino desde el botón del encabezado
+ * de `DetalleCarga` (HU 2.4). Este bloque sólo muestra el resultado: el paso
+ * donde se canceló y el cartel con la fecha.
  *
  * Qué botones aparecen lo decide la máquina de estados de
  * `utils/estadosCarga`, no una lista escrita acá: así el usuario no puede
@@ -189,13 +184,17 @@ export default function ProgresoCarga({ estado, eventos = [], alCambiarEstado })
   const puedeGestionar = typeof alCambiarEstado === 'function';
 
   // Transiciones disponibles, separadas por lo que significan para el usuario:
-  // seguir el ciclo, corregir un clic equivocado, o sacar la carga del circuito.
+  // seguir el ciclo o corregir un clic equivocado.
+  //
+  // `cancelada` se descarta del avance a propósito: la máquina de estados la
+  // sigue ofreciendo desde disponible y pendiente (el backend no cambió), pero
+  // desde este bloque no se cancela, y sin el filtro aparecería como el "paso
+  // siguiente".
   const posibles = puedeGestionar ? transicionesDesde(estado) : [];
   const destinoAvance =
     posibles.find((destino) => destino !== ESTADOS.CANCELADA && !esCorreccion(estado, destino)) ??
     null;
   const destinoRetroceso = posibles.find((destino) => esCorreccion(estado, destino)) ?? null;
-  const puedeCancelar = posibles.includes(ESTADOS.CANCELADA);
 
   const marcas = marcasPorEstado(eventos);
   const cancelada = estado === ESTADOS.CANCELADA;
@@ -298,10 +297,13 @@ export default function ProgresoCarga({ estado, eventos = [], alCambiarEstado })
     });
   };
 
-  /** Cierra la confirmación sin aplicar nada y devuelve el foco a quien la abrió. */
+  /**
+   * Cierra la confirmación sin aplicar nada y devuelve el foco al botón que la
+   * abrió, que siempre es el de avanzar: es la única acción de este bloque que
+   * pide confirmación.
+   */
   const cerrarConfirmacion = () => {
-    refFoco.current =
-      confirmando === ESTADOS.CANCELADA ? 'cerrar-cancelar' : 'cerrar-avance';
+    refFoco.current = 'cerrar-avance';
     setConfirmando(null);
   };
 
@@ -355,16 +357,16 @@ export default function ProgresoCarga({ estado, eventos = [], alCambiarEstado })
   const confirmacion = confirmando ? CONFIRMACIONES[confirmando] : null;
 
   /**
-   * Recuadro de confirmación, el mismo para cancelar y para entregar. Va
-   * dentro del componente y no en un modal: la pregunta es sobre la carga que
-   * se está mirando, y un modal taparía el recorrido justo cuando hace falta
-   * verlo para decidir.
+   * Recuadro de confirmación para marcar como entregada. Va dentro del
+   * componente y no en un modal: la pregunta es sobre la carga que se está
+   * mirando, y un modal taparía el recorrido justo cuando hace falta verlo
+   * para decidir.
    *
    * @returns {JSX.Element}
    */
   const recuadroConfirmacion = () => (
     <div
-      className={`pg-confirmar${confirmacion.peligroso ? ' pg-confirmar--peligro' : ''}`}
+      className="pg-confirmar"
       role="group"
       aria-labelledby={`${idBase}-confirmar-titulo`}
       aria-describedby={`${idBase}-confirmar-detalle`}
@@ -378,7 +380,7 @@ export default function ProgresoCarga({ estado, eventos = [], alCambiarEstado })
       <div className="pg-confirmar__acciones">
         <button
           type="button"
-          className={`ds-boton ${confirmacion.peligroso ? 'pg-boton-peligro' : 'ds-boton--primario'}`}
+          className="ds-boton ds-boton--primario"
           onClick={confirmar}
           onMouseDown={evitarFoco}
           disabled={cambiandoA !== null}
@@ -494,7 +496,7 @@ export default function ProgresoCarga({ estado, eventos = [], alCambiarEstado })
           {cancelada
             ? `Se canceló${
                 eventoCancelacion ? ` ${formatearFechaLarga(eventoCancelacion.marca_tiempo)}` : ''
-              }. Ya no aparece en el listado de cargas.`
+              }. Ya no aparece en el listado de los camioneros.`
             : TEXTOS[estado]?.detalle}
         </p>
 
@@ -535,32 +537,6 @@ export default function ProgresoCarga({ estado, eventos = [], alCambiarEstado })
           )
         )}
       </div>
-
-      {/*
-        Cancelar vive al pie y como enlace, lejos del botón principal: es una
-        salida del circuito, no el paso siguiente, y antes competía en tamaño
-        con la acción que sí se espera que se use.
-      */}
-      {puedeCancelar &&
-        (confirmando === ESTADOS.CANCELADA ? (
-          recuadroConfirmacion()
-        ) : (
-          <div className="pg-pie">
-            <button
-              type="button"
-              className="pg-enlace pg-enlace--peligro"
-              data-accion="pedir-cancelar"
-              onClick={() => {
-                setConfirmando(ESTADOS.CANCELADA);
-                refFoco.current = 'confirmar-abrir';
-              }}
-              onMouseDown={evitarFoco}
-              disabled={cambiandoA !== null}
-            >
-              Cancelar carga
-            </button>
-          </div>
-        ))}
 
       {/*
         Aviso temporal de cada cambio. El contenedor está siempre en el DOM y
