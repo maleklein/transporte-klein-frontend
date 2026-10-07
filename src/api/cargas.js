@@ -353,3 +353,55 @@ export async function cambiarEstadoCarga(id, estado) {
 
   return cuerpo;
 }
+
+/**
+ * PATCH /cargas/:id/cancelar (HU 2.4) — cancela una carga directamente, sin
+ * pasar por `cambiarEstadoCarga`.
+ *
+ * Es un atajo del lado del backend para este caso puntual: no recibe `estado`
+ * en el body (siempre cancela) y da un mensaje de 409 específico para cada
+ * motivo de rechazo (en viaje, entregada o ya cancelada) en vez del genérico
+ * "no se puede pasar de X a Y". Igual que `editarCarga`, el 409 no trae
+ * `errores` por campo, así que queda como un `ErrorDeApi` general.
+ *
+ * @param {number|string} id - `id_carga` de la carga a cancelar.
+ * @returns {Promise<object>} la carga ya cancelada que devuelve el backend (200).
+ * @throws {ErrorDeApi} si la carga no existe (404), no se puede cancelar en su
+ *   estado actual (409), o para el resto de los errores (401, 403, 500, sin conexión).
+ */
+export async function cancelarCarga(id) {
+  let respuesta;
+
+  try {
+    respuesta = await fetch(`${URL_API}/cargas/${encodeURIComponent(id)}/cancelar`, {
+      method: 'PATCH',
+      headers: { ...headersDeAuth() },
+    });
+  } catch {
+    throw new ErrorDeApi(
+      'No se pudo conectar con el servidor. Verificá que el sistema esté encendido e intentá de nuevo.',
+      null,
+      0,
+    );
+  }
+
+  let cuerpo = null;
+  try {
+    cuerpo = await respuesta.json();
+  } catch {
+    cuerpo = null;
+  }
+
+  if (!respuesta.ok) {
+    // Un 401 significa que el token falta, vencio o dejo de servir:
+    // se limpia la sesion y se vuelve al login.
+    manejarNoAutorizado(respuesta.status);
+    const mensaje =
+      cuerpo?.message ??
+      cuerpo?.error ??
+      `Ocurrió un error inesperado (código ${respuesta.status}).`;
+    throw new ErrorDeApi(mensaje, null, respuesta.status);
+  }
+
+  return cuerpo;
+}

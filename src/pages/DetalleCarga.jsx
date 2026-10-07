@@ -1,10 +1,12 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import {
   IconoAlerta,
   IconoCaja,
   IconoCalendario,
   IconoCamion,
+  IconoCerrar,
+  IconoCheck,
   IconoDocumento,
   IconoEditar,
   IconoFlechaAtras,
@@ -13,12 +15,18 @@ import {
 } from '../components/Iconos';
 import EstadoCarga from '../components/EstadoCarga';
 import HistorialCarga from '../components/HistorialCarga';
+import ModalConfirmacion from '../components/ModalConfirmacion';
 import ProgresoCarga from '../components/ProgresoCarga';
-import { cambiarEstadoCarga, obtenerCarga, obtenerHistorialCarga } from '../api/cargas';
+import { cambiarEstadoCarga, cancelarCarga, obtenerCarga, obtenerHistorialCarga } from '../api/cargas';
 import { ErrorDeApi } from '../api/usuarios';
 import { usuarioActual } from '../api/sesion';
 import { evitarFoco } from '../utils/formulario';
 import { ESTADOS_BLOQUEADOS_EDICION, formatearFecha, formatearPeso } from '../utils/carga';
+import {
+  ESTADOS_BLOQUEADOS_CANCELACION,
+  motivoCancelacionBloqueada,
+  motivoEdicionBloqueada,
+} from '../utils/estadosCarga';
 import './DetalleCarga.css';
 
 /**
@@ -29,6 +37,13 @@ import './DetalleCarga.css';
  * (`observaciones`). Debajo van el progreso de la carga (HU 7, `ProgresoCarga`)
  * y el historial de estados (HU 8, `HistorialCarga`). Los bloques de camioneros
  * / asignación son de otras HU (Sprint 2) y no van acá.
+ *
+ * El encabezado también tiene, para el administrador, un botón "Cancelar
+ * carga" (HU 2.4) además de "Editar": pega directo contra el atajo
+ * `PATCH /cargas/:id/cancelar` en vez de pasar por el cambio de estado
+ * genérico de `ProgresoCarga`, para que cancelar esté a mano sin tener que
+ * bajar hasta el recorrido. Pide confirmación en un modal (`ModalConfirmacion`)
+ * y, al confirmar, deja la carga y la bitácora al día sin recargar la página.
  *
  * El `id_carga` se lee de la URL y la carga se pide con `GET /cargas/:id` al
  * entrar. Funciona igual llegando desde el listado (click en una tarjeta) o
@@ -64,6 +79,18 @@ export default function DetalleCarga() {
   // es presentación, no seguridad.
   const esAdministrador = usuarioActual()?.rol === 'administrador';
 
+  // Cancelación de carga (HU 2.4): el modal de confirmación, si el pedido
+  // está en curso (deshabilita los botones del modal) y el 409 del backend,
+  // si lo rechaza (se muestra dentro del modal, sin cerrarlo). El botón que
+  // abre el modal guarda su ref para devolverle el foco si el usuario vuelve
+  // atrás sin confirmar.
+  const [modalCancelarAbierto, setModalCancelarAbierto] = useState(false);
+  const [cancelando, setCancelando] = useState(false);
+  const [errorCancelacion, setErrorCancelacion] = useState('');
+  const [mensajeCancelacion, setMensajeCancelacion] = useState('');
+  const refBotonCancelar = useRef(null);
+  const refAvisoCancelacion = useRef(null);
+
   /**
    * Lleva la carga a otro estado y deja la pantalla al día con lo que devuelve
    * el backend. Los errores se dejan propagar: los muestra `ProgresoCarga`,
@@ -80,6 +107,54 @@ export default function DetalleCarga() {
     return actualizada;
   };
 
+  /** Abre el modal de confirmación para cancelar la carga. */
+  const pedirCancelacion = () => {
+    setErrorCancelacion('');
+    setModalCancelarAbierto(true);
+  };
+
+  /** Cierra el modal sin cancelar nada y devuelve el foco al botón que lo abrió. */
+  const cerrarModalCancelar = () => {
+    if (cancelando) return;
+    setModalCancelarAbierto(false);
+    refBotonCancelar.current?.focus({ preventScroll: true });
+  };
+
+  /**
+   * Aplica la cancelación contra `PATCH /cargas/:id/cancelar`. Si sale bien,
+   * deja la carga y la bitácora al día (el badge y el historial se actualizan
+   * solos a partir de `carga`/`versionHistorial`, sin recargar la página) y
+   * muestra el aviso de éxito. Si el backend la rechaza con 409 (la carga
+   * cambió de estado mientras el modal estaba abierto), el mensaje se muestra
+   * dentro del modal y éste no se cierra, para que se pueda volver atrás.
+   */
+  const confirmarCancelacion = async () => {
+    setCancelando(true);
+    setErrorCancelacion('');
+    try {
+      const actualizada = await cancelarCarga(carga.id_carga);
+      setCarga(actualizada);
+      setVersionHistorial((version) => version + 1);
+      setModalCancelarAbierto(false);
+      setMensajeCancelacion('La carga se canceló correctamente.');
+    } catch (error) {
+      setErrorCancelacion(
+        error instanceof ErrorDeApi
+          ? error.message
+          : 'Ocurrió un error inesperado al cancelar la carga.',
+      );
+    } finally {
+      setCancelando(false);
+    }
+  };
+
+  // Lleva el foco al aviso de éxito apenas aparece, mismo criterio que
+  // `ProgresoCarga` con sus paneles: quien usa lector de pantalla se entera
+  // del resultado sin tener que ir a buscarlo.
+  useEffect(() => {
+    if (mensajeCancelacion) refAvisoCancelacion.current?.focus({ preventScroll: true });
+  }, [mensajeCancelacion]);
+
   useEffect(() => {
     const controlador = new AbortController();
     setEstadoPantalla('cargando');
@@ -89,6 +164,11 @@ export default function DetalleCarga() {
     setEventos([]);
     setEstadoHistorial('cargando');
     setVersionHistorial(0);
+    // Idem para la cancelación: un aviso o error de la carga anterior no
+    // tiene sentido mostrado sobre una carga distinta.
+    setModalCancelarAbierto(false);
+    setErrorCancelacion('');
+    setMensajeCancelacion('');
 
     obtenerCarga(id, { signal: controlador.signal })
       .then((datos) => {
@@ -208,19 +288,59 @@ export default function DetalleCarga() {
                   queda como único indicador.
                 */}
                 {!esAdministrador && <EstadoCarga estado={carga.estado_actual} />}
-                {esAdministrador && !ESTADOS_BLOQUEADOS_EDICION.includes(carga.estado_actual) && (
-                  <button
-                    type="button"
-                    className="ds-boton ds-boton--secundario"
-                    onClick={() => navigate(`/cargas/${carga.id_carga}/editar`)}
-                    onMouseDown={evitarFoco}
-                  >
-                    <IconoEditar />
-                    Editar
-                  </button>
+                {esAdministrador && (
+                  <div className="dc-accion-editar">
+                    <button
+                      type="button"
+                      className="ds-boton ds-boton--secundario"
+                      onClick={() => navigate(`/cargas/${carga.id_carga}/editar`)}
+                      onMouseDown={evitarFoco}
+                      disabled={ESTADOS_BLOQUEADOS_EDICION.includes(carga.estado_actual)}
+                    >
+                      <IconoEditar />
+                      Editar
+                    </button>
+                    {ESTADOS_BLOQUEADOS_EDICION.includes(carga.estado_actual) && (
+                      <p className="dc-accion-editar__motivo">
+                        {motivoEdicionBloqueada(carga.estado_actual)}
+                      </p>
+                    )}
+                  </div>
+                )}
+                {esAdministrador && (
+                  <div className="dc-accion-cancelar">
+                    <button
+                      type="button"
+                      ref={refBotonCancelar}
+                      className="ds-boton dc-boton-peligro"
+                      onClick={pedirCancelacion}
+                      onMouseDown={evitarFoco}
+                      disabled={ESTADOS_BLOQUEADOS_CANCELACION.includes(carga.estado_actual)}
+                    >
+                      <IconoCerrar />
+                      Cancelar carga
+                    </button>
+                    {ESTADOS_BLOQUEADOS_CANCELACION.includes(carga.estado_actual) && (
+                      <p className="dc-accion-cancelar__motivo">
+                        {motivoCancelacionBloqueada(carga.estado_actual)}
+                      </p>
+                    )}
+                  </div>
                 )}
               </div>
             </header>
+
+            {mensajeCancelacion && (
+              <div
+                className="dc-aviso-exito"
+                role="status"
+                tabIndex={-1}
+                ref={refAvisoCancelacion}
+              >
+                <IconoCheck width={20} height={20} />
+                {mensajeCancelacion}
+              </div>
+            )}
 
             <section className="dc-card">
               <h2 className="dc-card__titulo">Información de la carga</h2>
@@ -288,6 +408,18 @@ export default function DetalleCarga() {
               estadoPedido={estadoHistorial}
               mensajeError={errorHistorial}
               maximoVisible={4}
+            />
+
+            <ModalConfirmacion
+              abierto={modalCancelarAbierto}
+              titulo="¿Cancelar esta carga?"
+              detalle="La carga va a quedar marcada como cancelada. Esta acción no se puede deshacer."
+              error={errorCancelacion}
+              textoConfirmar="Confirmar"
+              textoVolver="Volver"
+              aplicando={cancelando}
+              alConfirmar={confirmarCancelacion}
+              alCancelar={cerrarModalCancelar}
             />
           </>
         )}
