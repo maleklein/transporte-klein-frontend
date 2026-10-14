@@ -3,12 +3,12 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import { listarUsuarios, ErrorDeApi } from '../api/usuarios';
 import {
   IconoAlerta,
-  IconoCamion,
   IconoCerrar,
   IconoEditar,
   IconoOjo,
   IconoUsuarioMas,
 } from '../components/Iconos';
+import BarraSuperior from '../components/BarraSuperior';
 import './Usuarios.css';
 
 /** Filtros en blanco. Sirve para inicializar el estado y el botón "Limpiar filtros". */
@@ -149,10 +149,7 @@ export default function Usuarios() {
 
   return (
     <>
-      <nav className="us-navbar">
-        <IconoCamion width={28} height={28} />
-        <span className="us-navbar__marca">Transporte Klein</span>
-      </nav>
+      <BarraSuperior />
 
       <main className="us-contenido">
         <div className="us-encabezado">

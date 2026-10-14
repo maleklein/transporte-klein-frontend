@@ -4,7 +4,6 @@ import {
   IconoAlerta,
   IconoCaja,
   IconoCalendario,
-  IconoCamion,
   IconoCerrar,
   IconoCheck,
   IconoDocumento,
@@ -13,6 +12,7 @@ import {
   IconoPeso,
   IconoUbicacion,
 } from '../components/Iconos';
+import BarraSuperior from '../components/BarraSuperior';
 import EstadoCarga from '../components/EstadoCarga';
 import HistorialCarga from '../components/HistorialCarga';
 import ModalConfirmacion from '../components/ModalConfirmacion';
@@ -229,10 +229,7 @@ export default function DetalleCarga() {
 
   return (
     <>
-      <nav className="us-navbar">
-        <IconoCamion width={28} height={28} />
-        <span className="us-navbar__marca">Transporte Klein</span>
-      </nav>
+      <BarraSuperior />
 
       <main className="dc-contenido">
         <button type="button" className="dc-volver" onClick={() => navigate('/cargas')}>
@@ -242,11 +239,17 @@ export default function DetalleCarga() {
 
         {estadoPantalla === 'cargando' && <p className="dc-mensaje">Cargando carga...</p>}
 
+        {/*
+          Al camionero el backend también le responde 404 por una carga que
+          dejó de estar disponible (HU 3), y a esas se llega tocando un aviso
+          viejo de "carga nueva" (HU 12): para él, lo que pasó es eso.
+        */}
         {estadoPantalla === 'no-encontrada' && (
           <div className="dc-aviso-error" role="alert">
             <IconoAlerta width={22} height={22} />
-            No encontramos la carga #{id}. Puede que se haya eliminado o que la dirección
-            sea incorrecta.
+            {esAdministrador
+              ? `No encontramos la carga #${id}. Puede que se haya eliminado o que la dirección sea incorrecta.`
+              : 'Esta carga ya no está disponible: puede que ya la hayan asignado o que se haya cancelado.'}
           </div>
         )}
 

@@ -8,6 +8,7 @@ import AltaCarga from './pages/AltaCarga';
 import EditarCarga from './pages/EditarCarga';
 import Cargas from './pages/Cargas';
 import DetalleCarga from './pages/DetalleCarga';
+import Notificaciones from './pages/Notificaciones';
 
 /**
  * Enrutador raíz de la aplicación.
@@ -33,6 +34,8 @@ function App() {
       {/* HU 2.5 — Consulta de cargas */}
       <Route path="/cargas" element={<Cargas />} />
       <Route path="/cargas/:id" element={<DetalleCarga />} />
+      {/* HU 12 — Centro de notificaciones */}
+      <Route path="/notificaciones" element={<Notificaciones />} />
     </Routes>
   );
 }

@@ -1,0 +1,61 @@
+/* ==========================================================================
+   Acceso a las notificaciones en la barra superior (HU 12).
+   Va sobre el azul de la barra: todo en blanco, y el contador en rojo con
+   un borde blanco para que se despegue del fondo.
+   ========================================================================== */
+
+.ni-enlace {
+  /* Empuja el acceso al extremo derecho de la barra. El margen negativo de
+     arriba y abajo lo deja crecer hasta 44px de alto (área cómoda para
+     tocar) sin agrandar la barra, que mide lo mismo que antes de tenerlo. */
+  margin: -8px 0 -8px auto;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 44px;
+  padding: 8px 14px;
+  border: 2px solid rgba(255, 255, 255, 0.6);
+  border-radius: var(--radio-chico);
+  color: #fff;
+  font-size: var(--texto-base);
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.ni-enlace:hover {
+  border-color: #fff;
+  background: rgba(255, 255, 255, 0.14);
+}
+
+/* El foco del sistema es azul oscuro y sobre la barra azul no se vería. */
+.ni-enlace:focus-visible {
+  outline: 3px solid #fff;
+  outline-offset: 2px;
+}
+
+.ni-contador {
+  display: inline-grid;
+  place-items: center;
+  min-width: 28px;
+  height: 28px;
+  padding: 0 8px;
+  border-radius: 999px;
+  background: var(--color-peligro);
+  box-shadow: 0 0 0 2px #fff;
+  font-size: var(--texto-ayuda);
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+}
+
+/* Texto sólo para lectores de pantalla. */
+.ni-oculto {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+  border: 0;
+}

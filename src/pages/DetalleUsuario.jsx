@@ -10,6 +10,7 @@ import {
   IconoUbicacion,
   IconoUsuario,
 } from '../components/Iconos';
+import BarraSuperior from '../components/BarraSuperior';
 import { formatearFecha } from '../utils/carga';
 import './DetalleCarga.css';
 import './DetalleUsuario.css';
@@ -39,10 +40,7 @@ export default function DetalleUsuario() {
 
   return (
     <>
-      <nav className="us-navbar">
-        <IconoCamion width={28} height={28} />
-        <span className="us-navbar__marca">Transporte Klein</span>
-      </nav>
+      <BarraSuperior />
 
       <main className="dc-contenido">
         <button type="button" className="dc-volver" onClick={() => navigate('/usuarios')}>
