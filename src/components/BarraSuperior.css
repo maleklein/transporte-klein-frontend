@@ -1,0 +1,7 @@
+/* En una pantalla angosta el acceso a las notificaciones no entra al lado de
+   la marca: lleva texto además del ícono (regla del sistema de diseño), así
+   que pasa a un segundo renglón en vez de desbordar la barra. */
+.bs-barra {
+  flex-wrap: wrap;
+  row-gap: 12px;
+}

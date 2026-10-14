@@ -8,12 +8,12 @@ import { usuarioActual } from '../api/sesion';
 import {
   IconoAlerta,
   IconoCalendario,
-  IconoCamion,
   IconoCerrar,
   IconoOjo,
   IconoPeso,
   IconoUbicacion,
 } from '../components/Iconos';
+import BarraSuperior from '../components/BarraSuperior';
 import EstadoCarga from '../components/EstadoCarga';
 import { formatearFecha, formatearPeso } from '../utils/carga';
 import { etiquetaEstado } from '../utils/estadosCarga';
@@ -133,10 +133,7 @@ export default function Cargas() {
 
   return (
     <>
-      <nav className="us-navbar">
-        <IconoCamion width={28} height={28} />
-        <span className="us-navbar__marca">Transporte Klein</span>
-      </nav>
+      <BarraSuperior />
 
       <main className="us-contenido">
         <div className="us-encabezado">

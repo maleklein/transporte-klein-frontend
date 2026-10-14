@@ -5,11 +5,11 @@ import { ErrorDeApi } from '../api/usuarios';
 import {
   IconoAlerta,
   IconoCajaMas,
-  IconoCamion,
   IconoCerrar,
   IconoCheck,
   IconoGuardar,
 } from '../components/Iconos';
+import BarraSuperior from '../components/BarraSuperior';
 import Campo from '../components/Campo';
 import SelectorUbicacion from '../components/SelectorUbicacion';
 import { evitarFoco } from '../utils/formulario';
@@ -182,10 +182,7 @@ export default function AltaCarga() {
 
   return (
     <>
-      <nav className="us-navbar">
-        <IconoCamion width={28} height={28} />
-        <span className="us-navbar__marca">Transporte Klein</span>
-      </nav>
+      <BarraSuperior />
 
       <main className="ac-contenido">
         <h1 className="ac-titulo">
