@@ -35,8 +35,8 @@ function App() {
       {/* HU 2.5 — Consulta de cargas */}
       <Route path="/cargas" element={<Cargas />} />
       <Route path="/cargas/:id" element={<DetalleCarga />} />
-      {/* HU 4 — Mis postulaciones del Camionero */}
-      <Route path="/mis-postulaciones" element={<Postulaciones />} />
+      {/* HU 4 y HU 6 — Mis viajes del camionero: asignados y postulaciones */}
+      <Route path="/mis-viajes" element={<Postulaciones />} />
       {/* HU 12 — Centro de notificaciones */}
       <Route path="/notificaciones" element={<Notificaciones />} />
     </Routes>
