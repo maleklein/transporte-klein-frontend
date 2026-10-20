@@ -16,13 +16,17 @@ import BarraSuperior from '../components/BarraSuperior';
 import EstadoCarga from '../components/EstadoCarga';
 import HistorialCarga from '../components/HistorialCarga';
 import ModalConfirmacion from '../components/ModalConfirmacion';
+import PostulacionCarga from '../components/PostulacionCarga';
+import PostulantesCarga from '../components/PostulantesCarga';
 import ProgresoCarga from '../components/ProgresoCarga';
 import { cambiarEstadoCarga, cancelarCarga, obtenerCarga, obtenerHistorialCarga } from '../api/cargas';
+import { asignarCargaACamionero } from '../api/asignaciones';
 import { ErrorDeApi } from '../api/usuarios';
 import { usuarioActual } from '../api/sesion';
 import { evitarFoco } from '../utils/formulario';
 import { ESTADOS_BLOQUEADOS_EDICION, formatearFecha, formatearPeso } from '../utils/carga';
 import {
+  ESTADOS,
   ESTADOS_BLOQUEADOS_CANCELACION,
   motivoCancelacionBloqueada,
   motivoEdicionBloqueada,
@@ -35,8 +39,13 @@ import './DetalleCarga.css';
  * Replica el bloque "Información de la carga" del mockup: título con el badge de
  * estado, la ruta origen → destino, fecha de retiro, peso, tipo y la descripción
  * (`observaciones`). Debajo van el progreso de la carga (HU 7, `ProgresoCarga`)
- * y el historial de estados (HU 8, `HistorialCarga`). Los bloques de camioneros
- * / asignación son de otras HU (Sprint 2) y no van acá.
+ * y el historial de estados (HU 8, `HistorialCarga`).
+ *
+ * Entre la información y el progreso va lo de los camioneros, distinto según
+ * quién mira: el camionero se postula (HU 4, `PostulacionCarga`) y el
+ * administrador ve a los postulados y asigna la carga (HU 6,
+ * `PostulantesCarga`). El botón para asignar es el del progreso, que es donde
+ * está el paso siguiente de cada estado.
  *
  * El encabezado también tiene, para el administrador, un botón "Cancelar
  * carga" (HU 2.4) además de "Editar": pega directo contra el atajo
@@ -91,6 +100,12 @@ export default function DetalleCarga() {
   const refBotonCancelar = useRef(null);
   const refAvisoCancelacion = useRef(null);
 
+  // Asignación (HU 6): el modal lo abre el botón "Asignar camionero" del
+  // progreso y lo dibuja `PostulantesCarga`. Se guarda qué elemento lo abrió
+  // para devolverle el foco si se cierra sin asignar.
+  const [modalAsignarAbierto, setModalAsignarAbierto] = useState(false);
+  const refOrigenAsignacion = useRef(null);
+
   /**
    * Lleva la carga a otro estado y deja la pantalla al día con lo que devuelve
    * el backend. Los errores se dejan propagar: los muestra `ProgresoCarga`,
@@ -105,6 +120,46 @@ export default function DetalleCarga() {
     setCarga(actualizada);
     setVersionHistorial((version) => version + 1);
     return actualizada;
+  };
+
+  /** Abre el modal de asignación (HU 6) y recuerda quién lo abrió. */
+  const abrirAsignacion = () => {
+    refOrigenAsignacion.current = document.activeElement;
+    setModalAsignarAbierto(true);
+  };
+
+  /** Cierra el modal de asignación y devuelve el foco a lo que lo abrió. */
+  const cerrarAsignacion = () => {
+    setModalAsignarAbierto(false);
+    refOrigenAsignacion.current?.focus?.({ preventScroll: true });
+  };
+
+  /**
+   * Asigna la carga al camionero elegido y deja la pantalla al día con lo que
+   * devuelve el backend, sin recargar: estado, progreso, bitácora y postulados.
+   * Los errores se dejan propagar: los muestra el modal.
+   *
+   * @param {number} idCamionero - id del camionero elegido.
+   * @returns {Promise<void>}
+   * @throws {ErrorDeApi} si el backend rechaza la asignación (409) o falla.
+   */
+  const asignar = async (idCamionero) => {
+    const actualizada = await asignarCargaACamionero(carga.id_carga, idCamionero);
+    setCarga(actualizada);
+    setVersionHistorial((version) => version + 1);
+  };
+
+  /**
+   * Después de que el camionero se postula: la primera postulación pasa la
+   * carga a pendiente, y la bitácora tiene un asiento nuevo.
+   */
+  const alPostularse = () => {
+    setCarga((previa) =>
+      previa.estado_actual === ESTADOS.DISPONIBLE
+        ? { ...previa, estado_actual: ESTADOS.PENDIENTE }
+        : previa,
+    );
+    setVersionHistorial((version) => version + 1);
   };
 
   /** Abre el modal de confirmación para cancelar la carga. */
@@ -288,9 +343,13 @@ export default function DetalleCarga() {
                   progreso está, ya nombra el estado actual y encima lo resalta,
                   así que repetirlo acá sería decir dos veces lo mismo a 400px
                   de distancia. Al camionero, que no ve el progreso, el badge le
-                  queda como único indicador.
+                  queda como único indicador, pero sólo en su viaje: en una
+                  carga abierta diría "Pendiente" cuando ya hay postulados, y
+                  se leería como que no puede postularse.
                 */}
-                {!esAdministrador && <EstadoCarga estado={carga.estado_actual} />}
+                {!esAdministrador && carga.id_camionero_asignado === usuarioActual()?.id && (
+                  <EstadoCarga estado={carga.estado_actual} />
+                )}
                 {esAdministrador && (
                   <div className="dc-accion-editar">
                     <button
@@ -388,16 +447,30 @@ export default function DetalleCarga() {
               </div>
             </section>
 
+            {esAdministrador ? (
+              <PostulantesCarga
+                carga={carga}
+                version={versionHistorial}
+                modalAbierto={modalAsignarAbierto}
+                alCerrarModal={cerrarAsignacion}
+                alAsignar={asignar}
+              />
+            ) : (
+              <PostulacionCarga carga={carga} alPostularse={alPostularse} />
+            )}
+
             {/*
               Progreso y cambio de estado (HU 7). El componente resuelve solo
               qué acciones ofrecer a partir de la máquina de estados, y usa el
-              historial para mostrar cuándo se llegó a cada paso.
+              historial para mostrar cuándo se llegó a cada paso. Desde
+              "pendiente", su botón abre la asignación (HU 6).
             */}
             {esAdministrador && (
               <ProgresoCarga
                 estado={carga.estado_actual}
                 eventos={eventos}
                 alCambiarEstado={cambiarEstado}
+                alAsignar={abrirAsignacion}
               />
             )}
 

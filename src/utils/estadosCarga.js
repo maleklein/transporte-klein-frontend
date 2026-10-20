@@ -52,6 +52,14 @@ export const TRANSICIONES = Object.freeze({
 export const ESTADOS_FINALES = Object.freeze([ESTADOS.ENTREGADA, ESTADOS.CANCELADA]);
 
 /**
+ * Estados en los que una carga recibe postulaciones (HU 4): "disponible"
+ * mientras nadie se postuló y "pendiente" desde la primera postulación hasta
+ * que se asigna (HU 6). Espejo de `ESTADOS_ABIERTOS` del backend, que con esta
+ * lista decide qué cargas ve el camionero.
+ */
+export const ESTADOS_ABIERTOS = Object.freeze([ESTADOS.DISPONIBLE, ESTADOS.PENDIENTE]);
+
+/**
  * Texto para mostrar de cada estado. Hace falta porque en la base se guarda
  * `en_viaje` con guión bajo, y capitalizar sin más daría "En_viaje".
  */
