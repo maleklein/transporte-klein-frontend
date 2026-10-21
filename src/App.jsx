@@ -9,6 +9,7 @@ import EditarCarga from './pages/EditarCarga';
 import Cargas from './pages/Cargas';
 import DetalleCarga from './pages/DetalleCarga';
 import Notificaciones from './pages/Notificaciones';
+import Metricas from './pages/Metricas';
 import Postulaciones from './pages/Postulaciones';
 
 /**
@@ -39,6 +40,8 @@ function App() {
       <Route path="/mis-viajes" element={<Postulaciones />} />
       {/* HU 12 — Centro de notificaciones */}
       <Route path="/notificaciones" element={<Notificaciones />} />
+      {/* HU 13 — Panel de métricas (solo administrador) */}
+      <Route path="/metricas" element={<Metricas />} />
     </Routes>
   );
 }
