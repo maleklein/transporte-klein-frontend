@@ -52,6 +52,14 @@ export const TRANSICIONES = Object.freeze({
 export const ESTADOS_FINALES = Object.freeze([ESTADOS.ENTREGADA, ESTADOS.CANCELADA]);
 
 /**
+ * Estados en los que una carga recibe postulaciones (HU 4): "disponible"
+ * mientras nadie se postuló y "pendiente" desde la primera postulación hasta
+ * que se asigna (HU 6). Espejo de `ESTADOS_ABIERTOS` del backend, que con esta
+ * lista decide qué cargas ve el camionero.
+ */
+export const ESTADOS_ABIERTOS = Object.freeze([ESTADOS.DISPONIBLE, ESTADOS.PENDIENTE]);
+
+/**
  * Texto para mostrar de cada estado. Hace falta porque en la base se guarda
  * `en_viaje` con guión bajo, y capitalizar sin más daría "En_viaje".
  */
@@ -184,12 +192,13 @@ export function motivoEdicionBloqueada(estadoActual) {
 
 /**
  * Estados desde los que ya no se puede cancelar una carga (HU 2.4), mismo
- * criterio que el backend (`cancelarCarga` en `cargaControllers.js`): en
- * viaje, entregada, o ya cancelada. A diferencia de `TRANSICIONES`, acá se
- * nombra "aceptada" aparte más abajo porque el backend le da un mensaje
- * genérico distinto al de estos tres.
+ * criterio que el backend (`cancelarCarga` en `cargaControllers.js`): sólo se
+ * cancela desde disponible o pendiente. "Aceptada" faltaba en esta lista y el
+ * botón quedaba habilitado para recibir un 409; con la asignación (HU 6) es el
+ * estado de toda carga asignada, así que el caso dejó de ser raro.
  */
 export const ESTADOS_BLOQUEADOS_CANCELACION = Object.freeze([
+  ESTADOS.ACEPTADA,
   ESTADOS.EN_VIAJE,
   ESTADOS.ENTREGADA,
   ESTADOS.CANCELADA,
@@ -206,6 +215,9 @@ export const ESTADOS_BLOQUEADOS_CANCELACION = Object.freeze([
  * @returns {string} el motivo, o cadena vacía si en ese estado sí se puede cancelar.
  */
 export function motivoCancelacionBloqueada(estadoActual) {
+  if (estadoActual === ESTADOS.ACEPTADA) {
+    return 'La carga ya tiene un camionero asignado: para cancelarla, primero volvela a pendiente.';
+  }
   if (estadoActual === ESTADOS.EN_VIAJE) {
     return 'La carga ya está en viaje: no se puede cancelar, sólo registrar su entrega.';
   }

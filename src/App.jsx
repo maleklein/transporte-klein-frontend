@@ -10,6 +10,7 @@ import Cargas from './pages/Cargas';
 import DetalleCarga from './pages/DetalleCarga';
 import Notificaciones from './pages/Notificaciones';
 import Metricas from './pages/Metricas';
+import Postulaciones from './pages/Postulaciones';
 
 /**
  * Enrutador raíz de la aplicación.
@@ -35,6 +36,8 @@ function App() {
       {/* HU 2.5 — Consulta de cargas */}
       <Route path="/cargas" element={<Cargas />} />
       <Route path="/cargas/:id" element={<DetalleCarga />} />
+      {/* HU 4 y HU 6 — Mis viajes del camionero: asignados y postulaciones */}
+      <Route path="/mis-viajes" element={<Postulaciones />} />
       {/* HU 12 — Centro de notificaciones */}
       <Route path="/notificaciones" element={<Notificaciones />} />
       {/* HU 13 — Panel de métricas (solo administrador) */}

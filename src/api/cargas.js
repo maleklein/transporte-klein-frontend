@@ -405,3 +405,130 @@ export async function cancelarCarga(id) {
 
   return cuerpo;
 }
+
+/**
+ * POST /cargas/:id/postulaciones (HU 4) — registra la postulación de un camionero a una carga.
+ *
+ * La primera postulación pasa la carga a "pendiente"; las que siguen no la mueven.
+ *
+ * @param {number|string} idCarga - `id_carga` a la que se postula.
+ * @returns {Promise<object>} la postulación creada.
+ * @throws {ErrorDeApi} si ya está postulado o la carga ya no recibe
+ *   postulaciones (409), si el usuario no tiene perfil de camionero (403) o si
+ *   falla la conexión.
+ */
+export async function postularACarga(idCarga) {
+  let respuesta;
+  try {
+    respuesta = await fetch(`${URL_API}/cargas/${encodeURIComponent(idCarga)}/postulaciones`, {
+      method: 'POST',
+      // No mandamos body, el backend solo necesita el ID de la URL y el token
+      headers: { ...headersDeAuth() },
+    });
+  } catch (error) {
+    throw new ErrorDeApi(
+      'No se pudo conectar con el servidor. Verificá que el sistema esté encendido e intentá de nuevo.',
+      null,
+      0,
+    );
+  }
+
+  let cuerpo = null;
+  try {
+    cuerpo = await respuesta.json();
+  } catch {
+    cuerpo = null;
+  }
+
+  if (!respuesta.ok) {
+    manejarNoAutorizado(respuesta.status);
+    const mensaje =
+      cuerpo?.message ??
+      cuerpo?.error ??
+      `Ocurrió un error inesperado (código ${respuesta.status}).`;
+    throw new ErrorDeApi(mensaje, null, respuesta.status);
+  }
+
+  return cuerpo;
+}
+
+
+/**
+ * GET /postulaciones/mis-postulaciones (HU 4)
+ */
+export async function obtenerMisPostulaciones(opciones = {}) {
+  let respuesta;
+  try {
+    respuesta = await fetch(`${URL_API}/postulaciones/mis-postulaciones`, {
+      headers: { ...headersDeAuth() },
+      signal: opciones.signal,
+    });
+  } catch (error) {
+    if (error?.name === 'AbortError') throw error;
+    throw new ErrorDeApi('No se pudo conectar con el servidor.', null, 0);
+  }
+
+  let cuerpo = null;
+  try {
+    cuerpo = await respuesta.json();
+  } catch {
+    cuerpo = null;
+  }
+
+  if (!respuesta.ok) {
+    manejarNoAutorizado(respuesta.status);
+    throw new ErrorDeApi(cuerpo?.message ?? 'Error inesperado.', null, respuesta.status);
+  }
+
+  return Array.isArray(cuerpo) ? cuerpo : [];
+}
+
+/**
+ * GET /cargas/:id/postulaciones (HU 4 y HU 6) — los camioneros que se
+ * postularon a una carga, del primero al último. Sólo para el administrador.
+ *
+ * Cada uno trae su postulación (`id_postulacion`, `estado`,
+ * `fecha_postulacion`) y sus datos para elegir: `nombre`, `apellido`,
+ * `tipo_vehiculo`, `capacidad_kg`, `ubicacion` y `disponibilidad`.
+ *
+ * @param {number|string} idCarga - `id_carga` de la carga.
+ * @param {object} [opciones]
+ * @param {AbortSignal} [opciones.signal] - para cancelar el pedido.
+ * @returns {Promise<object[]>} los postulados; `[]` si nadie se postuló.
+ * @throws {DOMException} `AbortError` si se canceló el pedido (se deja propagar).
+ * @throws {ErrorDeApi} si la carga no existe (404) o el backend falla (403, 500, sin conexión).
+ */
+export async function listarPostulantes(idCarga, opciones = {}) {
+  let respuesta;
+  try {
+    respuesta = await fetch(`${URL_API}/cargas/${encodeURIComponent(idCarga)}/postulaciones`, {
+      headers: { ...headersDeAuth() },
+      signal: opciones.signal,
+    });
+  } catch (error) {
+    if (error?.name === 'AbortError') throw error;
+    throw new ErrorDeApi(
+      'No se pudo conectar con el servidor. Verificá que el sistema esté encendido e intentá de nuevo.',
+      null,
+      0,
+    );
+  }
+
+  let cuerpo = null;
+  try {
+    cuerpo = await respuesta.json();
+  } catch {
+    cuerpo = null;
+  }
+
+  if (!respuesta.ok) {
+    manejarNoAutorizado(respuesta.status);
+    const mensaje =
+      cuerpo?.message ??
+      cuerpo?.error ??
+      `Ocurrió un error inesperado (código ${respuesta.status}).`;
+    throw new ErrorDeApi(mensaje, null, respuesta.status);
+  }
+
+  return Array.isArray(cuerpo) ? cuerpo : [];
+}
