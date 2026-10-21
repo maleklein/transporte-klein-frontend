@@ -186,3 +186,12 @@ export function IconoCampana(props) {
     </svg>
   );
 }
+
+export function IconoGrafico(props) {
+  return (
+    <svg {...base} {...props}>
+      <path d="M3 3v18h18" />
+      <path d="M7 16v-4M12 16V8M17 16v-7" />
+    </svg>
+  );
+}
