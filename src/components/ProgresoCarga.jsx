@@ -30,16 +30,18 @@ import './ProgresoCarga.css';
 const TEXTOS = Object.freeze({
   [ESTADOS.DISPONIBLE]: {
     titulo: 'Publicada, esperando transportista',
-    detalle: 'Los transportistas ya la pueden ver. Cuando uno la pida, pasala a pendiente.',
-    accion: 'Marcar como pendiente',
+    detalle: 'Los transportistas ya la pueden ver. Cuando se postule el primero, pasa sola a pendiente.',
+    // Sin botón: a "pendiente" la lleva la primera postulación (HU 4).
+    accion: null,
     // A "disponible" sólo se llega volviendo atrás, y ese aviso se arma con el
     // nombre del estado, así que acá no hace falta.
     aviso: null,
   },
   [ESTADOS.PENDIENTE]: {
-    titulo: 'Falta confirmar el acuerdo',
-    detalle: 'Un transportista pidió esta carga. Cuando confirmen el viaje, marcala como aceptada.',
-    accion: 'Marcar como aceptada',
+    titulo: 'Hay camioneros postulados',
+    detalle: 'Elegí a cuál asignarle la carga: al asignarla, el viaje queda confirmado.',
+    // Abre la asignación (HU 6): a "aceptada" no se pasa a mano.
+    accion: 'Asignar camionero',
     aviso: 'Carga marcada como pendiente',
   },
   [ESTADOS.ACEPTADA]: {
@@ -72,14 +74,17 @@ const TEXTOS = Object.freeze({
 });
 
 /**
- * Textos de la única transición que no se puede deshacer y por eso se
- * confirma antes de aplicarse: marcar como entregada.
+ * Textos de las transiciones que se confirman antes de aplicarse, por estado
+ * destino. Son las dos que no se arreglan con un "Deshacer":
  *
- * No es destructiva pero sí definitiva —`entregada` es terminal por RN-01—,
- * así que se pregunta antes, en un recuadro dentro del mismo bloque.
+ * - Marcar como entregada. No es destructiva pero sí definitiva —`entregada`
+ *   es terminal por RN-01—.
+ * - Volver de aceptada a pendiente, porque deshace la asignación (HU 6): la
+ *   carga se queda sin camionero, y volver a aceptada pide asignarla de nuevo.
  *
- * Cancelar también es definitiva, pero no vive acá: tiene su propio botón en
- * el encabezado de `DetalleCarga`, con su modal (HU 2.4).
+ * Se pregunta en un recuadro dentro del mismo bloque. Cancelar también es
+ * definitiva, pero no vive acá: tiene su propio botón en el encabezado de
+ * `DetalleCarga`, con su modal (HU 2.4).
  */
 const CONFIRMACIONES = Object.freeze({
   [ESTADOS.ENTREGADA]: {
@@ -88,6 +93,15 @@ const CONFIRMACIONES = Object.freeze({
       'Entregada es el último paso: la carga no vuelve a estados anteriores y sus datos quedan como registro de lo que pasó. No se puede deshacer.',
     confirmar: 'Sí, marcar entregada',
     volver: 'No, todavía no',
+    aviso: 'Carga marcada como entregada',
+  },
+  [ESTADOS.PENDIENTE]: {
+    titulo: '¿Volverla a pendiente?',
+    detalle:
+      'La carga se queda sin camionero asignado y todas las postulaciones vuelven a estar en espera, para que puedas asignarla de nuevo. Al camionero le llega un aviso.',
+    confirmar: 'Sí, volver a pendiente',
+    volver: 'No, dejarla así',
+    aviso: 'La carga volvió a pendiente y quedó sin camionero',
   },
 });
 
@@ -113,6 +127,7 @@ const FOCO = Object.freeze({
   titulo: ['[data-foco="titulo"]'],
   'confirmar-abrir': ['[data-accion="confirmar-no"]'],
   'cerrar-avance': ['[data-accion="avanzar"]'],
+  'cerrar-volver': ['[data-accion="volver"]', '[data-foco="titulo"]'],
 });
 
 /**
@@ -160,9 +175,10 @@ function marcasPorEstado(eventos) {
  * @param {string} props.estado - `estado_actual` de la carga.
  * @param {object[]} [props.eventos] - historial de cambios, más viejos primero, para las marcas de tiempo.
  * @param {function} [props.alCambiarEstado] - aplica la transición contra el backend; recibe el estado destino y puede lanzar `ErrorDeApi`. Sin esta prop el recorrido se muestra en modo lectura.
+ * @param {function} [props.alAsignar] - abre la asignación de un camionero (HU 6). Es lo que hace el botón de avanzar desde "pendiente"; sin esta prop, ese botón no aparece.
  * @returns {JSX.Element}
  */
-export default function ProgresoCarga({ estado, eventos = [], alCambiarEstado }) {
+export default function ProgresoCarga({ estado, eventos = [], alCambiarEstado, alAsignar }) {
   const idBase = useId();
   const refRaiz = useRef(null);
   const refTemporizador = useRef(null);
@@ -195,6 +211,20 @@ export default function ProgresoCarga({ estado, eventos = [], alCambiarEstado })
     posibles.find((destino) => destino !== ESTADOS.CANCELADA && !esCorreccion(estado, destino)) ??
     null;
   const destinoRetroceso = posibles.find((destino) => esCorreccion(estado, destino)) ?? null;
+
+  // Dos avances que ya no son un cambio de estado a mano:
+  // - a "pendiente" la lleva la primera postulación (HU 4), así que desde
+  //   "disponible" no hay botón;
+  // - a "aceptada" se llega asignando un camionero (HU 6): el botón abre la
+  //   asignación en vez de cambiar el estado, que el backend rechazaría.
+  const avanzaAsignando = estado === ESTADOS.PENDIENTE && destinoAvance === ESTADOS.ACEPTADA;
+  const mostrarAvance =
+    Boolean(destinoAvance) &&
+    Boolean(TEXTOS[estado]?.accion) &&
+    (!avanzaAsignando || typeof alAsignar === 'function');
+
+  // Volver de aceptada a pendiente deshace la asignación: se confirma antes.
+  const retrocesoConfirmado = estado === ESTADOS.ACEPTADA && destinoRetroceso === ESTADOS.PENDIENTE;
 
   const marcas = marcasPorEstado(eventos);
   const cancelada = estado === ESTADOS.CANCELADA;
@@ -270,6 +300,10 @@ export default function ProgresoCarga({ estado, eventos = [], alCambiarEstado })
   /** Avanza al paso siguiente, o pregunta antes si ese paso es definitivo. */
   const avanzar = () => {
     if (!destinoAvance) return;
+    if (avanzaAsignando) {
+      alAsignar();
+      return;
+    }
     if (requiereConfirmacion(destinoAvance)) {
       setConfirmando(destinoAvance);
       refFoco.current = 'confirmar-abrir';
@@ -281,6 +315,11 @@ export default function ProgresoCarga({ estado, eventos = [], alCambiarEstado })
   /** Vuelve un paso atrás para corregir un cambio equivocado. */
   const retroceder = () => {
     if (!destinoRetroceso) return;
+    if (retrocesoConfirmado) {
+      setConfirmando(destinoRetroceso);
+      refFoco.current = 'confirmar-abrir';
+      return;
+    }
     aplicar(destinoRetroceso, {
       textoAviso: `La carga volvió a ${etiquetaEstado(destinoRetroceso).toLowerCase()}`,
       foco: 'volver',
@@ -299,11 +338,10 @@ export default function ProgresoCarga({ estado, eventos = [], alCambiarEstado })
 
   /**
    * Cierra la confirmación sin aplicar nada y devuelve el foco al botón que la
-   * abrió, que siempre es el de avanzar: es la única acción de este bloque que
-   * pide confirmación.
+   * abrió: el de avanzar para entregada, el de volver para pendiente.
    */
   const cerrarConfirmacion = () => {
-    refFoco.current = 'cerrar-avance';
+    refFoco.current = confirmando === ESTADOS.ENTREGADA ? 'cerrar-avance' : 'cerrar-volver';
     setConfirmando(null);
   };
 
@@ -311,7 +349,7 @@ export default function ProgresoCarga({ estado, eventos = [], alCambiarEstado })
   const confirmar = () => {
     if (!confirmando) return;
     aplicar(confirmando, {
-      textoAviso: TEXTOS[confirmando]?.aviso,
+      textoAviso: CONFIRMACIONES[confirmando]?.aviso ?? TEXTOS[confirmando]?.aviso,
       permitirDeshacer: false,
       foco: 'titulo',
     });
@@ -357,10 +395,10 @@ export default function ProgresoCarga({ estado, eventos = [], alCambiarEstado })
   const confirmacion = confirmando ? CONFIRMACIONES[confirmando] : null;
 
   /**
-   * Recuadro de confirmación para marcar como entregada. Va dentro del
-   * componente y no en un modal: la pregunta es sobre la carga que se está
-   * mirando, y un modal taparía el recorrido justo cuando hace falta verlo
-   * para decidir.
+   * Recuadro de confirmación (entregada, o volver a pendiente desde aceptada).
+   * Va dentro del componente y no en un modal: la pregunta es sobre la carga
+   * que se está mirando, y un modal taparía el recorrido justo cuando hace
+   * falta verlo para decidir.
    *
    * @returns {JSX.Element}
    */
@@ -500,13 +538,13 @@ export default function ProgresoCarga({ estado, eventos = [], alCambiarEstado })
             : TEXTOS[estado]?.detalle}
         </p>
 
-        {confirmando === ESTADOS.ENTREGADA ? (
+        {confirmacion ? (
           // La pregunta ocupa el lugar de los botones que la abrieron.
           recuadroConfirmacion()
         ) : (
-          (destinoAvance || destinoRetroceso) && (
+          (mostrarAvance || destinoRetroceso) && (
             <div className="pg-ahora__acciones">
-              {destinoAvance && (
+              {mostrarAvance && (
                 <button
                   type="button"
                   className="ds-boton ds-boton--primario"

@@ -18,6 +18,10 @@ import './ModalConfirmacion.css';
  * que ya usa `ProgresoCarga` para sus confirmaciones: un Enter de más no
  * debería ejecutar la acción peligrosa.
  *
+ * Lo que se pase como `children` va entre el texto y los botones: la
+ * asignación de la HU 6 lo usa para la lista de camioneros a elegir, y pide
+ * arrancar con el foco en esa lista (`refFocoInicial`) en vez de en "Volver".
+ *
  * @param {object} props
  * @param {boolean} props.abierto
  * @param {string} props.titulo
@@ -27,6 +31,10 @@ import './ModalConfirmacion.css';
  * @param {string} [props.textoVolver='Volver']
  * @param {boolean} [props.aplicando=false] - deshabilita los botones y cambia el texto de "Confirmar" mientras se espera al backend.
  * @param {boolean} [props.peligroso=true] - si el botón de confirmar va en rojo lleno o con el estilo primario.
+ * @param {'peligro'|'primario'|'confirmar'} [props.variante] - color del botón de confirmar; si se pasa, manda sobre `peligroso`. "confirmar" es el verde del sistema de diseño.
+ * @param {boolean} [props.confirmarDeshabilitado=false] - deshabilita "Confirmar" hasta que se elija algo dentro de `children`.
+ * @param {import('react').RefObject<HTMLElement>} [props.refFocoInicial] - dónde poner el foco al abrir; por defecto, en "Volver".
+ * @param {import('react').ReactNode} [props.children] - contenido extra entre el texto y los botones.
  * @param {function} props.alConfirmar
  * @param {function} props.alCancelar - cierra el modal sin aplicar nada (click en "Volver", Escape o click afuera).
  * @returns {JSX.Element|null}
@@ -40,6 +48,10 @@ export default function ModalConfirmacion({
   textoVolver = 'Volver',
   aplicando = false,
   peligroso = true,
+  variante,
+  confirmarDeshabilitado = false,
+  refFocoInicial,
+  children,
   alConfirmar,
   alCancelar,
 }) {
@@ -48,16 +60,22 @@ export default function ModalConfirmacion({
 
   useEffect(() => {
     if (!abierto) return undefined;
-    refVolver.current?.focus({ preventScroll: true });
+    (refFocoInicial?.current ?? refVolver.current)?.focus({ preventScroll: true });
 
     const alPresionarTecla = (evento) => {
       if (evento.key === 'Escape') alCancelar();
     };
     document.addEventListener('keydown', alPresionarTecla);
     return () => document.removeEventListener('keydown', alPresionarTecla);
-  }, [abierto, alCancelar]);
+  }, [abierto, alCancelar, refFocoInicial]);
 
   if (!abierto) return null;
+
+  const claseConfirmar = {
+    peligro: 'mc-boton-peligro',
+    primario: 'ds-boton--primario',
+    confirmar: 'ds-boton--confirmar',
+  }[variante ?? (peligroso ? 'peligro' : 'primario')];
 
   return (
     <div
@@ -81,6 +99,8 @@ export default function ModalConfirmacion({
           {detalle}
         </p>
 
+        {children}
+
         {error && (
           <p className="mc-caja__error" role="alert">
             <IconoAlerta width={18} height={18} />
@@ -91,10 +111,10 @@ export default function ModalConfirmacion({
         <div className="mc-caja__acciones">
           <button
             type="button"
-            className={`ds-boton ${peligroso ? 'mc-boton-peligro' : 'ds-boton--primario'}`}
+            className={`ds-boton ${claseConfirmar}`}
             onClick={alConfirmar}
             onMouseDown={evitarFoco}
-            disabled={aplicando}
+            disabled={aplicando || confirmarDeshabilitado}
           >
             {aplicando ? 'Aplicando...' : textoConfirmar}
           </button>

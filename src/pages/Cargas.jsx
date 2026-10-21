@@ -8,6 +8,7 @@ import { usuarioActual } from '../api/sesion';
 import {
   IconoAlerta,
   IconoCalendario,
+  IconoCamion,
   IconoCerrar,
   IconoOjo,
   IconoPeso,
@@ -138,12 +139,23 @@ export default function Cargas() {
       <main className="us-contenido">
         <div className="us-encabezado">
           <h1>{esCamionero ? 'Cargas disponibles' : 'Gestión de Cargas'}</h1>
+          {/* HU 4 y HU 6: los viajes asignados y las postulaciones del camionero. */}
+          {esCamionero && (
+            <button
+              type="button"
+              className="ds-boton ds-boton--secundario"
+              onClick={() => navigate('/mis-viajes')}
+            >
+              <IconoCamion />
+              Mis viajes
+            </button>
+          )}
         </div>
 
         {esCamionero && (
           <p className="cg-intro">
             Estas son las cargas disponibles para tomar. Usá los filtros para encontrar
-            la que te sirva por fecha o destino.
+            la que te sirva por fecha o destino, y entrá a una para postularte.
           </p>
         )}
 
@@ -263,7 +275,12 @@ export default function Cargas() {
               >
                 <div className="cg-card__top">
                   <h2 className="cg-card__titulo">{carga.tipo_carga}</h2>
-                  <EstadoCarga estado={carga.estado_actual} />
+                  {/*
+                    Al camionero no se le muestra el estado: todas las que ve
+                    están abiertas a postulaciones, y una "Pendiente" (que ya
+                    tiene postulados) se leería como que no puede postularse.
+                  */}
+                  {!esCamionero && <EstadoCarga estado={carga.estado_actual} />}
                 </div>
 
                 <p className="cg-card__ruta">
