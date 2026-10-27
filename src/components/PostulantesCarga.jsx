@@ -1,5 +1,6 @@
-import { useEffect, useId, useRef, useState } from 'react';
+import { useCallback, useEffect, useId, useRef, useState } from 'react';
 import ModalConfirmacion from './ModalConfirmacion';
+import SugeridosCarga from './SugeridosCarga';
 import { IconoAlerta, IconoCamion, IconoCheck, IconoUbicacion } from './Iconos';
 import { listarPostulantes } from '../api/cargas';
 import { ErrorDeApi } from '../api/usuarios';
@@ -43,6 +44,8 @@ export default function PostulantesCarga({ carga, version, modalAbierto, alCerra
   const [errorPedido, setErrorPedido] = useState('');
 
   const [elegido, setElegido] = useState(null);
+  const [vista, setVista] = useState('postulados');
+  const [matchingListo, setMatchingListo] = useState(false);
   const [asignando, setAsignando] = useState(false);
   const [errorAsignacion, setErrorAsignacion] = useState('');
   const [mensajeExito, setMensajeExito] = useState('');
@@ -79,6 +82,8 @@ export default function PostulantesCarga({ carga, version, modalAbierto, alCerra
     if (modalAbierto) {
       setElegido(null);
       setErrorAsignacion('');
+      setVista('postulados');
+      setMatchingListo(false);
     }
   }, [modalAbierto]);
 
@@ -94,6 +99,10 @@ export default function PostulantesCarga({ carga, version, modalAbierto, alCerra
 
   const enEspera = postulantes.filter((postulante) => postulante.estado === 'pendiente');
 
+  const cerrarModal = useCallback(() => {
+    if (!asignando) alCerrarModal();
+  }, [asignando, alCerrarModal]);
+
   /** Aplica la asignación. Un rechazo del backend se muestra dentro del modal. */
   const confirmar = async () => {
     if (elegido === null) return;
@@ -103,7 +112,9 @@ export default function PostulantesCarga({ carga, version, modalAbierto, alCerra
       await alAsignar(elegido);
       const camionero = postulantes.find((postulante) => postulante.id_camionero === elegido);
       setMensajeExito(
-        `La carga quedó asignada a ${camionero?.nombre ?? ''} ${camionero?.apellido ?? ''}. A los demás postulados les llegó un aviso.`,
+        camionero
+          ? `La carga quedó asignada a ${camionero.nombre} ${camionero.apellido}. A los demás postulados les llegó un aviso.`
+          : 'La carga quedó asignada. A los demás postulados les llegó un aviso.',
       );
       // El foco no vuelve al botón que abrió el modal: va al aviso de éxito
       // (ver el efecto de `mensajeExito`), que se dibuja después de cerrar.
@@ -191,14 +202,31 @@ export default function PostulantesCarga({ carga, version, modalAbierto, alCerra
         textoVolver="Volver"
         aplicando={asignando}
         variante="confirmar"
-        confirmarDeshabilitado={elegido === null}
-        refFocoInicial={enEspera.length > 0 ? refPrimeraOpcion : undefined}
+        confirmarDeshabilitado={elegido === null || (vista === 'sugeridos' && !matchingListo)}
+        refFocoInicial={vista === 'postulados' && enEspera.length > 0 ? refPrimeraOpcion : undefined}
         alConfirmar={confirmar}
-        alCancelar={() => {
-          if (!asignando) alCerrarModal();
-        }}
+        alCancelar={cerrarModal}
       >
-        {enEspera.length > 0 ? (
+        <div className="pp-vistas" role="group" aria-label="Vista de camioneros">
+          {[['postulados', 'Postulados'], ['sugeridos', 'Sugeridos']].map(([valor, etiqueta]) => (
+            <button type="button" key={valor} aria-pressed={vista === valor}
+              disabled={asignando} className={`pp-vista${vista === valor ? ' pp-vista--activa' : ''}`}
+              onClick={() => {
+                if (vista === valor) return;
+                setVista(valor);
+                setElegido(null);
+                setErrorAsignacion('');
+                setMatchingListo(false);
+              }}>
+              {etiqueta}
+            </button>
+          ))}
+        </div>
+        {modalAbierto && vista === 'sugeridos' && (
+          <SugeridosCarga idCarga={carga.id_carga} version={version} elegido={elegido}
+            alElegir={setElegido} alListo={setMatchingListo} asignando={asignando} />
+        )}
+        {vista === 'postulados' && (enEspera.length > 0 ? (
           <fieldset className="pp-opciones">
             <legend className="pp-oculto">Camioneros postulados en espera</legend>
             {enEspera.map((postulante, indice) => (
@@ -232,7 +260,7 @@ export default function PostulantesCarga({ carga, version, modalAbierto, alCerra
           <p className="pp-mensaje pp-mensaje--modal">
             No hay camioneros en espera para esta carga.
           </p>
-        )}
+        ))}
       </ModalConfirmacion>
     </section>
   );
