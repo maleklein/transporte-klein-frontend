@@ -13,6 +13,7 @@ import BarraSuperior from '../components/BarraSuperior';
 import Campo from '../components/Campo';
 import SelectorUbicacion from '../components/SelectorUbicacion';
 import { evitarFoco } from '../utils/formulario';
+import { formatearKm } from '../utils/carga';
 import { VALORES_INICIALES, LARGOS_MAXIMOS, validar, armarPayload } from '../utils/validarCarga';
 import './AltaCarga.css';
 
@@ -33,6 +34,9 @@ export default function AltaCarga() {
   const [erroresBackend, setErroresBackend] = useState({});
   const [errorGeneral, setErrorGeneral] = useState('');
   const [mensajeExito, setMensajeExito] = useState('');
+  // id de la carga recién creada si su distancia quedó sin calcular (HU 9),
+  // para ofrecer ir a su detalle a reintentarlo. null si no hay nada pendiente.
+  const [idCalculoPendiente, setIdCalculoPendiente] = useState(null);
   const [intentoEnviar, setIntentoEnviar] = useState(false);
   const [enviando, setEnviando] = useState(false);
 
@@ -82,6 +86,7 @@ export default function AltaCarga() {
     setErroresBackend({});
     setIntentoEnviar(false);
     setMensajeExito('');
+    setIdCalculoPendiente(null);
     refPrimerCampo.current?.focus();
   };
 
@@ -156,10 +161,17 @@ export default function AltaCarga() {
 
     try {
       const cargaCreada = await crearCarga(armarPayload(valores));
+      const distanciaCalculada = cargaCreada.estado_calculo_km === 'ok';
 
       setMensajeExito(
-        `La carga ${cargaCreada.origen} → ${cargaCreada.destino} se registró correctamente y quedó en estado "${cargaCreada.estado_actual}".`,
+        `La carga ${cargaCreada.origen} → ${cargaCreada.destino} se registró correctamente y quedó en estado "${cargaCreada.estado_actual}".` +
+          (distanciaCalculada
+            ? ` Distancia estimada: ${formatearKm(cargaCreada.kilometros_estimados)}.`
+            : ''),
       );
+      // Si el servicio de mapas no respondió, la carga igual se guardó (RN-04):
+      // se avisa aparte para que no pase desapercibido entre el mensaje de éxito.
+      setIdCalculoPendiente(distanciaCalculada ? null : cargaCreada.id_carga);
     } catch (error) {
       if (error instanceof ErrorDeValidacion) {
         // El backend devuelve los errores ya agrupados por campo.
@@ -197,6 +209,24 @@ export default function AltaCarga() {
               <div className="ac-aviso ac-aviso--exito" role="status">
                 <IconoCheck />
                 {mensajeExito}
+              </div>
+            )}
+
+            {idCalculoPendiente !== null && (
+              <div className="ac-aviso ac-aviso--pendiente" role="status">
+                <IconoAlerta width={22} height={22} />
+                <span>
+                  No pudimos calcular la distancia en este momento: la carga quedó guardada con
+                  el cálculo pendiente.{' '}
+                  <button
+                    type="button"
+                    className="ac-aviso__enlace"
+                    onClick={() => navigate(`/cargas/${idCalculoPendiente}`)}
+                    onMouseDown={evitarFoco}
+                  >
+                    Reintentar desde el detalle
+                  </button>
+                </span>
               </div>
             )}
 

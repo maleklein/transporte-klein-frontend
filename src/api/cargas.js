@@ -304,6 +304,53 @@ export async function obtenerHistorialCarga(id, opciones = {}) {
 }
 
 /**
+ * POST /cargas/:id/recalcular-km (HU 9) — reintenta el cálculo de la distancia
+ * de una carga que quedó con el cálculo pendiente.
+ *
+ * Si el servicio de mapas sigue sin responder, el backend contesta 503 con un
+ * mensaje pensado para mostrarse tal cual, y la carga queda como estaba.
+ *
+ * @param {number|string} id - `id_carga` de la carga.
+ * @returns {Promise<object>} la carga ya actualizada, con `kilometros_estimados` (200).
+ * @throws {ErrorDeApi} si el servicio de mapas no respondió (503), la carga no
+ *   existe (404), o para el resto de los errores (401, 403, 500, sin conexión).
+ */
+export async function recalcularKmCarga(id) {
+  let respuesta;
+
+  try {
+    respuesta = await fetch(`${URL_API}/cargas/${encodeURIComponent(id)}/recalcular-km`, {
+      method: 'POST',
+      headers: { ...headersDeAuth() },
+    });
+  } catch {
+    throw new ErrorDeApi(
+      'No se pudo conectar con el servidor. Verificá que el sistema esté encendido e intentá de nuevo.',
+      null,
+      0,
+    );
+  }
+
+  let cuerpo = null;
+  try {
+    cuerpo = await respuesta.json();
+  } catch {
+    cuerpo = null;
+  }
+
+  if (!respuesta.ok) {
+    manejarNoAutorizado(respuesta.status);
+    const mensaje =
+      cuerpo?.message ??
+      cuerpo?.error ??
+      `Ocurrió un error inesperado (código ${respuesta.status}).`;
+    throw new ErrorDeApi(mensaje, null, respuesta.status);
+  }
+
+  return cuerpo;
+}
+
+/**
  * PATCH /cargas/:id/estado (HU 7) — lleva una carga a otro estado.
  *
  * El backend valida la transición contra la máquina de estados y deja el

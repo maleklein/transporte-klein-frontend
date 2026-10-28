@@ -49,6 +49,25 @@
   border-color: var(--color-peligro);
 }
 
+/* Distancia sin calcular (HU 9): la carga se guardó, pero falta algo.
+   Mismo ámbar que el badge "en viaje" y el dato pendiente del detalle. */
+.ac-aviso--pendiente {
+  background: #FFF4E5;
+  color: #8A5300;
+  border-color: #8A5300;
+}
+
+.ac-aviso__enlace {
+  padding: 0;
+  background: none;
+  border: none;
+  font: inherit;
+  font-weight: 700;
+  color: inherit;
+  text-decoration: underline;
+  cursor: pointer;
+}
+
 /* El textarea reusa .ds-campo__input, que fija min-height para inputs de una linea. */
 .ac-textarea {
   min-height: 110px;

@@ -12,11 +12,12 @@ import {
   IconoCerrar,
   IconoOjo,
   IconoPeso,
+  IconoRuta,
   IconoUbicacion,
 } from '../components/Iconos';
 import BarraSuperior from '../components/BarraSuperior';
 import EstadoCarga from '../components/EstadoCarga';
-import { formatearFecha, formatearPeso } from '../utils/carga';
+import { formatearFecha, formatearKm, formatearPeso } from '../utils/carga';
 import { etiquetaEstado } from '../utils/estadosCarga';
 import './Cargas.css';
 
@@ -301,6 +302,19 @@ export default function Cargas() {
                     <IconoPeso width={16} height={16} />
                     {formatearPeso(carga.peso_kg)}
                   </span>
+                  {/*
+                    Distancia estimada (HU 9): dato secundario, sólo para el
+                    administrador. Si quedó pendiente se avisa acá también, así
+                    se ve desde el listado qué cargas hay que reintentar.
+                  */}
+                  {!esCamionero && (
+                    <span>
+                      <IconoRuta width={16} height={16} />
+                      {carga.estado_calculo_km === 'ok'
+                        ? formatearKm(carga.kilometros_estimados)
+                        : 'Distancia pendiente'}
+                    </span>
+                  )}
                 </div>
 
                 {/*
