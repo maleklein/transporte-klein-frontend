@@ -34,6 +34,33 @@ export function formatearKm(km) {
 }
 
 /**
+ * Formatea un monto en pesos (HU 10), que llega del backend como string
+ * decimal ("389415.00") o como número, a "$ 389.415,00". Se muestran los
+ * centavos a propósito: la fórmula redondea a centavos, y así el monto coincide
+ * con la cuenta hecha a mano.
+ *
+ * @param {string|number|null} monto
+ * @returns {string} el monto listo para mostrar, o '—' si no hay valor.
+ */
+export function formatearPesos(monto) {
+  if (monto === null || monto === undefined || String(monto).trim() === '') return '—';
+  const numero = Number(monto);
+  if (!Number.isFinite(numero)) return `$ ${monto}`;
+  return numero.toLocaleString('es-AR', { style: 'currency', currency: 'ARS' });
+}
+
+/**
+ * Parámetros de la fórmula de costos (HU 10), en el orden en que se muestran,
+ * con el nombre que ve el administrador. Las claves son las de la tabla
+ * PARAMETRO_OPERATIVO del backend.
+ */
+export const PARAMETROS_COSTO = [
+  { clave: 'costo_por_km', etiqueta: 'Costo por km' },
+  { clave: 'peaje_por_km', etiqueta: 'Peaje por km' },
+  { clave: 'tarifa_por_km', etiqueta: 'Tarifa por km' },
+];
+
+/**
  * Pasa una fecha ISO ("2026-09-15") a "15/09/2026". No construye un `Date` a
  * propósito: hacerlo la correría un día según la zona horaria del navegador.
  *

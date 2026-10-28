@@ -201,6 +201,28 @@ export function IconoReintentar(props) {
   );
 }
 
+/** Signo pesos: montos de la estimación económica (HU 10). */
+export function IconoPesos(props) {
+  return (
+    <svg {...base} {...props}>
+      <path d="M12 2v20" />
+      <path d="M17 6H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" />
+    </svg>
+  );
+}
+
+/** Controles deslizantes: parámetros configurables (HU 10). */
+export function IconoAjustes(props) {
+  return (
+    <svg {...base} {...props}>
+      <path d="M4 6h10M18 6h2M4 12h4M12 12h8M4 18h12" />
+      <circle cx="16" cy="6" r="2" />
+      <circle cx="10" cy="12" r="2" />
+      <circle cx="18" cy="18" r="2" />
+    </svg>
+  );
+}
+
 export function IconoCampana(props) {
   return (
     <svg {...base} {...props}>
