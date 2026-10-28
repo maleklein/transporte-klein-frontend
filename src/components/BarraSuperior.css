@@ -1,0 +1,34 @@
+/* En una pantalla angosta el acceso a las notificaciones no entra al lado de
+   la marca: lleva texto además del ícono (regla del sistema de diseño), así
+   que pasa a un segundo renglón en vez de desbordar la barra. */
+.bs-barra {
+  flex-wrap: wrap;
+  row-gap: 12px;
+}
+
+/* Acceso al panel de métricas (HU 13), sólo visible para el administrador.
+   Mismo tratamiento que el acceso a notificaciones: texto + ícono en blanco
+   sobre el azul de la barra. */
+.bs-enlace-metricas {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 44px;
+  padding: 8px 14px;
+  border: 2px solid rgba(255, 255, 255, 0.6);
+  border-radius: var(--radio-chico);
+  color: #fff;
+  font-size: var(--texto-base);
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.bs-enlace-metricas:hover {
+  border-color: #fff;
+  background: rgba(255, 255, 255, 0.14);
+}
+
+.bs-enlace-metricas:focus-visible {
+  outline: 3px solid #fff;
+  outline-offset: 2px;
+}

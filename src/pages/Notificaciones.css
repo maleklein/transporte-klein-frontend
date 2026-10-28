@@ -1,0 +1,211 @@
+/* ==========================================================================
+   Centro de notificaciones (HU 12) — listado en /notificaciones.
+   Una columna angosta, como el detalle de carga: son textos para leer de
+   corrido, no una grilla para comparar.
+   ========================================================================== */
+
+.nt-contenido {
+  max-width: 760px;
+  margin: 0 auto;
+  padding: 28px;
+}
+
+.nt-volver {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 14px;
+  padding: 4px 2px;
+  background: none;
+  border: none;
+  border-radius: var(--radio-chico);
+  font-family: var(--fuente);
+  font-size: var(--texto-base);
+  font-weight: 700;
+  color: var(--color-primario);
+  cursor: pointer;
+}
+
+.nt-volver:hover {
+  text-decoration: underline;
+}
+
+.nt-encabezado {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 8px 16px;
+  margin-bottom: 20px;
+}
+
+.nt-titulo {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 0;
+  font-size: var(--texto-titulo);
+  font-weight: 700;
+  color: var(--color-primario);
+}
+
+.nt-resumen {
+  margin: 0;
+  font-size: var(--texto-label);
+  color: var(--color-texto-suave);
+}
+
+/* Mensajes de estado (cargando / sin notificaciones). */
+.nt-mensaje {
+  margin: 0;
+  padding: 40px 24px;
+  border: 2px solid var(--color-borde-suave);
+  border-radius: var(--radio);
+  text-align: center;
+  color: var(--color-texto-suave);
+}
+
+.nt-aviso-error {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 16px;
+  padding: 14px 16px;
+  border: 2px solid var(--color-peligro);
+  border-radius: var(--radio-chico);
+  background: var(--color-peligro-claro);
+  color: var(--color-peligro-oscuro);
+  font-weight: 600;
+}
+
+/* --------------------------------------------------------------------------
+   Cada aviso.
+   -------------------------------------------------------------------------- */
+
+.nt-lista {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.nt-item {
+  position: relative;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 14px 16px;
+  padding: 16px 18px;
+  border: 2px solid var(--color-borde-suave);
+  border-radius: var(--radio);
+  background: var(--color-fondo);
+  transition: border-color 0.12s ease, box-shadow 0.12s ease;
+}
+
+.nt-item:hover,
+.nt-item:focus-within {
+  border-color: var(--color-primario);
+  box-shadow: 0 4px 14px rgba(31, 78, 121, 0.12);
+}
+
+/* Sin leer: fondo celeste y una franja a la izquierda. No depende sólo del
+   color: además lleva la etiqueta "Sin leer" y el texto en negrita. */
+.nt-item--no-leida {
+  border-color: var(--color-primario);
+  border-left-width: 6px;
+  background: var(--color-primario-claro);
+}
+
+.nt-item__icono {
+  display: grid;
+  place-items: center;
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  background: var(--color-fondo-alt);
+  color: var(--color-primario);
+}
+
+.nt-item--no-leida .nt-item__icono {
+  background: var(--color-fondo);
+}
+
+.nt-item__cuerpo {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.nt-item__tipo {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 0;
+  font-size: var(--texto-ayuda);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  color: var(--color-texto-suave);
+}
+
+.nt-etiqueta {
+  padding: 2px 10px;
+  border-radius: 999px;
+  background: var(--color-primario);
+  color: #fff;
+  font-size: 13px;
+  letter-spacing: 0;
+  text-transform: none;
+}
+
+.nt-item__texto {
+  margin: 0;
+  color: var(--color-texto);
+}
+
+.nt-item--no-leida .nt-item__texto {
+  font-weight: 700;
+}
+
+.nt-item__fecha {
+  margin: 2px 0 0;
+  font-size: var(--texto-ayuda);
+  color: var(--color-texto-suave);
+  font-variant-numeric: tabular-nums;
+}
+
+/* El ::after estira el botón sobre todo el aviso: el click funciona en
+   cualquier parte sin duplicar controles (igual que las tarjetas de cargas). */
+.nt-item__abrir {
+  min-height: 44px;
+  padding: 9px 16px;
+  font-size: var(--texto-ayuda);
+  white-space: nowrap;
+}
+
+.nt-item__abrir::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: var(--radio);
+}
+
+@media (max-width: 560px) {
+  .nt-contenido {
+    padding: 20px 16px;
+  }
+
+  /* En angosto el botón baja debajo del texto y ocupa el ancho. */
+  .nt-item {
+    grid-template-columns: auto minmax(0, 1fr);
+  }
+
+  .nt-item__abrir {
+    grid-column: 1 / -1;
+    width: 100%;
+  }
+}

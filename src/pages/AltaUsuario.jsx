@@ -9,6 +9,7 @@ import {
   IconoGuardar,
   IconoUsuarioMas,
 } from '../components/Iconos';
+import BarraSuperior from '../components/BarraSuperior';
 import Campo from '../components/Campo';
 import { evitarFoco } from '../utils/formulario';
 import './AltaUsuario.css';
@@ -276,10 +277,7 @@ export default function AltaUsuario() {
 
   return (
     <>
-      <nav className="us-navbar">
-        <IconoCamion width={28} height={28} />
-        <span className="us-navbar__marca">Transporte Klein</span>
-      </nav>
+      <BarraSuperior />
 
       <main className="au-contenido">
         <h1 className="au-titulo">

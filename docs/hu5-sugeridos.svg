@@ -1,0 +1,33 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="700" height="780" viewBox="0 0 700 780">
+  <rect width="700" height="780" fill="#edf1f6"/>
+  <rect x="35" y="25" width="630" height="730" rx="16" fill="white"/>
+  <g font-family="Arial, sans-serif" fill="#1e293b">
+    <text x="65" y="72" font-size="25" font-weight="700">Asignar camionero</text>
+    <text x="65" y="108" font-size="16">Elegí a quién asignarle la carga.</text>
+    <text x="82" y="156" font-size="18">Postulados</text>
+    <text x="225" y="156" font-size="18" font-weight="700" fill="#1d4ed8">Sugeridos</text>
+    <path d="M210 173 H332" stroke="#1d4ed8" stroke-width="4"/>
+    <text x="65" y="205" font-size="15">Postulados aptos, ordenados por adecuación.</text>
+    <rect x="65" y="225" width="220" height="42" rx="6" fill="#eff6ff" stroke="#1d4ed8"/>
+    <text x="79" y="252" font-size="16" fill="#1d4ed8">Actualizar sugerencias</text>
+    <rect x="65" y="285" width="570" height="280" rx="8" fill="#f8fafc" stroke="#cbd5e1"/>
+    <circle cx="88" cy="312" r="10" fill="white" stroke="#64748b" stroke-width="2"/>
+    <text x="111" y="318" font-size="18" font-weight="700">1. Ana Prueba</text>
+    <text x="111" y="346" font-size="15">Camión · capacidad 10.000 kg</text>
+    <text x="111" y="373" font-size="18" font-weight="700" fill="#1d4ed8">76,17 / 100 puntos</text>
+    <text x="82" y="412" font-size="16" font-weight="700">▾ Por qué se sugiere</text>
+    <text x="82" y="444" font-size="15">Capacidad: 32 / 40 · para una carga de 8.000 kg</text>
+    <text x="82" y="477" font-size="15">Cercanía: 16,67 / 25 · a 100 km del origen</text>
+    <text x="82" y="510" font-size="15">Disponibilidad: 20 / 20 · declarada confirmada</text>
+    <text x="82" y="543" font-size="15">Experiencia: 7,5 / 15 · cinco viajes entregados</text>
+    <rect x="65" y="580" width="570" height="65" rx="8" fill="white" stroke="#cbd5e1"/>
+    <circle cx="88" cy="611" r="10" fill="white" stroke="#64748b" stroke-width="2"/>
+    <text x="111" y="608" font-size="17" font-weight="700">2. Bruno Prueba</text>
+    <text x="111" y="631" font-size="15">56,67 / 100 puntos · Ver por qué se sugiere</text>
+    <rect x="65" y="674" width="110" height="44" rx="6" fill="#f1f5f9"/>
+    <text x="94" y="702" font-size="16">Volver</text>
+    <rect x="375" y="674" width="260" height="44" rx="6" fill="#166534"/>
+    <text x="404" y="702" font-size="16" fill="white">Confirmar asignación</text>
+    <text x="65" y="743" font-size="12" fill="#64748b">HU 5 · Mockup de referencia · Datos ilustrativos</text>
+  </g>
+</svg>
