@@ -11,6 +11,7 @@ import DetalleCarga from './pages/DetalleCarga';
 import Notificaciones from './pages/Notificaciones';
 import Metricas from './pages/Metricas';
 import Postulaciones from './pages/Postulaciones';
+import ParametrosOperativos from './pages/ParametrosOperativos';
 
 /**
  * Enrutador raíz de la aplicación.
@@ -42,6 +43,8 @@ function App() {
       <Route path="/notificaciones" element={<Notificaciones />} />
       {/* HU 13 — Panel de métricas (solo administrador) */}
       <Route path="/metricas" element={<Metricas />} />
+      {/* HU 10 — Parámetros de la estimación de costos (solo administrador) */}
+      <Route path="/parametros" element={<ParametrosOperativos />} />
     </Routes>
   );
 }

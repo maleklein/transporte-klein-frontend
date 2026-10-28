@@ -27,3 +27,24 @@ está asignando. Un error permite reintentar y no habilita confirmar datos viejo
 Si mapas no puede calcular cercanía, el desglose avisa que aporta cero puntos.
 El historial muestra experiencia en entregas, todavía no calificaciones.
 El diseño de referencia está en `docs/hu5-sugeridos.svg` (datos ilustrativos).
+
+## Costos y ganancia estimados (HU 10)
+
+Sólo para el administrador. El camionero no ve montos: el backend ni siquiera
+se los manda.
+
+- **Detalle de carga**: el bloque **Estimación económica**
+  (`components/EconomiaCarga.jsx`) muestra costo, ingreso y ganancia, y los
+  parámetros con los que se calcularon. Si la distancia está pendiente, explica
+  que no se puede estimar hasta tenerla; se completa sola con el Reintentar de
+  la distancia.
+- **Parámetros operativos** (`/parametros`, acceso en la barra superior):
+  costo, peaje y tarifa por km, con la fecha de su última modificación. Valida
+  que sean números positivos y pide confirmación antes de guardar.
+
+Cambiar un parámetro **no recalcula las cargas que ya tienen su estimación**:
+cada una guarda la cuenta como foto del momento en que se hizo. Por eso el
+detalle muestra los parámetros usados en esa carga y no los vigentes. La
+fórmula y el motivo están en el README del backend.
+
+Capturas de referencia en `docs/hu10-*.png`.

@@ -1,0 +1,67 @@
+/* ==========================================================================
+   Parámetros operativos (HU 10). El formulario reusa la tarjeta, los avisos
+   y el pie de `AltaUsuario.css`; acá va sólo lo propio de esta pantalla.
+   ========================================================================== */
+
+.pm-intro {
+  margin: 0 0 6px;
+  color: var(--color-texto);
+}
+
+/* La fórmula a la vista: es lo que explica para qué sirve cada valor. */
+.pm-formula {
+  margin: 0 0 20px;
+  padding: 12px 16px 12px 34px;
+  border-radius: var(--radio-chico);
+  background: var(--color-fondo-alt);
+  color: var(--color-texto);
+  font-size: var(--texto-ayuda);
+  line-height: 1.6;
+}
+
+.pm-mensaje {
+  margin: 0;
+  padding: 40px 24px;
+  border: 2px solid var(--color-borde-suave);
+  border-radius: var(--radio);
+  text-align: center;
+  color: var(--color-texto-suave);
+}
+
+.pm-error-carga {
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.pm-parametro {
+  margin-bottom: 18px;
+}
+
+/* La descripción y la fecha van pegadas a su campo, debajo del input. */
+.pm-parametro .ds-campo {
+  margin-bottom: 6px;
+}
+
+.pm-ayuda {
+  margin: 0;
+  font-size: var(--texto-ayuda);
+  color: var(--color-texto-suave);
+}
+
+.pm-nota {
+  margin: 4px 0 20px;
+  padding: 12px 14px;
+  border-left: 4px solid var(--color-primario);
+  background: var(--color-primario-claro);
+  font-size: var(--texto-ayuda);
+  color: var(--color-texto);
+}
+
+/* Lista de cambios dentro del modal de confirmación. */
+.pm-cambios {
+  margin: 0 0 16px;
+  padding-left: 20px;
+  font-size: var(--texto-base);
+  color: var(--color-texto);
+  line-height: 1.6;
+}
