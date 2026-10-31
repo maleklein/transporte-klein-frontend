@@ -12,6 +12,7 @@ import {
 import BarraSuperior from '../components/BarraSuperior';
 import Campo from '../components/Campo';
 import { evitarFoco } from '../utils/formulario';
+import { validarNombreApellido } from '../utils/validarNombreApellido';
 import './AltaUsuario.css';
 import './EditarUsuario.css';
 
@@ -46,12 +47,14 @@ function valoresIniciales(usuario) {
 function validar(valores, esCamionero) {
   const errores = {};
 
-  if (!valores.nombre.trim()) {
-    errores.nombre = 'Ingresá el nombre.';
+  const errorNombre = validarNombreApellido(valores.nombre, 'nombre');
+  if (errorNombre) {
+    errores.nombre = errorNombre;
   }
 
-  if (!valores.apellido.trim()) {
-    errores.apellido = 'Ingresá el apellido.';
+  const errorApellido = validarNombreApellido(valores.apellido, 'apellido');
+  if (errorApellido) {
+    errores.apellido = errorApellido;
   }
 
   if (!valores.email.trim()) {
