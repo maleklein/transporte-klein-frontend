@@ -13,7 +13,7 @@ import {
 } from '../components/Iconos';
 import { listarNotificaciones, marcarNotificacionLeida } from '../api/notificaciones';
 import { ErrorDeApi } from '../api/usuarios';
-import { usuarioActual } from '../api/sesion';
+import { rutaInicio, usuarioActual } from '../api/sesion';
 import { formatearFechaHora, formatearMarcaCorta } from '../utils/carga';
 import './Notificaciones.css';
 
@@ -91,7 +91,7 @@ export default function Notificaciones() {
       navigate(-1);
       return;
     }
-    navigate(usuarioActual()?.rol === 'administrador' ? '/usuarios' : '/cargas');
+    navigate(rutaInicio(usuarioActual()?.rol));
   };
 
   /**

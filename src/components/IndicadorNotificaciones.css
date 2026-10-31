@@ -4,33 +4,13 @@
    un borde blanco para que se despegue del fondo.
    ========================================================================== */
 
+/* El resto del aspecto (borde, relleno, color, "activo") lo pone `.bs-enlace`
+   en BarraSuperior.css, que es la misma base que usan los demás accesos de
+   la navegación (HU 15). Esto sólo empuja el acceso al extremo derecho de la
+   barra: el margen negativo de arriba y abajo lo deja crecer hasta 44px de
+   alto (área cómoda para tocar) sin agrandar la barra. */
 .ni-enlace {
-  /* Empuja el acceso al extremo derecho de la barra. El margen negativo de
-     arriba y abajo lo deja crecer hasta 44px de alto (área cómoda para
-     tocar) sin agrandar la barra, que mide lo mismo que antes de tenerlo. */
   margin: -8px 0 -8px auto;
-  display: inline-flex;
-  align-items: center;
-  gap: 10px;
-  min-height: 44px;
-  padding: 8px 14px;
-  border: 2px solid rgba(255, 255, 255, 0.6);
-  border-radius: var(--radio-chico);
-  color: #fff;
-  font-size: var(--texto-base);
-  font-weight: 700;
-  text-decoration: none;
-}
-
-.ni-enlace:hover {
-  border-color: #fff;
-  background: rgba(255, 255, 255, 0.14);
-}
-
-/* El foco del sistema es azul oscuro y sobre la barra azul no se vería. */
-.ni-enlace:focus-visible {
-  outline: 3px solid #fff;
-  outline-offset: 2px;
 }
 
 .ni-contador {

@@ -7,6 +7,7 @@ import { ErrorDeApi } from '../api/usuarios';
 import { usuarioActual } from '../api/sesion';
 import {
   IconoAlerta,
+  IconoCajaMas,
   IconoCalendario,
   IconoCamion,
   IconoCerrar,
@@ -149,6 +150,17 @@ export default function Cargas() {
             >
               <IconoCamion />
               Mis viajes
+            </button>
+          )}
+          {/* HU 2.1 + 2.1.1: alta de carga, también alcanzable desde este listado. */}
+          {!esCamionero && (
+            <button
+              type="button"
+              className="ds-boton ds-boton--secundario"
+              onClick={() => navigate('/cargas/nueva')}
+            >
+              <IconoCajaMas />
+              Nueva carga
             </button>
           )}
         </div>

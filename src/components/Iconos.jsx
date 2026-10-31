@@ -218,3 +218,14 @@ export function IconoGrafico(props) {
     </svg>
   );
 }
+
+/** Casa: acceso al panel de inicio de cada rol (HU 15). */
+export function IconoInicio(props) {
+  return (
+    <svg {...base} {...props}>
+      <path d="M3 11.5 12 4l9 7.5" />
+      <path d="M5 10v10h14V10" />
+      <path d="M9.5 20v-6h5v6" />
+    </svg>
+  );
+}
