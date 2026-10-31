@@ -25,5 +25,11 @@ candidato deja de ser apto, su selección se limpia. No se actualiza mientras se
 está asignando. Un error permite reintentar y no habilita confirmar datos viejos.
 
 Si mapas no puede calcular cercanía, el desglose avisa que aporta cero puntos.
+El backend de HU 5 resuelve la ubicación del perfil contra el catálogo y envía
+coordenadas al servicio de HU 9. El desglose muestra la localidad reconocida;
+son distancias estimadas entre localidades, no posiciones GPS del camión.
+Para el perfil se recomienda `Localidad, Provincia`; si el nombre se repite,
+`Localidad, Departamento, Provincia`. Un nombre desconocido o ambiguo muestra
+una advertencia y no se utiliza para consultar mapas.
 El historial muestra experiencia en entregas, todavía no calificaciones.
 El diseño de referencia está en `docs/hu5-sugeridos.svg` (datos ilustrativos).

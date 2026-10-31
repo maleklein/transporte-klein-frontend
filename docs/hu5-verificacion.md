@@ -21,5 +21,8 @@ No se agregó una configuración global como parte del matching.
 
 El backend contiene pruebas de reglas, servicio, permisos HTTP y SQL con tablas
 temporales. Estas comprobaciones no reemplazan la prueba integral contra los
-datos de uso. La distancia real requiere integrar y verificar el módulo de
-mapas de HU 9; los ejemplos con kilómetros son datos de prueba.
+datos de uso. La conexión de HU 5 con el módulo de mapas de HU 9 ya transforma
+los nombres de localidades a coordenadas del catálogo. El backend prueba el
+circuito completo con PostgreSQL y una respuesta controlada del proveedor.
+Todavía falta comprobar una respuesta real de OpenRouteService con una clave
+configurada; los ejemplos con kilómetros siguen siendo datos de prueba.
