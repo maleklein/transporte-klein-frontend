@@ -60,7 +60,7 @@ export async function crearUsuario(datos) {
   try {
     respuesta = await fetch(`${URL_API}/usuarios`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 'Content-Type': 'application/json', ...headersDeAuth() },
       body: JSON.stringify(datos),
     });
   } catch {
