@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { iniciarSesion } from './api/sesion';
+import { iniciarSesion, rutaInicio } from './api/sesion';
 import './login.css';
 
 /**
@@ -35,9 +35,8 @@ const IniciarSesion = () => {
             // Si algo falla, tira un Error con un mensaje mostrable.
             const usuario = await iniciarSesion(correo, clave);
 
-            // Login OK: cada rol arranca en su pantalla. El administrador
-            // gestiona usuarios; el camionero ve el listado de cargas.
-            navigate(usuario.rol === 'administrador' ? '/usuarios' : '/cargas');
+            // Login OK: cada rol arranca en su panel de inicio (HU 15/16/17).
+            navigate(rutaInicio(usuario.rol));
         } catch (error) {
             asignarMensajeError(error.message);
         } finally {
