@@ -13,6 +13,14 @@ import BarraSuperior from '../components/BarraSuperior';
 import Campo from '../components/Campo';
 import { evitarFoco } from '../utils/formulario';
 import { validarNombreApellido } from '../utils/validarNombreApellido';
+import {
+  validarCapacidadKg,
+  validarDni,
+  validarEmail,
+  validarPassword,
+  validarTipoVehiculo,
+  validarUbicacion,
+} from '../utils/validarUsuario';
 import './AltaUsuario.css';
 
 /**
@@ -50,22 +58,19 @@ function validar(valores) {
     errores.apellido = errorApellido;
   }
 
-  if (!valores.dni.trim()) {
-    errores.dni = 'Ingresá el DNI.';
-  } else if (!/^\d{7,8}$/.test(valores.dni.trim())) {
-    errores.dni = 'El DNI debe tener 7 u 8 números, sin puntos ni espacios.';
+  const errorDni = validarDni(valores.dni);
+  if (errorDni) {
+    errores.dni = errorDni;
   }
 
-  if (!valores.email.trim()) {
-    errores.email = 'Ingresá el email.';
-  } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(valores.email.trim())) {
-    errores.email = 'Escribí un email válido. Ejemplo: nombre@mail.com';
+  const errorEmail = validarEmail(valores.email);
+  if (errorEmail) {
+    errores.email = errorEmail;
   }
 
-  if (!valores.password) {
-    errores.password = 'Ingresá una contraseña.';
-  } else if (valores.password.length < 8) {
-    errores.password = 'La contraseña debe tener al menos 8 caracteres.';
+  const errorPassword = validarPassword(valores.password);
+  if (errorPassword) {
+    errores.password = errorPassword;
   }
 
   if (!valores.rol) {
@@ -74,16 +79,19 @@ function validar(valores) {
 
   // Ubicación, vehículo y capacidad solo son obligatorios si el usuario es camionero.
   if (valores.rol === 'camionero') {
-    if (!valores.ubicacion.trim()) {
-      errores.ubicacion = 'Ingresá la ubicación del camionero.';
+    const errorUbicacion = validarUbicacion(valores.ubicacion);
+    if (errorUbicacion) {
+      errores.ubicacion = errorUbicacion;
     }
-    if (!valores.tipo_vehiculo.trim()) {
-      errores.tipo_vehiculo = 'Ingresá el tipo de vehículo.';
+
+    const errorTipoVehiculo = validarTipoVehiculo(valores.tipo_vehiculo);
+    if (errorTipoVehiculo) {
+      errores.tipo_vehiculo = errorTipoVehiculo;
     }
-    if (!String(valores.capacidad_kg).trim()) {
-      errores.capacidad_kg = 'Ingresá la capacidad en kilos.';
-    } else if (!(Number(valores.capacidad_kg) > 0)) {
-      errores.capacidad_kg = 'La capacidad debe ser un número mayor a cero.';
+
+    const errorCapacidad = validarCapacidadKg(valores.capacidad_kg);
+    if (errorCapacidad) {
+      errores.capacidad_kg = errorCapacidad;
     }
   }
 
