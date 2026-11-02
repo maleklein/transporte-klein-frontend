@@ -24,5 +24,8 @@ temporales. Estas comprobaciones no reemplazan la prueba integral contra los
 datos de uso. La conexión de HU 5 con el módulo de mapas de HU 9 ya transforma
 los nombres de localidades a coordenadas del catálogo. El backend prueba el
 circuito completo con PostgreSQL y una respuesta controlada del proveedor.
-Todavía falta comprobar una respuesta real de OpenRouteService con una clave
-configurada; los ejemplos con kilómetros siguen siendo datos de prueba.
+El 02/11/2026 también se verificó la consulta real a mapas en el backend:
+Santa Fe → Paraná devolvió HTTP 200, 29,62 km y 22,53 puntos de cercanía sin
+advertencias, usando candidatos temporales. El registro está en
+`docs/hu5-validacion-mapas.md` del repositorio backend. Esa prueba no cambia el
+carácter sintético de los datos usados en la revisión visual anterior.
