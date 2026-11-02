@@ -11,6 +11,7 @@ import {
   IconoUsuario,
 } from '../components/Iconos';
 import BarraSuperior from '../components/BarraSuperior';
+import ReputacionUsuario from '../components/ReputacionUsuario';
 import { formatearFecha } from '../utils/carga';
 import './DetalleCarga.css';
 import './DetalleUsuario.css';
@@ -147,6 +148,7 @@ export default function DetalleUsuario() {
             </dl>
           </section>
         )}
+        <ReputacionUsuario key={usuario.id_usuario} idUsuario={usuario.id_usuario} />
       </main>
     </>
   );
