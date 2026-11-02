@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { NavLink } from 'react-router-dom';
 import { IconoCampana } from './Iconos';
 import { EVENTO_NOTIFICACIONES_CAMBIARON, listarNotificaciones } from '../api/notificaciones';
 import './IndicadorNotificaciones.css';
@@ -62,7 +62,10 @@ export default function IndicadorNotificaciones() {
   const textoContador = noLeidas > 99 ? '99+' : String(noLeidas);
 
   return (
-    <Link to="/notificaciones" className="ni-enlace">
+    <NavLink
+      to="/notificaciones"
+      className={({ isActive }) => `bs-enlace ni-enlace${isActive ? ' bs-enlace--activo' : ''}`}
+    >
       <IconoCampana width={22} height={22} />
       Notificaciones
       {noLeidas > 0 && (
@@ -77,6 +80,6 @@ export default function IndicadorNotificaciones() {
           </span>
         </>
       )}
-    </Link>
+    </NavLink>
   );
 }

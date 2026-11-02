@@ -116,6 +116,17 @@ export function usuarioActual() {
 }
 
 /**
+ * Pantalla de inicio de un rol (HU 15/16/17): a donde manda el login y a
+ * donde vuelve cualquier pantalla que necesite "el inicio de este usuario".
+ *
+ * @param {string} rol - 'administrador' o 'camionero'.
+ * @returns {string} la ruta del panel de inicio de ese rol.
+ */
+export function rutaInicio(rol) {
+  return rol === 'administrador' ? '/panel-administrador' : '/panel-camionero';
+}
+
+/**
  * Headers de autenticación para las llamadas al backend.
  *
  * @returns {object} el header `Authorization`, o un objeto vacío si no hay sesión.

@@ -12,6 +12,13 @@ import {
 import BarraSuperior from '../components/BarraSuperior';
 import Campo from '../components/Campo';
 import { evitarFoco } from '../utils/formulario';
+import { validarNombreApellido } from '../utils/validarNombreApellido';
+import {
+  validarCapacidadKg,
+  validarEmail,
+  validarTipoVehiculo,
+  validarUbicacion,
+} from '../utils/validarUsuario';
 import './AltaUsuario.css';
 import './EditarUsuario.css';
 
@@ -46,31 +53,35 @@ function valoresIniciales(usuario) {
 function validar(valores, esCamionero) {
   const errores = {};
 
-  if (!valores.nombre.trim()) {
-    errores.nombre = 'Ingresá el nombre.';
+  const errorNombre = validarNombreApellido(valores.nombre, 'nombre');
+  if (errorNombre) {
+    errores.nombre = errorNombre;
   }
 
-  if (!valores.apellido.trim()) {
-    errores.apellido = 'Ingresá el apellido.';
+  const errorApellido = validarNombreApellido(valores.apellido, 'apellido');
+  if (errorApellido) {
+    errores.apellido = errorApellido;
   }
 
-  if (!valores.email.trim()) {
-    errores.email = 'Ingresá el email.';
-  } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(valores.email.trim())) {
-    errores.email = 'Escribí un email válido. Ejemplo: nombre@mail.com';
+  const errorEmail = validarEmail(valores.email);
+  if (errorEmail) {
+    errores.email = errorEmail;
   }
 
   if (esCamionero) {
-    if (!valores.ubicacion.trim()) {
-      errores.ubicacion = 'Ingresá la ubicación del camionero.';
+    const errorUbicacion = validarUbicacion(valores.ubicacion);
+    if (errorUbicacion) {
+      errores.ubicacion = errorUbicacion;
     }
-    if (!valores.tipo_vehiculo.trim()) {
-      errores.tipo_vehiculo = 'Ingresá el tipo de vehículo.';
+
+    const errorTipoVehiculo = validarTipoVehiculo(valores.tipo_vehiculo);
+    if (errorTipoVehiculo) {
+      errores.tipo_vehiculo = errorTipoVehiculo;
     }
-    if (!String(valores.capacidad_kg).trim()) {
-      errores.capacidad_kg = 'Ingresá la capacidad en kilos.';
-    } else if (!(Number(valores.capacidad_kg) > 0)) {
-      errores.capacidad_kg = 'La capacidad debe ser un número mayor a cero.';
+
+    const errorCapacidad = validarCapacidadKg(valores.capacidad_kg);
+    if (errorCapacidad) {
+      errores.capacidad_kg = errorCapacidad;
     }
   }
 

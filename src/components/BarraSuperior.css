@@ -6,10 +6,10 @@
   row-gap: 12px;
 }
 
-/* Acceso al panel de métricas (HU 13), sólo visible para el administrador.
-   Mismo tratamiento que el acceso a notificaciones: texto + ícono en blanco
-   sobre el azul de la barra. */
-.bs-enlace-metricas {
+/* Accesos de la navegación principal (HU 15), uno por pantalla alcanzable
+   desde la barra. Mismo tratamiento que el acceso a notificaciones: texto +
+   ícono en blanco sobre el azul de la barra. */
+.bs-enlace {
   display: inline-flex;
   align-items: center;
   gap: 8px;
@@ -23,12 +23,39 @@
   text-decoration: none;
 }
 
-.bs-enlace-metricas:hover {
+.bs-enlace:hover {
   border-color: #fff;
   background: rgba(255, 255, 255, 0.14);
 }
 
-.bs-enlace-metricas:focus-visible {
+.bs-enlace:focus-visible {
   outline: 3px solid #fff;
   outline-offset: 2px;
+}
+
+/* La sección actual (HU 15): fondo blanco sólido y texto azul, para que se
+   distinga del resto incluso sin color (no depende sólo del tono). */
+.bs-enlace--activo {
+  border-color: #fff;
+  background: #fff;
+  color: var(--color-primario);
+}
+
+.bs-enlace--activo:hover {
+  background: #fff;
+}
+
+/* Aviso de "sin permiso" (HU 15) que deja `RutaProtegida` al redirigir a un
+   usuario que abrió una pantalla de otro rol. Mismo criterio visual que los
+   avisos de error de cada pantalla (`.nt-aviso-error` y análogos). */
+.bs-aviso-acceso {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 0;
+  padding: 14px 28px;
+  border-bottom: 2px solid var(--color-peligro);
+  background: var(--color-peligro-claro);
+  color: var(--color-peligro-oscuro);
+  font-weight: 600;
 }
