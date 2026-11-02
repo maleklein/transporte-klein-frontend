@@ -14,6 +14,7 @@ import {
 } from '../components/Iconos';
 import BarraSuperior from '../components/BarraSuperior';
 import DistanciaCarga from '../components/DistanciaCarga';
+import EconomiaCarga from '../components/EconomiaCarga';
 import EstadoCarga from '../components/EstadoCarga';
 import HistorialCarga from '../components/HistorialCarga';
 import ModalConfirmacion from '../components/ModalConfirmacion';
@@ -45,7 +46,8 @@ import './DetalleCarga.css';
  *
  * Replica el bloque "Información de la carga" del mockup: título con el badge de
  * estado, la ruta origen → destino, fecha de retiro, peso, tipo, la distancia
- * estimada (HU 9, `DistanciaCarga`) y la descripción (`observaciones`). Debajo
+ * estimada (HU 9, `DistanciaCarga`) y la descripción (`observaciones`). Al
+ * administrador se le suma la estimación económica (HU 10, `EconomiaCarga`). Debajo
  * van el progreso de la carga (HU 7, `ProgresoCarga`) y el historial de estados
  * (HU 8, `HistorialCarga`).
  *
@@ -474,6 +476,12 @@ export default function DetalleCarga() {
                 <p className="dc-descripcion__texto">{descripcion}</p>
               </div>
             </section>
+
+            {/*
+              Costo y ganancia (HU 10). Recalcular comparte el handler con la
+              distancia: el backend hace las dos cuentas en el mismo pedido.
+            */}
+            {esAdministrador && <EconomiaCarga carga={carga} alRecalcular={recalcularKm} />}
 
             {esAdministrador ? (
               <PostulantesCarga

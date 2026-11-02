@@ -14,6 +14,7 @@ import Metricas from './pages/Metricas';
 import Postulaciones from './pages/Postulaciones';
 import PanelAdministrador from './pages/PanelAdministrador';
 import PanelCamionero from './pages/PanelCamionero';
+import ParametrosOperativos from './pages/ParametrosOperativos';
 
 /**
  * Enrutador raíz de la aplicación.
@@ -47,6 +48,8 @@ function App() {
         <Route path="/cargas/:id/editar" element={<EditarCarga />} />
         {/* HU 13 — Panel de métricas */}
         <Route path="/metricas" element={<Metricas />} />
+        {/* HU 10 — Parámetros de la estimación de costos */}
+        <Route path="/parametros" element={<ParametrosOperativos />} />
       </Route>
 
       {/* Sólo camionero */}

@@ -287,6 +287,123 @@
   color: var(--color-peligro-oscuro);
 }
 
+/* ------------------------------------------------------------------
+   Estimación económica (HU 10) — `EconomiaCarga.jsx`.
+   ------------------------------------------------------------------ */
+
+.ec-titulo {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.ec-titulo svg {
+  color: var(--color-primario);
+}
+
+.ec-montos {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+  margin: 0;
+}
+
+.ec-monto {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 12px 14px;
+  border-radius: var(--radio-chico);
+  background: var(--color-fondo-alt);
+}
+
+.ec-monto dt {
+  font-size: var(--texto-ayuda);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  color: var(--color-texto-suave);
+}
+
+.ec-monto dd {
+  margin: 0;
+  font-size: var(--texto-label);
+  font-weight: 700;
+  color: var(--color-texto);
+  font-variant-numeric: tabular-nums;
+}
+
+/* La ganancia es el dato que se mira primero: va en verde, o en rojo si la
+   tarifa no cubre el costo. El texto también cambia ("Pérdida"),
+   así no depende sólo del color. */
+.ec-monto--ganancia {
+  background: var(--color-confirmar-claro);
+}
+
+.ec-monto--ganancia dd {
+  color: var(--color-confirmar-oscuro);
+}
+
+.ec-monto--perdida {
+  background: var(--color-peligro-claro);
+}
+
+.ec-monto--perdida dd {
+  color: var(--color-peligro-oscuro);
+}
+
+.ec-parametros {
+  margin-top: 16px;
+  padding-top: 14px;
+  border-top: 1px solid var(--color-borde-suave);
+}
+
+.ec-parametros__titulo {
+  margin: 0 0 6px;
+  font-size: var(--texto-ayuda);
+  font-weight: 700;
+  color: var(--color-texto);
+}
+
+.ec-parametros__lista {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 20px;
+  margin: 0 0 8px;
+  padding: 0;
+  list-style: none;
+  font-size: var(--texto-ayuda);
+  color: var(--color-texto);
+}
+
+.ec-nota,
+.ec-aviso {
+  margin: 0;
+  font-size: var(--texto-ayuda);
+  color: var(--color-texto-suave);
+}
+
+.ec-sin-calcular {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 10px;
+}
+
+.ec-enlace {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-weight: 700;
+  color: var(--color-primario);
+}
+
+@media (max-width: 520px) {
+  .ec-montos {
+    grid-template-columns: 1fr;
+  }
+}
+
 /* ==========================================================================
    Historial de estados (HU 8) — línea de tiempo vertical, `HistorialCarga.jsx`.
    ========================================================================== */

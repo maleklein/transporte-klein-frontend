@@ -1,5 +1,6 @@
 import { Link, useLocation } from 'react-router-dom';
 import {
+  IconoAjustes,
   IconoAlerta,
   IconoCaja,
   IconoCajaMas,
@@ -50,6 +51,12 @@ const ACCESOS_ADMINISTRADOR = [
     texto: 'Métricas',
     Icono: IconoGrafico,
     activo: (ruta) => ruta === '/metricas',
+  },
+  {
+    to: '/parametros',
+    texto: 'Parámetros',
+    Icono: IconoAjustes,
+    activo: (ruta) => ruta === '/parametros',
   },
 ];
 
