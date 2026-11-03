@@ -227,7 +227,7 @@ export default function PanelAdministrador() {
             titulo="Notificaciones sin leer"
             dato={noLeidas}
             cantidad={cantidadNoLeidas > 99 ? '99+' : cantidadNoLeidas}
-            detalle="Avisos de cargas nuevas, asignaciones y cambios de estado."
+            detalle="Avisos de cambios de estado y asignaciones de tus cargas."
             accion="Ver notificaciones"
             destacada={cantidadNoLeidas > 0}
           />
