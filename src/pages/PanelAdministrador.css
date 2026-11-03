@@ -1,15 +1,20 @@
 /* ==========================================================================
    Panel principal del administrador (HU 16).
+   Las tarjetas de resumen, el contenedor, la introducción y el aviso de error
+   son los del panel del camionero (`PanelCamionero.css`, prefijo `pcm-`), para
+   que los dos paneles se vean igual. Acá va sólo lo propio de este panel.
    ========================================================================== */
 
-.pa-contenido {
-  max-width: 1000px;
+/* Son dos tarjetas: en la grilla de cuatro del camionero quedarían a la mitad. */
+.pa-tarjetas {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  margin-bottom: 32px;
 }
 
-.pa-titulo {
-  display: flex;
-  align-items: center;
-  gap: 10px;
+@media (max-width: 560px) {
+  .pa-tarjetas {
+    grid-template-columns: minmax(0, 1fr);
+  }
 }
 
 .pa-seccion {
@@ -29,6 +34,7 @@
   margin: 0;
 }
 
+/* Mismo tamaño que "Viajes en curso" del panel del camionero. */
 .pa-seccion__titulo {
   margin: 0 0 12px;
   font-size: var(--texto-label);
@@ -50,72 +56,6 @@
   color: var(--color-texto-suave);
 }
 
-.pa-cargando {
-  margin: 8px 0 0;
-  color: var(--color-texto-suave);
-}
-
-/* --------------------------------------------------------------------------
-   Requiere tu atención: dos tarjetas con un número grande.
-   -------------------------------------------------------------------------- */
-
-.pa-atencion-grilla {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 16px;
-}
-
-.pa-atencion {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-  padding: 18px 20px;
-  border: 2px solid var(--color-borde-suave);
-  border-radius: var(--radio);
-  background: var(--color-fondo);
-}
-
-/* Con algo pendiente, la tarjeta toma el ámbar de "todavía no terminó"
-   (el mismo de `en viaje` y del cálculo pendiente de la HU 9). */
-.pa-atencion--alerta {
-  border-color: #E0A84A;
-  background: #FFF8EC;
-}
-
-.pa-atencion__titulo {
-  margin: 0;
-  font-size: var(--texto-base);
-  font-weight: 700;
-  color: var(--color-texto-suave);
-}
-
-.pa-atencion__valor {
-  margin: 0;
-  font-size: 40px;
-  font-weight: 700;
-  line-height: 1.1;
-  color: var(--color-texto);
-  font-variant-numeric: tabular-nums;
-}
-
-.pa-atencion--alerta .pa-atencion__valor {
-  color: #8A5300;
-}
-
-.pa-atencion__detalle {
-  margin: 0;
-  color: var(--color-texto);
-}
-
-/* El enlace va siempre al pie, también si la consulta falló: la sección se
-   puede abrir igual. */
-.pa-atencion__enlace {
-  margin-top: auto;
-  padding-top: 10px;
-  font-weight: 700;
-  color: var(--color-primario);
-}
-
 /* --------------------------------------------------------------------------
    Cargas por estado: seis casillas en el orden del ciclo de vida.
    -------------------------------------------------------------------------- */
@@ -128,7 +68,7 @@
 
 .pa-estados {
   display: grid;
-  grid-template-columns: repeat(6, 1fr);
+  grid-template-columns: repeat(6, minmax(0, 1fr));
   gap: 12px;
   margin: 0;
   padding: 0;
@@ -148,17 +88,17 @@
 .pa-estado__valor {
   font-size: 28px;
   font-weight: 700;
-  color: var(--color-texto);
+  color: var(--color-primario);
   font-variant-numeric: tabular-nums;
 }
 
 /* --------------------------------------------------------------------------
-   Accesos directos.
+   Accesos directos. Mismo borde y hover que las tarjetas de resumen.
    -------------------------------------------------------------------------- */
 
 .pa-accesos {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 12px;
   margin: 0;
   padding: 0;
@@ -176,16 +116,17 @@
   border-radius: var(--radio);
   color: var(--color-primario);
   text-decoration: none;
+  transition: border-color 0.12s ease, box-shadow 0.12s ease;
 }
 
 .pa-acceso:hover {
   border-color: var(--color-primario);
-  background: var(--color-primario-claro);
+  box-shadow: 0 4px 14px rgba(31, 78, 121, 0.12);
 }
 
 .pa-acceso:focus-visible {
-  outline: none;
-  box-shadow: var(--foco);
+  outline: 3px solid var(--color-primario);
+  outline-offset: 2px;
 }
 
 .pa-acceso svg {
@@ -207,54 +148,22 @@
   color: var(--color-texto-suave);
 }
 
-/* --------------------------------------------------------------------------
-   Error de un bloque, con su reintento.
-   -------------------------------------------------------------------------- */
-
-.pa-error {
-  display: flex;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: 10px 14px;
-  margin-top: 6px;
-  padding: 12px 14px;
-  border: 2px solid var(--color-peligro);
-  border-radius: var(--radio-chico);
-  background: var(--color-peligro-claro);
-}
-
-.pa-error__texto {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  margin: 0;
-  color: var(--color-peligro-oscuro);
-  font-weight: 600;
-}
-
-.pa-error__boton {
-  min-height: 36px;
-  padding: 6px 12px;
-  font-size: var(--texto-ayuda);
-}
-
 @media (max-width: 860px) {
   .pa-estados {
-    grid-template-columns: repeat(3, 1fr);
+    grid-template-columns: repeat(3, minmax(0, 1fr));
   }
 
   .pa-accesos {
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
 
 @media (max-width: 560px) {
-  .pa-atencion-grilla,
   .pa-accesos {
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr);
   }
 
   .pa-estados {
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }

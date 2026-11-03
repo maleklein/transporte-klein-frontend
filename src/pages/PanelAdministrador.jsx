@@ -8,8 +8,8 @@ import {
   IconoCaja,
   IconoCajaMas,
   IconoCampana,
+  IconoEtiqueta,
   IconoGrafico,
-  IconoInicio,
   IconoReintentar,
   IconoUsuario,
 } from '../components/Iconos';
@@ -17,9 +17,11 @@ import { listarCargas } from '../api/cargas';
 import { obtenerMetricas } from '../api/metricas';
 import { listarNotificaciones } from '../api/notificaciones';
 import { ErrorDeApi } from '../api/usuarios';
-import { evitarFoco } from '../utils/formulario';
 import { formatearFecha } from '../utils/carga';
 import { ESTADOS } from '../utils/estadosCarga';
+// Las tarjetas de resumen (`pcm-tarjeta`) son las del panel del camionero
+// (HU 17): se reusan sus estilos para que los dos paneles se vean igual.
+import './PanelCamionero.css';
 import './PanelAdministrador.css';
 
 /** Orden en que se muestran los estados: el del ciclo de vida de una carga. */
@@ -66,112 +68,82 @@ function periodoDelConteo() {
 }
 
 /*
- * Las tres consultas del resumen. Van afuera del componente para que no
- * cambien de identidad en cada render: `useConsulta` las usa de dependencia.
- * Reutilizan endpoints que ya existían (HU 13, HU 2.5 y HU 12): para tres
- * números no hacía falta un endpoint de resumen nuevo.
+ * Las tres consultas del resumen. Reutilizan endpoints que ya existían
+ * (HU 13, HU 2.5 y HU 12): para tres números no hacía falta un endpoint de
+ * resumen nuevo.
  */
-const pedirMetricas = (signal) => obtenerMetricas(periodoDelConteo(), { signal });
-const pedirPendientes = (signal) => listarCargas({ estado: ESTADOS.PENDIENTE }, { signal });
-const pedirNoLeidas = (signal) => listarNotificaciones({ soloNoLeidas: true }, { signal });
+const pedirMetricas = ({ signal }) => obtenerMetricas(periodoDelConteo(), { signal });
+const pedirPendientes = ({ signal }) => listarCargas({ estado: ESTADOS.PENDIENTE }, { signal });
+const pedirNoLeidas = ({ signal }) => listarNotificaciones({ soloNoLeidas: true }, { signal });
 
 /**
- * Hace una consulta al montar la pantalla y expone su estado, para que cada
- * bloque del panel muestre su propio "cargando", error y reintento sin
- * depender de los demás.
+ * Pide un dato del panel y lo deja como `{ estado, valor, error }`. Mismo
+ * patrón que `useDato` del panel del camionero (HU 17).
  *
- * @param {(signal: AbortSignal) => Promise<*>} pedir - la consulta.
- * @returns {{estado: 'cargando'|'ok'|'error', datos: *, error: string, reintentar: () => void}}
+ * Cada dato se pide por separado a propósito: si falla uno, los demás se
+ * muestran igual y su tarjeta sigue siendo un acceso a la sección.
+ *
+ * @param {function} pedir - recibe `{ signal }` y devuelve una promesa.
+ * @param {number} version - cambia al apretar "Reintentar", para volver a pedir.
+ * @param {string} queFallo - mensaje si el error no trae uno propio.
+ * @returns {{estado: 'cargando'|'ok'|'error', valor: *, error: string}}
  */
-function useConsulta(pedir) {
-  const [estado, setEstado] = useState('cargando');
-  const [datos, setDatos] = useState(null);
-  const [error, setError] = useState('');
-  const [intento, setIntento] = useState(0);
+function useDato(pedir, version, queFallo) {
+  const [dato, setDato] = useState({ estado: 'cargando', valor: null, error: '' });
 
   useEffect(() => {
     const controlador = new AbortController();
-    setEstado('cargando');
-    setError('');
+    setDato((previo) => ({ ...previo, estado: 'cargando', error: '' }));
 
-    pedir(controlador.signal)
-      .then((respuesta) => {
-        setDatos(respuesta);
-        setEstado('ok');
-      })
-      .catch((causa) => {
-        if (causa?.name === 'AbortError') return;
-        setError(causa instanceof ErrorDeApi ? causa.message : 'No se pudo obtener este dato.');
-        setEstado('error');
+    pedir({ signal: controlador.signal })
+      .then((valor) => setDato({ estado: 'ok', valor, error: '' }))
+      .catch((fallo) => {
+        if (fallo?.name === 'AbortError') return;
+        setDato({ estado: 'error', valor: null, error: fallo instanceof ErrorDeApi ? fallo.message : queFallo });
       });
 
     return () => controlador.abort();
-  }, [pedir, intento]);
+    // `pedir` y `queFallo` son fijos: sólo se vuelve a pedir al reintentar.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [version]);
 
-  return { estado, datos, error, reintentar: () => setIntento((valor) => valor + 1) };
+  return dato;
 }
 
 /**
- * Mensaje de error de un bloque, con su botón para volver a intentar.
+ * Tarjeta de resumen: un número y el acceso a su sección. Toda la tarjeta es
+ * el enlace, así el acceso sigue disponible aunque el dato falle. Mismo
+ * marcado que `TarjetaResumen` del panel del camionero.
  *
  * @param {object} props
- * @param {string} props.mensaje
- * @param {() => void} props.alReintentar
+ * @param {string} props.to - a dónde lleva.
+ * @param {import('react').ComponentType} props.Icono
+ * @param {string} props.titulo - qué cuenta.
+ * @param {{estado: string}} props.dato - estado del pedido.
+ * @param {number|string} props.cantidad - el número, cuando el dato llegó.
+ * @param {string} props.detalle - qué significa el número.
+ * @param {string} props.accion - texto del acceso.
+ * @param {boolean} [props.destacada] - resalta la tarjeta si hay algo que mirar.
  * @returns {JSX.Element}
  */
-function ErrorDeBloque({ mensaje, alReintentar }) {
+function TarjetaResumen({ to, Icono, titulo, dato, cantidad, detalle, accion, destacada = false }) {
   return (
-    <div className="pa-error" role="alert">
-      <p className="pa-error__texto">
-        <IconoAlerta width={18} height={18} />
-        {mensaje}
-      </p>
-      <button
-        type="button"
-        className="ds-boton ds-boton--secundario pa-error__boton"
-        onClick={alReintentar}
-        onMouseDown={evitarFoco}
-      >
-        <IconoReintentar width={16} height={16} />
-        Reintentar
-      </button>
-    </div>
-  );
-}
-
-/**
- * Tarjeta de "Requiere tu atención": un número grande, qué significa y el
- * enlace a la sección donde se resuelve.
- *
- * @param {object} props
- * @param {ReturnType<typeof useConsulta>} props.consulta
- * @param {(datos: *) => number} props.contar - cuántos hay, a partir de la respuesta.
- * @param {string} props.titulo
- * @param {(cantidad: number) => string} props.describir - texto según la cantidad.
- * @param {string} props.enlace - a dónde lleva.
- * @param {string} props.textoEnlace
- * @returns {JSX.Element}
- */
-function TarjetaAtencion({ consulta, contar, titulo, describir, enlace, textoEnlace }) {
-  const cantidad = consulta.estado === 'ok' ? contar(consulta.datos) : 0;
-
-  return (
-    <article className={`pa-atencion${cantidad > 0 ? ' pa-atencion--alerta' : ''}`}>
-      <h3 className="pa-atencion__titulo">{titulo}</h3>
-
-      {consulta.estado === 'cargando' && <p className="pa-cargando">Cargando...</p>}
-      {consulta.estado === 'error' && <ErrorDeBloque mensaje={consulta.error} alReintentar={consulta.reintentar} />}
-      {consulta.estado === 'ok' && (
-        <>
-          <p className="pa-atencion__valor">{cantidad > 99 ? '99+' : cantidad}</p>
-          <p className="pa-atencion__detalle">{describir(cantidad)}</p>
-        </>
+    <Link to={to} className={`pcm-tarjeta${destacada ? ' pcm-tarjeta--destacada' : ''}`}>
+      <span className="pcm-tarjeta__titulo">
+        <Icono width={20} height={20} />
+        {titulo}
+      </span>
+      {dato.estado === 'cargando' && <span className="pcm-tarjeta__valor pcm-tarjeta__valor--cargando">…</span>}
+      {dato.estado === 'ok' && <span className="pcm-tarjeta__valor">{cantidad}</span>}
+      {dato.estado === 'error' && (
+        <span className="pcm-tarjeta__error">
+          <IconoAlerta width={16} height={16} />
+          No se pudo cargar este dato.
+        </span>
       )}
-
-      <Link to={enlace} className="pa-atencion__enlace">
-        {textoEnlace}
-      </Link>
-    </article>
+      <span className="pcm-tarjeta__detalle">{detalle}</span>
+      <span className="pcm-tarjeta__accion">{accion} →</span>
+    </Link>
   );
 }
 
@@ -181,12 +153,13 @@ function TarjetaAtencion({ consulta, contar, titulo, describir, enlace, textoEnl
  *
  * Arriba, lo que requiere atención: las cargas pendientes de asignación (las
  * que ya tienen camioneros postulados) y las notificaciones sin leer, cada una
- * con su enlace. Después, cuántas cargas hay en cada estado, con el período
- * que abarca el conteo. Abajo, los accesos directos a cada sección.
+ * como tarjeta que lleva a su listado. Después, cuántas cargas hay en cada
+ * estado, con el período que abarca el conteo. Abajo, los accesos directos.
  *
- * Cada bloque pide sus datos por separado y muestra su propio error: si falla
- * una consulta, las demás siguen a la vista, y los accesos directos no
- * dependen de ninguna. Los datos se piden cada vez que se entra al panel.
+ * Sigue el mismo esquema que el panel del camionero (HU 17): cada dato se pide
+ * por separado, y si falla alguno se avisa arriba con un único "Reintentar"
+ * mientras las tarjetas y los accesos siguen llevando a su sección. Los datos
+ * se piden cada vez que se entra al panel.
  *
  * Sólo el administrador llega acá: la ruta está dentro del grupo protegido
  * por rol de `App.jsx`, y los tres endpoints exigen el rol en el backend.
@@ -194,59 +167,70 @@ function TarjetaAtencion({ consulta, contar, titulo, describir, enlace, textoEnl
  * @returns {JSX.Element}
  */
 export default function PanelAdministrador() {
-  const metricas = useConsulta(pedirMetricas);
-  const pendientes = useConsulta(pedirPendientes);
-  const noLeidas = useConsulta(pedirNoLeidas);
+  const [version, setVersion] = useState(0);
 
-  const periodo = metricas.datos?.periodo;
-  const totalCargas = metricas.datos?.total_cargas ?? 0;
+  const pendientes = useDato(pedirPendientes, version, 'No se pudieron cargar las cargas pendientes de asignación.');
+  const noLeidas = useDato(pedirNoLeidas, version, 'No se pudieron cargar tus notificaciones.');
+  const metricas = useDato(pedirMetricas, version, 'No se pudo cargar el conteo de cargas por estado.');
+
+  const cantidadPendientes = pendientes.valor?.length ?? 0;
+  // El backend devuelve 100 notificaciones como máximo, igual que para el contador de la barra.
+  const cantidadNoLeidas = noLeidas.valor?.length ?? 0;
+  const periodo = metricas.valor?.periodo;
+  const totalCargas = metricas.valor?.total_cargas ?? 0;
+
+  const errores = [pendientes, noLeidas, metricas].filter((dato) => dato.estado === 'error');
 
   return (
     <>
       <BarraSuperior />
 
-      <main className="us-contenido pa-contenido">
+      <main className="us-contenido pcm-contenido">
         <div className="us-encabezado">
-          <h1 className="pa-titulo">
-            <IconoInicio width={26} height={26} />
-            Panel del administrador
-          </h1>
+          <h1>Panel del administrador</h1>
         </div>
+        <p className="pcm-intro">Así está la operación hoy. Tocá cada tarjeta para ir a esa sección.</p>
 
-        <section className="pa-seccion" aria-labelledby="pa-titulo-atencion">
-          <h2 className="pa-seccion__titulo" id="pa-titulo-atencion">
-            Requiere tu atención
-          </h2>
-          <div className="pa-atencion-grilla">
-            <TarjetaAtencion
-              consulta={pendientes}
-              contar={(cargas) => cargas.length}
-              titulo="Pendientes de asignación"
-              describir={(cantidad) =>
-                cantidad === 0
-                  ? 'No hay cargas esperando que elijas camionero.'
-                  : cantidad === 1
-                    ? 'Carga con camioneros postulados, esperando que elijas a uno.'
-                    : 'Cargas con camioneros postulados, esperando que elijas a uno.'
-              }
-              enlace={`/cargas?estado=${ESTADOS.PENDIENTE}`}
-              textoEnlace="Ver pendientes"
-            />
-            <TarjetaAtencion
-              consulta={noLeidas}
-              contar={(notificaciones) => notificaciones.length}
-              titulo="Notificaciones sin leer"
-              describir={(cantidad) =>
-                cantidad === 0
-                  ? 'Estás al día: no tenés avisos sin leer.'
-                  : cantidad === 1
-                    ? 'Aviso que todavía no leíste.'
-                    : 'Avisos que todavía no leíste.'
-              }
-              enlace="/notificaciones"
-              textoEnlace="Abrir notificaciones"
-            />
+        {errores.length > 0 && (
+          <div className="pcm-aviso-error" role="alert">
+            <IconoAlerta width={22} height={22} />
+            <span className="pcm-aviso-error__texto">
+              {/* Los mensajes del backend no siempre terminan en punto. */}
+              {errores.map((dato) => dato.error.replace(/([^.!?])$/, '$1.')).join(' ')} Los accesos siguen
+              funcionando.
+            </span>
+            <button
+              type="button"
+              className="ds-boton ds-boton--secundario"
+              onClick={() => setVersion((previa) => previa + 1)}
+            >
+              <IconoReintentar />
+              Reintentar
+            </button>
           </div>
+        )}
+
+        <section className="pcm-tarjetas pa-tarjetas" aria-label="Requiere tu atención">
+          <TarjetaResumen
+            to={`/cargas?estado=${ESTADOS.PENDIENTE}`}
+            Icono={IconoEtiqueta}
+            titulo="Pendientes de asignación"
+            dato={pendientes}
+            cantidad={cantidadPendientes}
+            detalle="Cargas con camioneros postulados, esperando que elijas a uno."
+            accion="Ver pendientes"
+            destacada={cantidadPendientes > 0}
+          />
+          <TarjetaResumen
+            to="/notificaciones"
+            Icono={IconoCampana}
+            titulo="Notificaciones sin leer"
+            dato={noLeidas}
+            cantidad={cantidadNoLeidas > 99 ? '99+' : cantidadNoLeidas}
+            detalle="Avisos de cargas nuevas, asignaciones y cambios de estado."
+            accion="Ver notificaciones"
+            destacada={cantidadNoLeidas > 0}
+          />
         </section>
 
         <section className="pa-seccion" aria-labelledby="pa-titulo-estados">
@@ -255,15 +239,13 @@ export default function PanelAdministrador() {
               Cargas por estado
             </h2>
             <Link to="/metricas" className="pa-enlace">
-              Ver estadísticas completas
+              Ver estadísticas completas →
             </Link>
           </div>
 
           {metricas.estado === 'cargando' && <p className="pa-mensaje">Cargando el resumen de cargas...</p>}
 
-          {metricas.estado === 'error' && (
-            <ErrorDeBloque mensaje={metricas.error} alReintentar={metricas.reintentar} />
-          )}
+          {metricas.estado === 'error' && <p className="pa-mensaje">No se pudo cargar el conteo de cargas por estado.</p>}
 
           {metricas.estado === 'ok' && (
             <>
@@ -285,7 +267,7 @@ export default function PanelAdministrador() {
                 <ul className="pa-estados">
                   {ORDEN_ESTADOS.map((estado) => (
                     <li key={estado} className="pa-estado">
-                      <span className="pa-estado__valor">{metricas.datos.cargas_por_estado?.[estado] ?? 0}</span>
+                      <span className="pa-estado__valor">{metricas.valor.cargas_por_estado?.[estado] ?? 0}</span>
                       <EstadoCarga estado={estado} />
                     </li>
                   ))}

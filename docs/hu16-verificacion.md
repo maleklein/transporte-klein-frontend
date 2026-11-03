@@ -18,7 +18,7 @@ interceptando la respuesta de `/metricas` en el navegador.
 | "Ver pendientes" | Abre `/cargas?estado=pendiente` con el filtro elegido y sólo cargas pendientes. |
 | "Cargas" de la barra estando filtrado | Vuelve a `/cargas` sin filtro. |
 | Cambiar el filtro de estado en el listado | La URL se actualiza (`?estado=…`). |
-| Falla `/metricas` (500) | Ese bloque muestra el error con "Reintentar"; tarjetas y accesos siguen visibles. |
+| Falla `/metricas` (500) | Aviso arriba con "Reintentar", como el panel del camionero; tarjetas y accesos siguen visibles. |
 | "Reintentar" | Vuelve a pedir y muestra los datos. |
 | Período sin cargas | "No se crearon cargas en este período", con acceso a registrar una. |
 | Pantalla de 390 px | Sin desplazamiento horizontal. |

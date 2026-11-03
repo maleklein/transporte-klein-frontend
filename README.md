@@ -70,9 +70,12 @@ lleva el login y el acceso "Inicio" de la barra). Tiene tres bloques:
   notificaciones y parámetros.
 
 No hay endpoint de resumen: reutiliza `GET /metricas`, `GET /cargas?estado=pendiente`
-y `GET /notificaciones?solo_no_leidas=true`. Cada bloque pide lo suyo por separado,
-así que si falla una consulta sólo ese bloque muestra el error (con "Reintentar")
-y los accesos directos siguen disponibles.
+y `GET /notificaciones?solo_no_leidas=true`. Cada dato se pide por separado: si
+falla alguno, se avisa arriba con "Reintentar" y las tarjetas y los accesos
+directos siguen llevando a su sección.
+
+Sigue el mismo esquema que el panel del camionero (HU 17) y reusa sus tarjetas
+(`PanelCamionero.css`, clases `pcm-`), así los dos paneles se ven igual.
 
 "Ver pendientes" abre el listado ya filtrado: el filtro de estado del listado de
 cargas ahora vive en la URL (`/cargas?estado=pendiente`).
