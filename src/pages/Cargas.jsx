@@ -1,5 +1,5 @@
-import { useEffect, useRef, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useEffect, useMemo, useRef, useState } from 'react';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { listarCargas } from '../api/cargas';
 import { listarProvincias } from '../api/geografia';
 import ComboBox from '../components/ComboBox';
@@ -37,15 +37,36 @@ const FILTROS_VACIOS = { estado: '', fecha: '', destino_provincia: '' };
  * `/cargas/:id` con el `id_carga` de esa fila; el detalle recarga la carga con
  * `GET /cargas/:id`.
  *
+ * El filtro de estado también vive en la URL (`/cargas?estado=pendiente`),
+ * para que otra pantalla pueda abrir el listado ya filtrado: el panel del
+ * administrador (HU 16) lo usa para "Ver pendientes de asignación".
+ *
  * @returns {JSX.Element}
  */
 export default function Cargas() {
   const navigate = useNavigate();
+  const [parametrosUrl, setParametrosUrl] = useSearchParams();
 
   // Los tres filtros son discretos (se eligen de una lista o de un calendario),
   // así que cada cambio dispara un único pedido y no hace falta esperar a que
   // el usuario termine de escribir.
-  const [filtros, setFiltros] = useState(FILTROS_VACIOS);
+  // El estado no se guarda en `filtros`: se lee siempre de la URL, que es la
+  // única fuente. Si se guardara también acá, entrar a "Cargas" desde la barra
+  // estando en `?estado=pendiente` dejaría el filtro viejo puesto.
+  const [filtrosLocales, setFiltros] = useState(FILTROS_VACIOS);
+  const estadoUrl = parametrosUrl.get('estado') ?? '';
+  const filtros = useMemo(() => ({ ...filtrosLocales, estado: estadoUrl }), [filtrosLocales, estadoUrl]);
+
+  /**
+   * Cambia el filtro de estado escribiéndolo en la URL. `replace` para no
+   * llenar el historial con un paso por cada cambio de filtro.
+   *
+   * @param {string} estado - estado elegido, o '' para no filtrar.
+   * @returns {void}
+   */
+  const cambiarEstadoFiltro = (estado) => {
+    setParametrosUrl(estado ? { estado } : {}, { replace: true });
+  };
 
   const [cargas, setCargas] = useState([]);
   // 'cargando' | 'ok' | 'error'
@@ -96,6 +117,9 @@ export default function Cargas() {
         for (const carga of datos) {
           if (carga.estado_actual) estadosVistosRef.current.add(carga.estado_actual);
         }
+        // El estado filtrado puede venir por URL sin que haya ninguna carga en
+        // él: se suma igual, para que el <select> lo muestre elegido.
+        if (filtros.estado) estadosVistosRef.current.add(filtros.estado);
         setEstadosDisponibles([...estadosVistosRef.current].sort());
         setCargas(datos);
         setEstadoPantalla('ok');
@@ -121,6 +145,7 @@ export default function Cargas() {
    */
   const limpiarFiltros = () => {
     setFiltros(FILTROS_VACIOS);
+    cambiarEstadoFiltro('');
   };
 
   /**
@@ -184,9 +209,7 @@ export default function Cargas() {
                 id="cg-estado"
                 className="ds-campo__input"
                 value={filtros.estado}
-                onChange={(evento) =>
-                  setFiltros((previos) => ({ ...previos, estado: evento.target.value }))
-                }
+                onChange={(evento) => cambiarEstadoFiltro(evento.target.value)}
               >
                 <option value="">Todos los estados</option>
                 {estadosDisponibles.map((estado) => (

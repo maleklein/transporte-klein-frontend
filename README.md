@@ -54,3 +54,30 @@ detalle muestra los parámetros usados en esa carga y no los vigentes. La
 fórmula y el motivo están en el README del backend.
 
 Capturas de referencia en `docs/hu10-*.png`.
+
+## Panel principal del administrador (HU 16)
+
+Es la pantalla de inicio del administrador (`/panel-administrador`, a donde
+lleva el login y el acceso "Inicio" de la barra). Tiene tres bloques:
+
+- **Requiere tu atención**: cuántas cargas están pendientes de asignación (las
+  que ya tienen camioneros postulados), con "Ver pendientes", y cuántas
+  notificaciones faltan leer, con "Abrir notificaciones".
+- **Cargas por estado**: los seis estados de las cargas creadas en los últimos
+  30 días, según el estado en que están hoy. Es el mismo conteo y el mismo
+  período por defecto que el panel de métricas.
+- **Accesos directos** a usuarios, cargas, nueva carga, estadísticas,
+  notificaciones y parámetros.
+
+No hay endpoint de resumen: reutiliza `GET /metricas`, `GET /cargas?estado=pendiente`
+y `GET /notificaciones?solo_no_leidas=true`. Cada dato se pide por separado: si
+falla alguno, se avisa arriba con "Reintentar" y las tarjetas y los accesos
+directos siguen llevando a su sección.
+
+Sigue el mismo esquema que el panel del camionero (HU 17) y reusa sus tarjetas
+(`PanelCamionero.css`, clases `pcm-`), así los dos paneles se ven igual.
+
+"Ver pendientes" abre el listado ya filtrado: el filtro de estado del listado de
+cargas ahora vive en la URL (`/cargas?estado=pendiente`).
+
+Verificación en `docs/hu16-verificacion.md` y capturas en `docs/hu16-*.png`.
