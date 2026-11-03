@@ -37,7 +37,7 @@ export default function ReputacionUsuario({ idUsuario, mostrarIdentidad = false 
       <ol className="cal-historial">
         {datos.historial.map((calificacion) => <li key={calificacion.id_calificacion} className="cal-evaluacion">
           <strong>{calificacion.puntaje} / 5 — {calificacion.nombre_emisor} {calificacion.apellido_emisor}</strong>
-          <p>Viaje #{calificacion.id_carga} · {new Date(calificacion.creado_en).toLocaleString('es-AR')}</p>
+          <p>Viaje #{calificacion.id_carga} · {new Date(calificacion.creado_en).toLocaleString('es-AR', { hourCycle: 'h23' })}</p>
           <p className="cal-comentario">{calificacion.comentario || 'Sin comentario.'}</p>
         </li>)}
       </ol>
