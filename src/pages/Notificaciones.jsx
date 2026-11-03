@@ -88,6 +88,9 @@ export default function Notificaciones() {
   }, []);
 
   const cantidadNoLeidas = notificaciones.filter((notificacion) => !notificacion.leida).length;
+  // Al administrador no le llegan avisos de cargas nuevas (las crea él): el
+  // mensaje de lista vacía no se los promete.
+  const esAdministrador = usuarioActual()?.rol === 'administrador';
 
   /**
    * Vuelve a la pantalla anterior. Si se entró a esta directo (sin pantalla
@@ -217,8 +220,17 @@ export default function Notificaciones() {
 
         {estadoPantalla === 'ok' && notificaciones.length === 0 && (
           <p className="nt-mensaje">
-            Todavía no tenés notificaciones. Acá vas a ver los avisos de cargas nuevas,
-            asignaciones y cambios de estado.
+            {esAdministrador ? (
+              <>
+                Todavía no tenés notificaciones. Acá vas a ver los cambios de estado de tus cargas
+                y las asignaciones confirmadas.
+              </>
+            ) : (
+              <>
+                Todavía no tenés notificaciones. Acá vas a ver los avisos de cargas nuevas,
+                asignaciones y cambios de estado.
+              </>
+            )}
           </p>
         )}
 
