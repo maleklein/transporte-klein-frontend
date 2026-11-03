@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import BarraSuperior from '../components/BarraSuperior';
 import {
@@ -11,7 +11,11 @@ import {
   IconoFlechaAtras,
   IconoOjo,
 } from '../components/Iconos';
-import { listarNotificaciones, marcarNotificacionLeida } from '../api/notificaciones';
+import {
+  listarNotificaciones,
+  marcarNotificacionLeida,
+  marcarTodasLeidas,
+} from '../api/notificaciones';
 import { ErrorDeApi } from '../api/usuarios';
 import { rutaInicio, usuarioActual } from '../api/sesion';
 import { formatearFechaHora, formatearMarcaCorta } from '../utils/carga';
@@ -57,6 +61,11 @@ export default function Notificaciones() {
   const [abriendo, setAbriendo] = useState(null);
   const [errorAlAbrir, setErrorAlAbrir] = useState('');
 
+  // "Marcar todas como leídas": si el pedido está en curso, y el resumen, que
+  // recibe el foco cuando el botón desaparece.
+  const [marcandoTodas, setMarcandoTodas] = useState(false);
+  const refResumen = useRef(null);
+
   useEffect(() => {
     const controlador = new AbortController();
 
@@ -92,6 +101,34 @@ export default function Notificaciones() {
       return;
     }
     navigate(rutaInicio(usuarioActual()?.rol));
+  };
+
+  /**
+   * Marca como leídas todas las que faltaban, de una vez. Sirve sobre todo al
+   * camionero: cada carga nueva le deja un aviso, y sin esto tenía que abrirlos
+   * de a uno para bajar el contador.
+   *
+   * Al terminar el botón desaparece (ya no queda nada sin leer), así que el
+   * foco pasa al resumen, que ahora dice "Ya leíste todas.".
+   *
+   * @returns {Promise<void>}
+   */
+  const marcarTodas = async () => {
+    setErrorAlAbrir('');
+    setMarcandoTodas(true);
+    try {
+      await marcarTodasLeidas();
+      setNotificaciones((previas) => previas.map((otra) => ({ ...otra, leida: true })));
+      refResumen.current?.focus({ preventScroll: true });
+    } catch (error) {
+      setErrorAlAbrir(
+        error instanceof ErrorDeApi
+          ? error.message
+          : 'No se pudieron marcar las notificaciones como leídas. Intentá de nuevo.',
+      );
+    } finally {
+      setMarcandoTodas(false);
+    }
   };
 
   /**
@@ -148,11 +185,24 @@ export default function Notificaciones() {
             Notificaciones
           </h1>
           {estadoPantalla === 'ok' && notificaciones.length > 0 && (
-            <p className="nt-resumen">
-              {cantidadNoLeidas === 0
-                ? 'Ya leíste todas.'
-                : `${cantidadNoLeidas} sin leer.`}
-            </p>
+            <div className="nt-encabezado__acciones">
+              <p className="nt-resumen" role="status" tabIndex={-1} ref={refResumen}>
+                {cantidadNoLeidas === 0
+                  ? 'Ya leíste todas.'
+                  : `${cantidadNoLeidas} sin leer.`}
+              </p>
+              {cantidadNoLeidas > 0 && (
+                <button
+                  type="button"
+                  className="ds-boton ds-boton--secundario nt-marcar-todas"
+                  onClick={marcarTodas}
+                  disabled={marcandoTodas}
+                >
+                  <IconoCheck width={18} height={18} />
+                  {marcandoTodas ? 'Marcando...' : 'Marcar todas como leídas'}
+                </button>
+              )}
+            </div>
           )}
         </header>
 
