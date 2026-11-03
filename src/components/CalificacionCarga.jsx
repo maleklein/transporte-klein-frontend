@@ -70,7 +70,7 @@ export default function CalificacionCarga({ idCarga }) {
           {datos.emitida ? <div className="cal-evaluacion">
             <h3>Tu calificación: {datos.emitida.puntaje} / 5</h3>
             <p className="cal-comentario">{datos.emitida.comentario || 'Sin comentario.'}</p>
-            <p>Registrada el {new Date(datos.emitida.creado_en).toLocaleString('es-AR')}. No se puede modificar.</p>
+            <p>Registrada el {new Date(datos.emitida.creado_en).toLocaleString('es-AR', { hourCycle: 'h23' })}. No se puede modificar.</p>
           </div> : datos.puede_calificar ? <form onSubmit={enviar}>
             <fieldset disabled={guardando} className="cal-campos">
               <legend>Evaluá el desempeño de tu contraparte</legend>

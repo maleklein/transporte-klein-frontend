@@ -71,7 +71,7 @@ export default function SugeridosCarga({ idCarga, version, elegido, alElegir, al
         </button>
         <span className="pp-opcion__dato" role="status">
           {actualizando ? 'Actualizando sugerencias…' : ranking && estado === 'ok'
-            ? `Actualizado a las ${new Date(ranking.calculado_en).toLocaleTimeString('es-AR')}` : ''}
+            ? `Actualizado a las ${new Date(ranking.calculado_en).toLocaleTimeString('es-AR', { hourCycle: 'h23' })}` : ''}
         </span>
       </div>
       {estado === 'cargando' && <p className="pp-mensaje" role="status">Buscando camioneros aptos…</p>}
