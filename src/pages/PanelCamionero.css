@@ -1,0 +1,234 @@
+/* ==========================================================================
+   Panel de inicio del camionero (HU 17) — `PanelCamionero.jsx`.
+   Tarjetas de resumen que son a la vez accesos, y la lista de viajes en curso.
+   ========================================================================== */
+
+.pcm-contenido {
+  max-width: 1040px;
+}
+
+.pcm-intro {
+  margin: -12px 0 20px;
+  color: var(--color-texto-suave);
+}
+
+.pcm-aviso-error {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px 14px;
+  margin-bottom: 20px;
+  padding: 14px 16px;
+  border: 2px solid var(--color-peligro);
+  border-radius: var(--radio-chico);
+  background: var(--color-peligro-claro);
+  color: var(--color-peligro-oscuro);
+  font-weight: 600;
+}
+
+.pcm-aviso-error__texto {
+  flex: 1 1 260px;
+}
+
+/* --------------------------------------------------------------------------
+   Tarjetas: cuatro en fila mientras entren, dos en tablet, una en celular.
+   -------------------------------------------------------------------------- */
+
+.pcm-tarjetas {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 16px;
+}
+
+@media (max-width: 980px) {
+  .pcm-tarjetas {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 560px) {
+  .pcm-tarjetas {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+.pcm-tarjeta {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-height: 190px;
+  padding: 18px 20px;
+  border: 2px solid var(--color-borde-suave);
+  border-radius: var(--radio);
+  background: var(--color-fondo);
+  color: var(--color-texto);
+  text-decoration: none;
+  transition: border-color 0.12s ease, box-shadow 0.12s ease;
+}
+
+.pcm-tarjeta:hover {
+  border-color: var(--color-primario);
+  box-shadow: 0 4px 14px rgba(31, 78, 121, 0.12);
+}
+
+.pcm-tarjeta:focus-visible {
+  outline: 3px solid var(--color-primario);
+  outline-offset: 2px;
+}
+
+/* Hay algo que mirar: viajes por hacer o avisos sin leer. */
+.pcm-tarjeta--destacada {
+  border-color: var(--color-primario);
+  background: var(--color-primario-claro);
+}
+
+.pcm-tarjeta__titulo {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: var(--texto-ayuda);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  color: var(--color-texto-suave);
+}
+
+.pcm-tarjeta__titulo svg {
+  flex-shrink: 0;
+  color: var(--color-primario);
+}
+
+.pcm-tarjeta__valor {
+  font-size: 40px;
+  line-height: 1.1;
+  font-weight: 700;
+  color: var(--color-primario);
+  font-variant-numeric: tabular-nums;
+}
+
+.pcm-tarjeta__valor--cargando {
+  color: var(--color-borde);
+}
+
+.pcm-tarjeta__error {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin: 8px 0;
+  color: var(--color-peligro-oscuro);
+  font-size: var(--texto-ayuda);
+  font-weight: 600;
+}
+
+.pcm-tarjeta__detalle {
+  flex: 1;
+  font-size: var(--texto-ayuda);
+  color: var(--color-texto-suave);
+}
+
+.pcm-tarjeta__accion {
+  font-weight: 700;
+  color: var(--color-primario);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+/* --------------------------------------------------------------------------
+   Sin postulaciones ni viajes: invitación a buscar cargas.
+   -------------------------------------------------------------------------- */
+
+.pcm-vacio {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 14px 20px;
+  margin-top: 24px;
+  padding: 20px 22px;
+  border: 2px dashed var(--color-borde);
+  border-radius: var(--radio);
+}
+
+.pcm-vacio__texto {
+  flex: 1 1 320px;
+  margin: 0;
+}
+
+.pcm-vacio .ds-boton {
+  text-decoration: none;
+}
+
+/* --------------------------------------------------------------------------
+   Viajes en curso.
+   -------------------------------------------------------------------------- */
+
+.pcm-viajes {
+  margin-top: 28px;
+}
+
+.pcm-viajes__titulo {
+  margin: 0 0 12px;
+  font-size: var(--texto-label);
+  font-weight: 700;
+  color: var(--color-texto);
+}
+
+.pcm-viajes__lista {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.pcm-viaje {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 14px 18px;
+  border: 2px solid var(--color-borde-suave);
+  border-radius: var(--radio-chico);
+  color: var(--color-texto);
+  text-decoration: none;
+}
+
+.pcm-viaje:hover {
+  border-color: var(--color-primario);
+}
+
+.pcm-viaje:focus-visible {
+  outline: 3px solid var(--color-primario);
+  outline-offset: 2px;
+}
+
+.pcm-viaje__cabecera {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.pcm-viaje__tipo {
+  font-size: var(--texto-label);
+  font-weight: 700;
+}
+
+.pcm-viaje__ruta {
+  font-weight: 600;
+}
+
+.pcm-viaje__fecha {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: var(--texto-ayuda);
+  color: var(--color-texto-suave);
+}
+
+.pcm-viajes__mas {
+  display: inline-block;
+  margin-top: 12px;
+  font-weight: 700;
+  color: var(--color-primario);
+}

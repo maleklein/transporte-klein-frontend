@@ -116,3 +116,48 @@ export async function marcarNotificacionLeida(id) {
   window.dispatchEvent(new Event(EVENTO_NOTIFICACIONES_CAMBIARON));
   return cuerpo;
 }
+
+/**
+ * PUT /notificaciones/leidas — marca como leídas todas las notificaciones del
+ * usuario logueado que faltaban leer.
+ *
+ * Avisa con el mismo evento que `marcarNotificacionLeida`, así el contador de
+ * la barra baja en el momento.
+ *
+ * @returns {Promise<{marcadas: number}>} cuántas se marcaron (0 si no había ninguna).
+ * @throws {ErrorDeApi} si el backend falla (500, sin conexión).
+ */
+export async function marcarTodasLeidas() {
+  let respuesta;
+  try {
+    respuesta = await fetch(`${URL_API}/notificaciones/leidas`, {
+      method: 'PUT',
+      headers: { ...headersDeAuth() },
+    });
+  } catch {
+    throw new ErrorDeApi(
+      'No se pudo conectar con el servidor. Verificá que el sistema esté encendido e intentá de nuevo.',
+      null,
+      0,
+    );
+  }
+
+  let cuerpo = null;
+  try {
+    cuerpo = await respuesta.json();
+  } catch {
+    cuerpo = null;
+  }
+
+  if (!respuesta.ok) {
+    manejarNoAutorizado(respuesta.status);
+    const mensaje =
+      cuerpo?.message ??
+      cuerpo?.error ??
+      `Ocurrió un error inesperado (código ${respuesta.status}).`;
+    throw new ErrorDeApi(mensaje, null, respuesta.status);
+  }
+
+  window.dispatchEvent(new Event(EVENTO_NOTIFICACIONES_CAMBIARON));
+  return cuerpo;
+}

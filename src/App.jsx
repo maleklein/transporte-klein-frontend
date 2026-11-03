@@ -15,6 +15,7 @@ import Postulaciones from './pages/Postulaciones';
 import PanelAdministrador from './pages/PanelAdministrador';
 import PanelCamionero from './pages/PanelCamionero';
 import ParametrosOperativos from './pages/ParametrosOperativos';
+import PerfilReputacion from './pages/PerfilReputacion';
 
 /**
  * Enrutador raíz de la aplicación.
@@ -62,6 +63,7 @@ function App() {
 
       {/* Cualquiera con sesión, administrador o camionero */}
       <Route element={<RutaProtegida />}>
+        <Route path="/perfiles/:id" element={<PerfilReputacion />} />
         {/* HU 2.5 — Consulta de cargas */}
         <Route path="/cargas" element={<Cargas />} />
         <Route path="/cargas/:id" element={<DetalleCarga />} />

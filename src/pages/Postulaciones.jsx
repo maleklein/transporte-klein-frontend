@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import {
   IconoAlerta,
   IconoCalendario,
@@ -13,25 +13,9 @@ import EstadoCarga from '../components/EstadoCarga';
 import { obtenerMisPostulaciones } from '../api/cargas';
 import { ErrorDeApi } from '../api/usuarios';
 import { formatearFecha } from '../utils/carga';
-import { ESTADOS, ESTADOS_ABIERTOS } from '../utils/estadosCarga';
+import { ESTADOS } from '../utils/estadosCarga';
+import { grupoDePostulacion } from '../utils/postulaciones';
 import './Postulaciones.css';
-
-/**
- * En qué grupo de la pantalla cae cada postulación:
- * - asignado: se la eligió (HU 6) y es un viaje suyo, en el estado que esté;
- * - espera: sigue esperando a que el administrador elija, con la carga abierta;
- * - cerrada: no lo eligieron, o la carga se canceló mientras esperaba.
- *
- * @param {object} postulacion - fila de `GET /postulaciones/mis-postulaciones`.
- * @returns {'asignado'|'espera'|'cerrada'}
- */
-function grupoDe(postulacion) {
-  if (postulacion.estado === 'aceptada') return 'asignado';
-  if (postulacion.estado === 'pendiente' && ESTADOS_ABIERTOS.includes(postulacion.estado_actual)) {
-    return 'espera';
-  }
-  return 'cerrada';
-}
 
 /** Títulos y textos de cada grupo, en el orden en que se muestran. */
 const GRUPOS = [
@@ -52,6 +36,7 @@ const GRUPOS = [
  */
 export default function Postulaciones() {
   const navigate = useNavigate();
+  const location = useLocation();
   const [postulaciones, setPostulaciones] = useState([]);
   // 'cargando' | 'ok' | 'error'
   const [estadoPantalla, setEstadoPantalla] = useState('cargando');
@@ -75,6 +60,14 @@ export default function Postulaciones() {
 
     return () => controlador.abort();
   }, []);
+
+  // El panel del camionero (HU 17) enlaza a un grupo puntual, por ejemplo
+  // /mis-viajes#pos-espera. Los grupos recién existen cuando llegan los datos,
+  // así que el desplazamiento espera a que la pantalla esté lista.
+  useEffect(() => {
+    if (estadoPantalla !== 'ok' || !location.hash) return;
+    document.getElementById(location.hash.slice(1))?.scrollIntoView({ block: 'start' });
+  }, [estadoPantalla, location.hash]);
 
   return (
     <>
@@ -109,7 +102,7 @@ export default function Postulaciones() {
         {estadoPantalla === 'ok' &&
           postulaciones.length > 0 &&
           GRUPOS.map(({ clave, titulo, vacio }) => {
-            const delGrupo = postulaciones.filter((postulacion) => grupoDe(postulacion) === clave);
+            const delGrupo = postulaciones.filter((postulacion) => grupoDePostulacion(postulacion) === clave);
             if (delGrupo.length === 0 && !vacio) return null;
 
             return (

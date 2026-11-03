@@ -55,6 +55,31 @@
   color: var(--color-texto-suave);
 }
 
+.nt-resumen:focus {
+  outline: none;
+}
+
+/* El resumen y "Marcar todas como leídas", juntos a la derecha del título. */
+.nt-encabezado__acciones {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px 16px;
+}
+
+.nt-marcar-todas {
+  min-height: 44px;
+  padding: 9px 16px;
+  font-size: var(--texto-ayuda);
+}
+
+@media (max-width: 560px) {
+  .nt-encabezado__acciones,
+  .nt-marcar-todas {
+    width: 100%;
+  }
+}
+
 /* Mensajes de estado (cargando / sin notificaciones). */
 .nt-mensaje {
   margin: 0;

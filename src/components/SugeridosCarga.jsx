@@ -112,6 +112,12 @@ export default function SugeridosCarga({ idCarga, version, elegido, alElegir, al
                     </div>
                   ))}
                 </dl>
+                {camionero.ubicacion_resuelta && (
+                  <p className="pp-mensaje">
+                    Localidad utilizada: {camionero.ubicacion_resuelta.nombre}, {camionero.ubicacion_resuelta.provincia}.
+                    {' '}La distancia se estima entre localidades, no desde la posición GPS del camión.
+                  </p>
+                )}
                 {camionero.advertencias.map((aviso) => <p className="pp-mensaje" key={aviso}>{aviso}</p>)}
               </details>
             </div>

@@ -15,6 +15,7 @@ import {
 import BarraSuperior from '../components/BarraSuperior';
 import DistanciaCarga from '../components/DistanciaCarga';
 import EconomiaCarga from '../components/EconomiaCarga';
+import CalificacionCarga from '../components/CalificacionCarga';
 import EstadoCarga from '../components/EstadoCarga';
 import HistorialCarga from '../components/HistorialCarga';
 import ModalConfirmacion from '../components/ModalConfirmacion';
@@ -482,6 +483,8 @@ export default function DetalleCarga() {
               distancia: el backend hace las dos cuentas en el mismo pedido.
             */}
             {esAdministrador && <EconomiaCarga carga={carga} alRecalcular={recalcularKm} />}
+
+            {carga.estado_actual === 'entregada' && <CalificacionCarga key={id} idCarga={id} />}
 
             {esAdministrador ? (
               <PostulantesCarga

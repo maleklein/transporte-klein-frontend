@@ -21,5 +21,11 @@ No se agregó una configuración global como parte del matching.
 
 El backend contiene pruebas de reglas, servicio, permisos HTTP y SQL con tablas
 temporales. Estas comprobaciones no reemplazan la prueba integral contra los
-datos de uso. La distancia real requiere integrar y verificar el módulo de
-mapas de HU 9; los ejemplos con kilómetros son datos de prueba.
+datos de uso. La conexión de HU 5 con el módulo de mapas de HU 9 ya transforma
+los nombres de localidades a coordenadas del catálogo. El backend prueba el
+circuito completo con PostgreSQL y una respuesta controlada del proveedor.
+El 02/11/2026 también se verificó la consulta real a mapas en el backend:
+Santa Fe → Paraná devolvió HTTP 200, 29,62 km y 22,53 puntos de cercanía sin
+advertencias, usando candidatos temporales. El registro está en
+`docs/hu5-validacion-mapas.md` del repositorio backend. Esa prueba no cambia el
+carácter sintético de los datos usados en la revisión visual anterior.

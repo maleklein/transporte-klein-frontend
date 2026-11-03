@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1100" height="550" viewBox="0 0 1100 550">
+<rect width="1100" height="550" fill="#f1f4f7"/>
+<g font-family="Arial" fill="#1a1a1a">
+<text x="30" y="40" font-size="24" font-weight="bold">HU 11 · Calificación del viaje y perfil</text>
+<rect x="30" y="65" width="500" height="455" rx="12" fill="white" stroke="#cbd5df"/>
+<rect x="560" y="65" width="510" height="455" rx="12" fill="white" stroke="#cbd5df"/>
+<text x="55" y="110" font-size="22" font-weight="bold">Calificación del viaje</text>
+<text x="55" y="150" font-size="17">Contraparte: Camionero Demostración</text>
+<text x="55" y="185" font-size="16">Solo disponible después de la entrega.</text>
+<text x="55" y="220" font-size="17">Puntaje:   ○ 1   ○ 2   ○ 3   ○ 4   ● 5</text>
+<text x="55" y="265" font-size="17">Comentario (opcional, hasta 1000 caracteres)</text>
+<rect x="55" y="280" width="450" height="100" rx="7" fill="#fff" stroke="#8794a3"/>
+<text x="70" y="310" font-size="17">Entrega cuidada y buena comunicación.</text>
+<rect x="55" y="405" width="450" height="50" rx="7" fill="#1f4e79"/>
+<text x="190" y="437" font-size="18" fill="white">Enviar calificación</text>
+<text x="55" y="490" font-size="15">Una evaluación por parte y viaje. Sin edición.</text>
+<text x="585" y="110" font-size="22" font-weight="bold">Camionero Demostración</text>
+<text x="585" y="155" font-size="20">Reputación</text>
+<text x="585" y="205" font-size="32" fill="#1f4e79">5,00 / 5</text>
+<text x="585" y="240" font-size="17">1 calificación recibida · 1 utilizada</text>
+<text x="585" y="280" font-size="17">▸ Cómo se calcula</text>
+<text x="585" y="325" font-size="20" font-weight="bold">Historial de calificaciones</text>
+<rect x="585" y="345" width="460" height="110" rx="7" fill="#fff" stroke="#cbd5df"/>
+<text x="600" y="375" font-size="17">5 / 5 — Administración Demostración</text>
+<text x="600" y="407" font-size="16">Viaje #1 · fecha y hora</text>
+<text x="600" y="437" font-size="16">Entrega cuidada y buena comunicación.</text>
+<text x="585" y="490" font-size="16">Anterior                  Página 1                  Siguiente</text>
+</g></svg>

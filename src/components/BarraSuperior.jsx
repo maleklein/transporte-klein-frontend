@@ -127,6 +127,9 @@ export default function BarraSuperior() {
           );
         })}
 
+        {usuario && <Link to={`/perfiles/${usuario.id}`} className={`bs-enlace${location.pathname === `/perfiles/${usuario.id}` ? ' bs-enlace--activo' : ''}`} aria-current={location.pathname === `/perfiles/${usuario.id}` ? 'page' : undefined}>
+          <IconoUsuario width={20} height={20} />Mi perfil
+        </Link>}
         {usuario && <IndicadorNotificaciones />}
       </nav>
 
