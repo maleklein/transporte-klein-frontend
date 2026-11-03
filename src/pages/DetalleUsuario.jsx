@@ -20,9 +20,9 @@ import './DetalleUsuario.css';
  * Ficha de solo lectura de un usuario (HU 1.3), en la ruta /usuarios/detalle.
  *
  * Muestra todos los datos del usuario seleccionado en el listado: datos
- * personales, rol, estado y, si es camionero, sus datos de vehículo. No tiene
- * ningún campo editable — para modificar los datos hay que ir a "Editar"
- * desde el listado (HU 1.2).
+ * personales, rol, estado y, solo si es camionero, sus datos de vehículo y su
+ * reputación. No tiene ningún campo editable — para modificar los datos hay
+ * que ir a "Editar" desde el listado (HU 1.2).
  *
  * Los datos llegan por router state desde el listado — `GET /usuarios` no
  * expone un endpoint individual por id, así que no se puede recargar por URL:
@@ -148,7 +148,10 @@ export default function DetalleUsuario() {
             </dl>
           </section>
         )}
-        <ReputacionUsuario key={usuario.id_usuario} idUsuario={usuario.id_usuario} />
+
+        {esCamionero && (
+          <ReputacionUsuario key={usuario.id_usuario} idUsuario={usuario.id_usuario} />
+        )}
       </main>
     </>
   );
