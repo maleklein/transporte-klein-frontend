@@ -1,16 +1,17 @@
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import {
   IconoAjustes,
   IconoAlerta,
   IconoCaja,
   IconoCajaMas,
   IconoCamion,
+  IconoCerrarSesion,
   IconoGrafico,
   IconoInicio,
   IconoUsuario,
 } from './Iconos';
 import IndicadorNotificaciones from './IndicadorNotificaciones';
-import { usuarioActual } from '../api/sesion';
+import { cerrarSesion, usuarioActual } from '../api/sesion';
 import './BarraSuperior.css';
 
 /**
@@ -102,9 +103,27 @@ const ACCESOS_CAMIONERO = [
  */
 export default function BarraSuperior() {
   const location = useLocation();
+  const navigate = useNavigate();
   const usuario = usuarioActual();
   const accesos = !usuario ? [] : usuario.rol === 'administrador' ? ACCESOS_ADMINISTRADOR : ACCESOS_CAMIONERO;
   const avisoAcceso = location.state?.avisoAcceso;
+
+  /**
+   * Cierra la sesión y manda al login.
+   *
+   * Sólo borra la sesión guardada: no hay estado de autenticación propio en
+   * React, cada pantalla lo lee de `usuarioActual()` al renderizar, así que
+   * una vez borrada la sesión no hay nada más que "resetear". El `replace`
+   * evita que "atrás" vuelva a una pantalla protegida; `RutaProtegida` de
+   * todas formas la volvería a mandar al login, pero así ni se ve el salto.
+   * El temporizador del contador de notificaciones (`IndicadorNotificaciones`)
+   * se detiene solo: al navegar, ese componente se desmonta y limpia su
+   * propio `setInterval`.
+   */
+  const salir = () => {
+    cerrarSesion();
+    navigate('/', { replace: true });
+  };
 
   return (
     <>
@@ -131,6 +150,12 @@ export default function BarraSuperior() {
           <IconoUsuario width={20} height={20} />Mi perfil
         </Link>}
         {usuario && <IndicadorNotificaciones />}
+        {usuario && (
+          <button type="button" className="bs-enlace" onClick={salir}>
+            <IconoCerrarSesion width={20} height={20} />
+            Cerrar sesión
+          </button>
+        )}
       </nav>
 
       {avisoAcceso && (
