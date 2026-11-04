@@ -66,10 +66,18 @@ export default function Postulaciones() {
 
   // El panel del camionero (HU 17) enlaza a un grupo puntual, por ejemplo
   // /mis-viajes#pos-espera. Los grupos recién existen cuando llegan los datos,
-  // así que el desplazamiento espera a que la pantalla esté lista.
+  // así que el desplazamiento espera a que la pantalla esté lista. Solo baja si
+  // el grupo arranca en la mitad de abajo y no entra entero: si ya se ve, bajar
+  // escondería la barra, el título y el botón de volver sin mostrar nada nuevo.
   useEffect(() => {
     if (estadoPantalla !== 'ok' || !location.hash) return;
-    document.getElementById(location.hash.slice(1))?.scrollIntoView({ block: 'start' });
+    // El id está en el título; se mide la sección entera, con sus tarjetas.
+    const grupo = document.getElementById(location.hash.slice(1))?.closest('section');
+    if (!grupo) return;
+    const { top, bottom } = grupo.getBoundingClientRect();
+    if (top > window.innerHeight / 2 && bottom > window.innerHeight) {
+      grupo.scrollIntoView({ block: 'start' });
+    }
   }, [estadoPantalla, location.hash]);
 
   return (
