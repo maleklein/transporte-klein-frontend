@@ -17,10 +17,13 @@
   padding: 8px 14px;
   border: 2px solid rgba(255, 255, 255, 0.6);
   border-radius: var(--radio-chico);
+  background: none;
   color: #fff;
+  font-family: var(--fuente);
   font-size: var(--texto-base);
   font-weight: 700;
   text-decoration: none;
+  cursor: pointer;
 }
 
 .bs-enlace:hover {
