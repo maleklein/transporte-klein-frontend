@@ -19,6 +19,7 @@ import { listarNotificaciones } from '../api/notificaciones';
 import { ErrorDeApi } from '../api/usuarios';
 import { formatearFecha } from '../utils/carga';
 import { ESTADOS } from '../utils/estadosCarga';
+import { desdeInicio } from '../utils/volver';
 // Las tarjetas de resumen (`pcm-tarjeta`) son las del panel del camionero
 // (HU 17): se reusan sus estilos para que los dos paneles se vean igual.
 import './PanelCamionero.css';
@@ -128,7 +129,7 @@ function useDato(pedir, version, queFallo) {
  */
 function TarjetaResumen({ to, Icono, titulo, dato, cantidad, detalle, accion, destacada = false }) {
   return (
-    <Link to={to} className={`pcm-tarjeta${destacada ? ' pcm-tarjeta--destacada' : ''}`}>
+    <Link to={to} state={desdeInicio('administrador')} className={`pcm-tarjeta${destacada ? ' pcm-tarjeta--destacada' : ''}`}>
       <span className="pcm-tarjeta__titulo">
         <Icono width={20} height={20} />
         {titulo}
@@ -238,7 +239,7 @@ export default function PanelAdministrador() {
             <h2 className="pa-seccion__titulo" id="pa-titulo-estados">
               Cargas por estado
             </h2>
-            <Link to="/metricas" className="pa-enlace">
+            <Link to="/metricas" state={desdeInicio('administrador')} className="pa-enlace">
               Ver estadísticas completas →
             </Link>
           </div>
@@ -259,7 +260,7 @@ export default function PanelAdministrador() {
               {totalCargas === 0 ? (
                 <p className="pa-mensaje">
                   No se crearon cargas en este período.{' '}
-                  <Link to="/cargas/nueva" className="pa-enlace">
+                  <Link to="/cargas/nueva" state={desdeInicio('administrador')} className="pa-enlace">
                     Registrar una carga
                   </Link>
                 </p>
@@ -284,7 +285,7 @@ export default function PanelAdministrador() {
           <ul className="pa-accesos">
             {ACCESOS.map(({ to, titulo, detalle, Icono }) => (
               <li key={to}>
-                <Link to={to} className="pa-acceso">
+                <Link to={to} state={desdeInicio('administrador')} className="pa-acceso">
                   <Icono width={24} height={24} />
                   <span className="pa-acceso__texto">
                     <span className="pa-acceso__titulo">{titulo}</span>

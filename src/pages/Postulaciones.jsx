@@ -15,6 +15,7 @@ import { ErrorDeApi } from '../api/usuarios';
 import { formatearFecha } from '../utils/carga';
 import { ESTADOS } from '../utils/estadosCarga';
 import { grupoDePostulacion } from '../utils/postulaciones';
+import { destinoVolver, volverA } from '../utils/volver';
 import './Postulaciones.css';
 
 /** Títulos y textos de cada grupo, en el orden en que se muestran. */
@@ -37,6 +38,8 @@ const GRUPOS = [
 export default function Postulaciones() {
   const navigate = useNavigate();
   const location = useLocation();
+  // Desde el inicio o desde Cargas vuelve ahí; si se entró directo, lleva a buscar cargas.
+  const volver = destinoVolver(location, { ruta: '/cargas', texto: 'Ir a buscar cargas' });
   const [postulaciones, setPostulaciones] = useState([]);
   // 'cargando' | 'ok' | 'error'
   const [estadoPantalla, setEstadoPantalla] = useState('cargando');
@@ -74,9 +77,9 @@ export default function Postulaciones() {
       <BarraSuperior />
 
       <main className="pos-contenido">
-        <button type="button" className="dc-volver" onClick={() => navigate('/cargas')}>
+        <button type="button" className="dc-volver" onClick={() => navigate(volver.ruta, { state: volver.estado })}>
           <IconoFlechaAtras width={20} height={20} />
-          Ir a buscar cargas
+          {volver.texto}
         </button>
 
         <h1 className="pos-titulo">Mis viajes</h1>
@@ -151,7 +154,9 @@ export default function Postulaciones() {
                           <button
                             type="button"
                             className="ds-boton ds-boton--secundario pos-card__ver"
-                            onClick={() => navigate(`/cargas/${p.id_carga}`)}
+                            onClick={() => navigate(`/cargas/${p.id_carga}`, {
+                              state: volverA('/mis-viajes', 'Volver a Mis viajes', location.state),
+                            })}
                             aria-label={`Ver la carga de ${p.origen} a ${p.destino}`}
                           >
                             <IconoOjo width={18} height={18} />
