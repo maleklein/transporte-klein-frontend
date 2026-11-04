@@ -1,0 +1,98 @@
+/* ==========================================================================
+   Campo de selección con búsqueda (ComboBox).
+
+   Se ve igual que un <select> del sistema de diseño —hereda de
+   `.ds-campo__input`— pero se puede escribir dentro para filtrar.
+   ========================================================================== */
+
+.cb {
+  position: relative;
+}
+
+/* Deja lugar para la flecha, para que el texto no se le meta encima. */
+.cb-input {
+  padding-right: 40px;
+}
+
+/* Flecha dibujada con bordes en vez de un SVG: es decorativa y así no suma
+   un ícono más al archivo de íconos. */
+.cb-flecha {
+  position: absolute;
+  top: 50%;
+  right: 16px;
+  width: 9px;
+  height: 9px;
+  margin-top: -6px;
+  border-right: 2px solid var(--color-texto-suave);
+  border-bottom: 2px solid var(--color-texto-suave);
+  transform: rotate(45deg);
+  pointer-events: none;
+}
+
+.cb-lista {
+  position: absolute;
+  z-index: 30;
+  top: calc(100% + 4px);
+  left: 0;
+  right: 0;
+  max-height: 280px;
+  margin: 0;
+  padding: 4px;
+  overflow-y: auto;
+  list-style: none;
+  border: 2px solid var(--color-primario);
+  border-radius: var(--radio-chico);
+  background: var(--color-fondo);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.18);
+}
+
+.cb-lista[hidden] {
+  display: none;
+}
+
+.cb-opcion {
+  padding: 10px 12px;
+  border-radius: var(--radio-chico);
+  font-size: var(--texto-base);
+  color: var(--color-texto);
+  cursor: pointer;
+}
+
+/* Una sola clase para el resaltado del mouse y el del teclado: son lo mismo
+   para el usuario, y tenerlos distintos haría parecer que hay dos selecciones
+   al mismo tiempo. */
+.cb-opcion--resaltada {
+  background: var(--color-primario);
+  color: #fff;
+}
+
+/* La opción que limpia la selección ("Todas las provincias") se distingue del
+   resto: no es un lugar, es una acción. */
+.cb-opcion--vacia {
+  font-style: italic;
+  color: var(--color-texto-suave);
+}
+
+.cb-opcion--vacia.cb-opcion--resaltada {
+  color: #fff;
+}
+
+.cb-sin-resultados {
+  padding: 12px;
+  color: var(--color-texto-suave);
+  font-size: var(--texto-ayuda);
+}
+
+/* Sólo para lectores de pantalla: anuncia cuántas opciones quedaron al
+   filtrar. En pantalla ese dato ya se ve en la lista. */
+.cb-anuncio {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+  border: 0;
+}

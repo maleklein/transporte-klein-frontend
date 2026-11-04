@@ -1,0 +1,581 @@
+/**
+ * Capa de acceso al backend para el módulo de Cargas.
+ * Backend: Express en http://localhost:3000
+ */
+
+import { ErrorDeApi } from './usuarios';
+import { headersDeAuth, manejarNoAutorizado } from './sesion';
+
+/** URL base del backend. Se puede pisar con la variable de entorno VITE_API_URL. */
+const URL_API = import.meta.env.VITE_API_URL ?? 'http://localhost:3000';
+
+/**
+ * Error de validación de `POST /cargas`.
+ *
+ * A diferencia del módulo de usuarios, este endpoint devuelve los errores ya
+ * agrupados por campo: `{ message, errores: { campo: mensaje } }`. No hace falta
+ * deducir el campo a partir del texto.
+ */
+export class ErrorDeValidacion extends ErrorDeApi {
+  constructor(mensaje, errores, estado) {
+    super(mensaje, null, estado);
+    this.name = 'ErrorDeValidacion';
+    this.errores = errores;
+  }
+}
+
+/**
+ * POST /cargas — da de alta una carga en estado "disponible".
+ *
+ * @param {object} datos payload del formulario ya normalizado.
+ * @returns {Promise<object>} la carga creada que devuelve el backend (201).
+ * @throws {ErrorDeValidacion} si el backend rechazó campos puntuales (400).
+ * @throws {ErrorDeApi} para el resto de los errores (401, 403, 500, sin conexión).
+ */
+export async function crearCarga(datos) {
+  let respuesta;
+
+  try {
+    respuesta = await fetch(`${URL_API}/cargas`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', ...headersDeAuth() },
+      body: JSON.stringify(datos),
+    });
+  } catch {
+    // El servidor no respondió (apagado, sin red, CORS bloqueado).
+    throw new ErrorDeApi(
+      'No se pudo conectar con el servidor. Verificá que el sistema esté encendido e intentá de nuevo.',
+      null,
+      0,
+    );
+  }
+
+  let cuerpo = null;
+  try {
+    cuerpo = await respuesta.json();
+  } catch {
+    cuerpo = null;
+  }
+
+  if (!respuesta.ok) {
+    // Un 401 significa que el token falta, vencio o dejo de servir:
+    // se limpia la sesion y se vuelve al login.
+    manejarNoAutorizado(respuesta.status);
+    const mensaje =
+      cuerpo?.message ??
+      cuerpo?.error ??
+      `Ocurrió un error inesperado (código ${respuesta.status}).`;
+
+    if (cuerpo?.errores && typeof cuerpo.errores === 'object') {
+      throw new ErrorDeValidacion(mensaje, cuerpo.errores, respuesta.status);
+    }
+
+    throw new ErrorDeApi(mensaje, null, respuesta.status);
+  }
+
+  return cuerpo;
+}
+
+/**
+ * PUT /cargas/:id (HU 2.2) — modifica los seis campos de una carga existente.
+ *
+ * Usa las mismas validaciones que `POST /cargas`, así que un campo inválido
+ * da el mismo `ErrorDeValidacion` que `crearCarga`. Además puede rechazar el
+ * pedido con 409 si la carga ya está en un estado que no admite edición
+ * ('en_viaje' o 'entregada') — ese caso no trae `errores` por campo, así que
+ * queda como un `ErrorDeApi` general con `estado === 409`, para que la
+ * pantalla lo distinga y no deje reintentar el guardado.
+ *
+ * @param {number|string} id - `id_carga` de la carga a modificar.
+ * @param {object} datos - payload del formulario ya normalizado (mismos seis campos que `crearCarga`).
+ * @returns {Promise<object>} la carga actualizada que devuelve el backend (200).
+ * @throws {ErrorDeValidacion} si el backend rechazó campos puntuales (400).
+ * @throws {ErrorDeApi} si la carga no existe (404), no admite edición (409),
+ *   o para el resto de los errores (401, 403, 500, sin conexión).
+ */
+export async function editarCarga(id, datos) {
+  let respuesta;
+
+  try {
+    respuesta = await fetch(`${URL_API}/cargas/${encodeURIComponent(id)}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json', ...headersDeAuth() },
+      body: JSON.stringify(datos),
+    });
+  } catch {
+    // El servidor no respondió (apagado, sin red, CORS bloqueado).
+    throw new ErrorDeApi(
+      'No se pudo conectar con el servidor. Verificá que el sistema esté encendido e intentá de nuevo.',
+      null,
+      0,
+    );
+  }
+
+  let cuerpo = null;
+  try {
+    cuerpo = await respuesta.json();
+  } catch {
+    cuerpo = null;
+  }
+
+  if (!respuesta.ok) {
+    // Un 401 significa que el token falta, vencio o dejo de servir:
+    // se limpia la sesion y se vuelve al login.
+    manejarNoAutorizado(respuesta.status);
+    const mensaje =
+      cuerpo?.message ??
+      cuerpo?.error ??
+      `Ocurrió un error inesperado (código ${respuesta.status}).`;
+
+    if (cuerpo?.errores && typeof cuerpo.errores === 'object') {
+      throw new ErrorDeValidacion(mensaje, cuerpo.errores, respuesta.status);
+    }
+
+    throw new ErrorDeApi(mensaje, null, respuesta.status);
+  }
+
+  return cuerpo;
+}
+
+/**
+ * GET /cargas (HU 2.5 - GIANNA) — lista las cargas registradas.
+ *
+ * Los tres filtros son opcionales y combinables entre sí. El que llega vacío no
+ * se manda como query param.
+ *
+ * @param {object} [filtros]
+ * @param {string} [filtros.estado]  - `estado_actual` exacto ("disponible", "publicada", ...).
+ * @param {string} [filtros.fecha]   - fecha exacta en formato AAAA-MM-DD.
+ * @param {string} [filtros.destino_provincia] - id de provincia de destino (2 dígitos).
+ * @param {object} [opciones]
+ * @param {AbortSignal} [opciones.signal] - para cancelar el pedido si se dispara otro antes.
+ * @returns {Promise<object[]>} las cargas que cumplen los filtros; `[]` si ninguna coincide.
+ * @throws {DOMException} `AbortError` si se canceló el pedido (se deja propagar tal cual).
+ * @throws {ErrorDeApi} si el backend rechaza un filtro (400) o falla (500, sin conexión).
+ */
+export async function listarCargas(filtros = {}, opciones = {}) {
+  const params = new URLSearchParams();
+  for (const clave of ['estado', 'fecha', 'destino_provincia']) {
+    const valor = String(filtros[clave] ?? '').trim();
+    if (valor) params.set(clave, valor);
+  }
+  const consulta = params.toString();
+
+  let respuesta;
+  try {
+    respuesta = await fetch(`${URL_API}/cargas${consulta ? `?${consulta}` : ''}`, {
+      headers: { ...headersDeAuth() },
+      signal: opciones.signal,
+    });
+  } catch (error) {
+    // Un pedido cancelado no es un error a mostrar: lo maneja quien llamó.
+    if (error?.name === 'AbortError') throw error;
+    throw new ErrorDeApi(
+      'No se pudo conectar con el servidor. Verificá que el sistema esté encendido e intentá de nuevo.',
+      null,
+      0,
+    );
+  }
+
+  let cuerpo = null;
+  try {
+    cuerpo = await respuesta.json();
+  } catch {
+    cuerpo = null;
+  }
+
+  if (!respuesta.ok) {
+    // Un 401 significa que el token falta, vencio o dejo de servir:
+    // se limpia la sesion y se vuelve al login.
+    manejarNoAutorizado(respuesta.status);
+    const mensaje =
+      cuerpo?.message ??
+      cuerpo?.error ??
+      `Ocurrió un error inesperado (código ${respuesta.status}).`;
+    throw new ErrorDeApi(mensaje, null, respuesta.status);
+  }
+
+  return Array.isArray(cuerpo) ? cuerpo : [];
+}
+
+/**
+ * GET /cargas/:id (HU 2.5 - GIANNA) — trae una carga puntual por su `id_carga`.
+ *
+ * Se usa en el detalle: el listado navega a `/cargas/:id` y esta pantalla
+ * recarga la carga por URL (así funciona igual entrando desde el listado o
+ * escribiendo la dirección a mano).
+ *
+ * @param {number|string} id - `id_carga` de la carga buscada.
+ * @param {object} [opciones]
+ * @param {AbortSignal} [opciones.signal] - para cancelar el pedido.
+ * @returns {Promise<object>} la carga encontrada.
+ * @throws {DOMException} `AbortError` si se canceló el pedido (se deja propagar).
+ * @throws {ErrorDeApi} si la carga no existe (404) o el backend falla (500, sin conexión).
+ */
+export async function obtenerCarga(id, opciones = {}) {
+  let respuesta;
+  try {
+    respuesta = await fetch(`${URL_API}/cargas/${encodeURIComponent(id)}`, {
+      headers: { ...headersDeAuth() },
+      signal: opciones.signal,
+    });
+  } catch (error) {
+    if (error?.name === 'AbortError') throw error;
+    throw new ErrorDeApi(
+      'No se pudo conectar con el servidor. Verificá que el sistema esté encendido e intentá de nuevo.',
+      null,
+      0,
+    );
+  }
+
+  let cuerpo = null;
+  try {
+    cuerpo = await respuesta.json();
+  } catch {
+    cuerpo = null;
+  }
+
+  if (!respuesta.ok) {
+    // Un 401 significa que el token falta, vencio o dejo de servir:
+    // se limpia la sesion y se vuelve al login.
+    manejarNoAutorizado(respuesta.status);
+    const mensaje =
+      cuerpo?.message ??
+      cuerpo?.error ??
+      `Ocurrió un error inesperado (código ${respuesta.status}).`;
+    throw new ErrorDeApi(mensaje, null, respuesta.status);
+  }
+
+  return cuerpo;
+}
+
+/**
+ * GET /cargas/:id/historial (HU 8) — trae la bitácora de cambios de estado de
+ * una carga, más vieja primero.
+ *
+ * Cada fila trae `estado_anterior` (`null` en el primer registro, antes del
+ * alta no había estado previo), `estado_nuevo`, `actor` (nombre ya resuelto
+ * por el backend, o "Sistema") y `marca_tiempo` (ISO 8601 con Z, sin
+ * transformar acá). Si la carga no existe o todavía no tiene cambios
+ * registrados, el backend responde `200 []` — no es un error.
+ *
+ * @param {number|string} id - `id_carga` de la carga.
+ * @param {object} [opciones]
+ * @param {AbortSignal} [opciones.signal] - para cancelar el pedido.
+ * @returns {Promise<object[]>} los eventos del historial; `[]` si no hay.
+ * @throws {DOMException} `AbortError` si se canceló el pedido (se deja propagar).
+ * @throws {ErrorDeApi} si el backend falla (400, 500, sin conexión).
+ */
+export async function obtenerHistorialCarga(id, opciones = {}) {
+  let respuesta;
+  try {
+    respuesta = await fetch(`${URL_API}/cargas/${encodeURIComponent(id)}/historial`, {
+      headers: { ...headersDeAuth() },
+      signal: opciones.signal,
+    });
+  } catch (error) {
+    if (error?.name === 'AbortError') throw error;
+    throw new ErrorDeApi(
+      'No se pudo conectar con el servidor. Verificá que el sistema esté encendido e intentá de nuevo.',
+      null,
+      0,
+    );
+  }
+
+  let cuerpo = null;
+  try {
+    cuerpo = await respuesta.json();
+  } catch {
+    cuerpo = null;
+  }
+
+  if (!respuesta.ok) {
+    // Un 401 significa que el token falta, vencio o dejo de servir:
+    // se limpia la sesion y se vuelve al login.
+    manejarNoAutorizado(respuesta.status);
+    const mensaje =
+      cuerpo?.message ??
+      cuerpo?.error ??
+      `Ocurrió un error inesperado (código ${respuesta.status}).`;
+    throw new ErrorDeApi(mensaje, null, respuesta.status);
+  }
+
+  return Array.isArray(cuerpo) ? cuerpo : [];
+}
+
+/**
+ * POST /cargas/:id/recalcular-km (HU 9) — reintenta el cálculo de la distancia
+ * de una carga que quedó con el cálculo pendiente.
+ *
+ * Si el servicio de mapas sigue sin responder, el backend contesta 503 con un
+ * mensaje pensado para mostrarse tal cual, y la carga queda como estaba.
+ *
+ * @param {number|string} id - `id_carga` de la carga.
+ * @returns {Promise<object>} la carga ya actualizada, con `kilometros_estimados` (200).
+ * @throws {ErrorDeApi} si el servicio de mapas no respondió (503), la carga no
+ *   existe (404), o para el resto de los errores (401, 403, 500, sin conexión).
+ */
+export async function recalcularKmCarga(id) {
+  let respuesta;
+
+  try {
+    respuesta = await fetch(`${URL_API}/cargas/${encodeURIComponent(id)}/recalcular-km`, {
+      method: 'POST',
+      headers: { ...headersDeAuth() },
+    });
+  } catch {
+    throw new ErrorDeApi(
+      'No se pudo conectar con el servidor. Verificá que el sistema esté encendido e intentá de nuevo.',
+      null,
+      0,
+    );
+  }
+
+  let cuerpo = null;
+  try {
+    cuerpo = await respuesta.json();
+  } catch {
+    cuerpo = null;
+  }
+
+  if (!respuesta.ok) {
+    manejarNoAutorizado(respuesta.status);
+    const mensaje =
+      cuerpo?.message ??
+      cuerpo?.error ??
+      `Ocurrió un error inesperado (código ${respuesta.status}).`;
+    throw new ErrorDeApi(mensaje, null, respuesta.status);
+  }
+
+  return cuerpo;
+}
+
+/**
+ * PATCH /cargas/:id/estado (HU 7) — lleva una carga a otro estado.
+ *
+ * El backend valida la transición contra la máquina de estados y deja el
+ * cambio asentado en la bitácora con el administrador responsable. Si la
+ * transición no está permitida responde 409 con un mensaje que explica a qué
+ * estados sí se puede pasar, pensado para mostrarse tal cual al usuario.
+ *
+ * @param {number|string} id - `id_carga` de la carga.
+ * @param {string} estado - estado destino (uno de `ESTADOS` en `utils/estadosCarga`).
+ * @returns {Promise<object>} la carga ya actualizada que devuelve el backend (200).
+ * @throws {ErrorDeApi} si la carga no existe (404), la transición no está
+ *   permitida (409), el estado pedido es inválido (400), o para el resto de
+ *   los errores (401, 403, 500, sin conexión).
+ */
+export async function cambiarEstadoCarga(id, estado) {
+  let respuesta;
+
+  try {
+    respuesta = await fetch(`${URL_API}/cargas/${encodeURIComponent(id)}/estado`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json', ...headersDeAuth() },
+      body: JSON.stringify({ estado }),
+    });
+  } catch {
+    throw new ErrorDeApi(
+      'No se pudo conectar con el servidor. Verificá que el sistema esté encendido e intentá de nuevo.',
+      null,
+      0,
+    );
+  }
+
+  let cuerpo = null;
+  try {
+    cuerpo = await respuesta.json();
+  } catch {
+    cuerpo = null;
+  }
+
+  if (!respuesta.ok) {
+    manejarNoAutorizado(respuesta.status);
+    const mensaje =
+      cuerpo?.message ??
+      cuerpo?.error ??
+      `Ocurrió un error inesperado (código ${respuesta.status}).`;
+    throw new ErrorDeApi(mensaje, null, respuesta.status);
+  }
+
+  return cuerpo;
+}
+
+/**
+ * PATCH /cargas/:id/cancelar (HU 2.4) — cancela una carga directamente, sin
+ * pasar por `cambiarEstadoCarga`.
+ *
+ * Es un atajo del lado del backend para este caso puntual: no recibe `estado`
+ * en el body (siempre cancela) y da un mensaje de 409 específico para cada
+ * motivo de rechazo (en viaje, entregada o ya cancelada) en vez del genérico
+ * "no se puede pasar de X a Y". Igual que `editarCarga`, el 409 no trae
+ * `errores` por campo, así que queda como un `ErrorDeApi` general.
+ *
+ * @param {number|string} id - `id_carga` de la carga a cancelar.
+ * @returns {Promise<object>} la carga ya cancelada que devuelve el backend (200).
+ * @throws {ErrorDeApi} si la carga no existe (404), no se puede cancelar en su
+ *   estado actual (409), o para el resto de los errores (401, 403, 500, sin conexión).
+ */
+export async function cancelarCarga(id) {
+  let respuesta;
+
+  try {
+    respuesta = await fetch(`${URL_API}/cargas/${encodeURIComponent(id)}/cancelar`, {
+      method: 'PATCH',
+      headers: { ...headersDeAuth() },
+    });
+  } catch {
+    throw new ErrorDeApi(
+      'No se pudo conectar con el servidor. Verificá que el sistema esté encendido e intentá de nuevo.',
+      null,
+      0,
+    );
+  }
+
+  let cuerpo = null;
+  try {
+    cuerpo = await respuesta.json();
+  } catch {
+    cuerpo = null;
+  }
+
+  if (!respuesta.ok) {
+    // Un 401 significa que el token falta, vencio o dejo de servir:
+    // se limpia la sesion y se vuelve al login.
+    manejarNoAutorizado(respuesta.status);
+    const mensaje =
+      cuerpo?.message ??
+      cuerpo?.error ??
+      `Ocurrió un error inesperado (código ${respuesta.status}).`;
+    throw new ErrorDeApi(mensaje, null, respuesta.status);
+  }
+
+  return cuerpo;
+}
+
+/**
+ * POST /cargas/:id/postulaciones (HU 4) — registra la postulación de un camionero a una carga.
+ *
+ * La primera postulación pasa la carga a "pendiente"; las que siguen no la mueven.
+ *
+ * @param {number|string} idCarga - `id_carga` a la que se postula.
+ * @returns {Promise<object>} la postulación creada.
+ * @throws {ErrorDeApi} si ya está postulado o la carga ya no recibe
+ *   postulaciones (409), si el usuario no tiene perfil de camionero (403) o si
+ *   falla la conexión.
+ */
+export async function postularACarga(idCarga) {
+  let respuesta;
+  try {
+    respuesta = await fetch(`${URL_API}/cargas/${encodeURIComponent(idCarga)}/postulaciones`, {
+      method: 'POST',
+      // No mandamos body, el backend solo necesita el ID de la URL y el token
+      headers: { ...headersDeAuth() },
+    });
+  } catch (error) {
+    throw new ErrorDeApi(
+      'No se pudo conectar con el servidor. Verificá que el sistema esté encendido e intentá de nuevo.',
+      null,
+      0,
+    );
+  }
+
+  let cuerpo = null;
+  try {
+    cuerpo = await respuesta.json();
+  } catch {
+    cuerpo = null;
+  }
+
+  if (!respuesta.ok) {
+    manejarNoAutorizado(respuesta.status);
+    const mensaje =
+      cuerpo?.message ??
+      cuerpo?.error ??
+      `Ocurrió un error inesperado (código ${respuesta.status}).`;
+    throw new ErrorDeApi(mensaje, null, respuesta.status);
+  }
+
+  return cuerpo;
+}
+
+
+/**
+ * GET /postulaciones/mis-postulaciones (HU 4)
+ */
+export async function obtenerMisPostulaciones(opciones = {}) {
+  let respuesta;
+  try {
+    respuesta = await fetch(`${URL_API}/postulaciones/mis-postulaciones`, {
+      headers: { ...headersDeAuth() },
+      signal: opciones.signal,
+    });
+  } catch (error) {
+    if (error?.name === 'AbortError') throw error;
+    throw new ErrorDeApi('No se pudo conectar con el servidor.', null, 0);
+  }
+
+  let cuerpo = null;
+  try {
+    cuerpo = await respuesta.json();
+  } catch {
+    cuerpo = null;
+  }
+
+  if (!respuesta.ok) {
+    manejarNoAutorizado(respuesta.status);
+    throw new ErrorDeApi(cuerpo?.message ?? 'Error inesperado.', null, respuesta.status);
+  }
+
+  return Array.isArray(cuerpo) ? cuerpo : [];
+}
+
+/**
+ * GET /cargas/:id/postulaciones (HU 4 y HU 6) — los camioneros que se
+ * postularon a una carga, del primero al último. Sólo para el administrador.
+ *
+ * Cada uno trae su postulación (`id_postulacion`, `estado`,
+ * `fecha_postulacion`) y sus datos para elegir: `nombre`, `apellido`,
+ * `tipo_vehiculo`, `capacidad_kg`, `ubicacion` y `disponibilidad`.
+ *
+ * @param {number|string} idCarga - `id_carga` de la carga.
+ * @param {object} [opciones]
+ * @param {AbortSignal} [opciones.signal] - para cancelar el pedido.
+ * @returns {Promise<object[]>} los postulados; `[]` si nadie se postuló.
+ * @throws {DOMException} `AbortError` si se canceló el pedido (se deja propagar).
+ * @throws {ErrorDeApi} si la carga no existe (404) o el backend falla (403, 500, sin conexión).
+ */
+export async function listarPostulantes(idCarga, opciones = {}) {
+  let respuesta;
+  try {
+    respuesta = await fetch(`${URL_API}/cargas/${encodeURIComponent(idCarga)}/postulaciones`, {
+      headers: { ...headersDeAuth() },
+      signal: opciones.signal,
+    });
+  } catch (error) {
+    if (error?.name === 'AbortError') throw error;
+    throw new ErrorDeApi(
+      'No se pudo conectar con el servidor. Verificá que el sistema esté encendido e intentá de nuevo.',
+      null,
+      0,
+    );
+  }
+
+  let cuerpo = null;
+  try {
+    cuerpo = await respuesta.json();
+  } catch {
+    cuerpo = null;
+  }
+
+  if (!respuesta.ok) {
+    manejarNoAutorizado(respuesta.status);
+    const mensaje =
+      cuerpo?.message ??
+      cuerpo?.error ??
+      `Ocurrió un error inesperado (código ${respuesta.status}).`;
+    throw new ErrorDeApi(mensaje, null, respuesta.status);
+  }
+
+  return Array.isArray(cuerpo) ? cuerpo : [];
+}

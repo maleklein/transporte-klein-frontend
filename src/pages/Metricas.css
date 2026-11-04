@@ -1,0 +1,160 @@
+/* ==========================================================================
+   Panel de métricas (HU 13) — selector de rango, tarjetas y gráficos.
+   ========================================================================== */
+
+.mt-titulo {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+/* --------------------------------------------------------------------------
+   Selector de rango: dos fechas + "Aplicar". Mismo tratamiento que la barra
+   de filtros del listado de cargas (`.cg-filtros`).
+   -------------------------------------------------------------------------- */
+.mt-filtros {
+  display: grid;
+  grid-template-columns: 1fr 1fr auto;
+  gap: 16px;
+  align-items: end;
+  padding: 20px;
+  margin-bottom: 12px;
+  border: 2px solid var(--color-borde-suave);
+  border-radius: var(--radio);
+  background: var(--color-fondo-alt);
+}
+
+.mt-filtro {
+  display: flex;
+  flex-direction: column;
+}
+
+.mt-filtro .ds-campo__label {
+  margin-bottom: 8px;
+}
+
+.mt-aplicar {
+  white-space: nowrap;
+}
+
+@media (max-width: 720px) {
+  .mt-filtros {
+    grid-template-columns: 1fr;
+  }
+
+  .mt-aplicar {
+    width: 100%;
+  }
+}
+
+.mt-error-validacion {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0 0 16px;
+  color: var(--color-peligro);
+  font-weight: 600;
+}
+
+.mt-periodo {
+  margin: 0 0 24px;
+  color: var(--color-texto-suave);
+  font-size: var(--texto-base);
+}
+
+.mt-mensaje {
+  margin: 0;
+  padding: 40px 24px;
+  border: 2px solid var(--color-borde-suave);
+  border-radius: var(--radio);
+  text-align: center;
+  color: var(--color-texto-suave);
+  font-size: var(--texto-base);
+}
+
+.mt-aviso-error {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+  padding: 14px 16px;
+  margin-bottom: 16px;
+  border: 2px solid var(--color-peligro);
+  border-radius: var(--radio-chico);
+  background: var(--color-peligro-claro);
+  color: var(--color-peligro-oscuro);
+  font-weight: 600;
+}
+
+.mt-aviso-error__texto {
+  flex: 1;
+  min-width: 200px;
+}
+
+/* --------------------------------------------------------------------------
+   Tarjetas de resumen.
+   -------------------------------------------------------------------------- */
+.mt-tarjetas {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 18px;
+  margin-bottom: 28px;
+}
+
+.mt-tarjeta {
+  padding: 18px 20px;
+  border: 2px solid var(--color-borde-suave);
+  border-radius: var(--radio);
+  background: var(--color-fondo);
+}
+
+.mt-tarjeta__titulo {
+  margin: 0 0 10px;
+  font-size: var(--texto-ayuda);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  color: var(--color-texto-suave);
+}
+
+.mt-tarjeta__valor {
+  margin: 0;
+  font-size: 32px;
+  font-weight: 700;
+  color: var(--color-primario);
+}
+
+.mt-tarjeta__detalle {
+  margin: 4px 0 0;
+  font-size: var(--texto-ayuda);
+  color: var(--color-texto-suave);
+}
+
+/* --------------------------------------------------------------------------
+   Gráficos — máximo 2 columnas, igual que el resto del proyecto.
+   -------------------------------------------------------------------------- */
+.mt-graficos {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 18px;
+}
+
+@media (max-width: 920px) {
+  .mt-graficos {
+    grid-template-columns: 1fr;
+  }
+}
+
+.mt-grafico-card {
+  padding: 18px 20px;
+  border: 2px solid var(--color-borde-suave);
+  border-radius: var(--radio);
+  background: var(--color-fondo);
+}
+
+.mt-grafico-card__titulo {
+  margin: 0 0 12px;
+  font-size: var(--texto-label);
+  font-weight: 700;
+  color: var(--color-texto);
+}

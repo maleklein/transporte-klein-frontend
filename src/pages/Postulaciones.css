@@ -1,0 +1,161 @@
+/* ==========================================================================
+   Mis viajes del camionero (HU 4 y HU 6) — `Postulaciones.jsx`, en /mis-viajes.
+   Usa los tokens del sistema de diseño (`index.css`) para quedar igual que el
+   resto de las pantallas.
+   ========================================================================== */
+
+.pos-contenido {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 28px;
+}
+
+.pos-titulo {
+  margin: 4px 0 20px;
+  font-size: var(--texto-titulo);
+  color: var(--color-primario);
+}
+
+.pos-mensaje {
+  margin: 0;
+  padding: 40px 24px;
+  border: 2px solid var(--color-borde-suave);
+  border-radius: var(--radio);
+  text-align: center;
+  color: var(--color-texto-suave);
+}
+
+/* Dentro de un grupo, el vacío es una línea y no un recuadro grande. */
+.pos-mensaje--grupo {
+  padding: 0;
+  border: none;
+  text-align: left;
+}
+
+.pos-aviso-error {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 14px 16px;
+  border: 2px solid var(--color-peligro);
+  border-radius: var(--radio-chico);
+  background: var(--color-peligro-claro);
+  color: var(--color-peligro-oscuro);
+  font-weight: 600;
+}
+
+.pos-grupo + .pos-grupo {
+  margin-top: 28px;
+}
+
+.pos-grupo__titulo {
+  margin: 0 0 12px;
+  font-size: var(--texto-label);
+  font-weight: 700;
+  color: var(--color-texto);
+}
+
+.pos-grupo__cantidad {
+  margin-left: 8px;
+  font-weight: 400;
+  color: var(--color-texto-suave);
+}
+
+.pos-lista {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.pos-card {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 18px 20px;
+  border: 2px solid var(--color-borde-suave);
+  border-radius: var(--radio);
+  background: var(--color-fondo);
+}
+
+/* Los viajes asignados se distinguen de un vistazo: son los que importan. */
+.pos-card--asignado {
+  border-color: var(--color-primario);
+}
+
+.pos-card--cerrada {
+  background: var(--color-fondo-alt);
+}
+
+.pos-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.pos-card-tipo {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: var(--texto-label);
+  color: var(--color-texto);
+}
+
+/* Etiquetas de las postulaciones que no son un viaje (en espera, no elegida). */
+.pos-badge {
+  display: inline-block;
+  padding: 4px 12px;
+  border-radius: 999px;
+  font-size: var(--texto-ayuda);
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.pos-badge--pendiente {
+  background: var(--color-primario-claro);
+  color: var(--color-primario);
+}
+
+.pos-badge--rechazada {
+  background: var(--color-fondo);
+  color: var(--color-texto-suave);
+  box-shadow: inset 0 0 0 2px var(--color-borde-suave);
+}
+
+.pos-card-body {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  color: var(--color-texto);
+}
+
+.pos-card-dato {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 0;
+}
+
+.pos-card-dato svg {
+  flex-shrink: 0;
+  color: var(--color-primario);
+}
+
+.pos-card__ver {
+  align-self: flex-end;
+  min-height: 44px;
+  padding: 9px 16px;
+  font-size: var(--texto-ayuda);
+}
+
+@media (max-width: 560px) {
+  .pos-contenido {
+    padding: 20px 16px;
+  }
+
+  .pos-card__ver {
+    align-self: stretch;
+  }
+}

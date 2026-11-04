@@ -1,0 +1,169 @@
+/* ==========================================================================
+   Panel principal del administrador (HU 16).
+   Las tarjetas de resumen, el contenedor, la introducción y el aviso de error
+   son los del panel del camionero (`PanelCamionero.css`, prefijo `pcm-`), para
+   que los dos paneles se vean igual. Acá va sólo lo propio de este panel.
+   ========================================================================== */
+
+/* Son dos tarjetas: en la grilla de cuatro del camionero quedarían a la mitad. */
+.pa-tarjetas {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  margin-bottom: 32px;
+}
+
+@media (max-width: 560px) {
+  .pa-tarjetas {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+.pa-seccion {
+  margin-bottom: 32px;
+}
+
+.pa-seccion__encabezado {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 8px 16px;
+  margin-bottom: 12px;
+}
+
+.pa-seccion__encabezado .pa-seccion__titulo {
+  margin: 0;
+}
+
+/* Mismo tamaño que "Viajes en curso" del panel del camionero. */
+.pa-seccion__titulo {
+  margin: 0 0 12px;
+  font-size: var(--texto-label);
+  font-weight: 700;
+  color: var(--color-texto);
+}
+
+.pa-enlace {
+  font-weight: 700;
+  color: var(--color-primario);
+}
+
+.pa-mensaje {
+  margin: 0;
+  padding: 28px 24px;
+  border: 2px solid var(--color-borde-suave);
+  border-radius: var(--radio);
+  text-align: center;
+  color: var(--color-texto-suave);
+}
+
+/* --------------------------------------------------------------------------
+   Cargas por estado: seis casillas en el orden del ciclo de vida.
+   -------------------------------------------------------------------------- */
+
+.pa-periodo {
+  margin: 0 0 12px;
+  color: var(--color-texto-suave);
+  font-size: var(--texto-ayuda);
+}
+
+.pa-estados {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: 12px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.pa-estado {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 6px;
+  padding: 14px;
+  border: 2px solid var(--color-borde-suave);
+  border-radius: var(--radio);
+}
+
+.pa-estado__valor {
+  font-size: 28px;
+  font-weight: 700;
+  color: var(--color-primario);
+  font-variant-numeric: tabular-nums;
+}
+
+/* --------------------------------------------------------------------------
+   Accesos directos. Mismo borde y hover que las tarjetas de resumen.
+   -------------------------------------------------------------------------- */
+
+.pa-accesos {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.pa-acceso {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  height: 100%;
+  box-sizing: border-box;
+  padding: 16px;
+  border: 2px solid var(--color-borde-suave);
+  border-radius: var(--radio);
+  color: var(--color-primario);
+  text-decoration: none;
+  transition: border-color 0.12s ease, box-shadow 0.12s ease;
+}
+
+.pa-acceso:hover {
+  border-color: var(--color-primario);
+  box-shadow: 0 4px 14px rgba(31, 78, 121, 0.12);
+}
+
+.pa-acceso:focus-visible {
+  outline: 3px solid var(--color-primario);
+  outline-offset: 2px;
+}
+
+.pa-acceso svg {
+  flex-shrink: 0;
+}
+
+.pa-acceso__texto {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.pa-acceso__titulo {
+  font-weight: 700;
+}
+
+.pa-acceso__detalle {
+  font-size: var(--texto-ayuda);
+  color: var(--color-texto-suave);
+}
+
+@media (max-width: 860px) {
+  .pa-estados {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .pa-accesos {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 560px) {
+  .pa-accesos {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .pa-estados {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}

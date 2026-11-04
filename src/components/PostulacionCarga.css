@@ -1,0 +1,51 @@
+/* ==========================================================================
+   Postulación del camionero en el detalle de carga (HU 4) — `PostulacionCarga.jsx`.
+   La tarjeta usa `.dc-card` del detalle; acá va lo propio del bloque.
+   ========================================================================== */
+
+.pc-tarjeta {
+  margin-top: 20px;
+}
+
+.pc-texto {
+  max-width: 60ch;
+  margin: 0 0 16px;
+  color: var(--color-texto);
+}
+
+/* El botón ocupa todo el ancho: es la acción principal de la pantalla para el
+   camionero, y así es fácil de encontrar y de tocar. */
+.pc-boton {
+  width: 100%;
+  min-height: 56px;
+  font-size: var(--texto-label);
+}
+
+.pc-estado {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  margin: 0;
+  padding: 14px 16px;
+  border: 2px solid var(--color-confirmar);
+  border-radius: var(--radio-chico);
+  background: var(--color-confirmar-claro);
+  color: var(--color-confirmar-oscuro);
+  font-weight: 600;
+}
+
+.pc-estado svg {
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.pc-estado a {
+  color: inherit;
+  text-underline-offset: 3px;
+}
+
+.pc-estado--suyo {
+  border-color: var(--color-primario);
+  background: var(--color-primario-claro);
+  color: var(--color-primario);
+}

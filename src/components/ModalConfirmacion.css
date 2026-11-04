@@ -1,0 +1,66 @@
+/* ==========================================================================
+   Modal de confirmación genérico — `ModalConfirmacion.jsx`.
+   ========================================================================== */
+
+.mc-fondo {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  background: rgba(26, 26, 26, 0.5);
+  z-index: 1000;
+}
+
+.mc-caja {
+  width: 100%;
+  max-width: 440px;
+  padding: 26px;
+  border-radius: var(--radio);
+  background: var(--color-fondo);
+  box-shadow: var(--sombra-modal);
+}
+
+.mc-caja__titulo {
+  margin: 0 0 10px;
+  font-size: var(--texto-titulo);
+  font-weight: 700;
+  color: var(--color-texto);
+}
+
+.mc-caja__detalle {
+  margin: 0 0 18px;
+  color: var(--color-texto-suave);
+}
+
+.mc-caja__error {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0 0 18px;
+  padding: 10px 14px;
+  border: 2px solid var(--color-peligro);
+  border-radius: var(--radio-chico);
+  background: var(--color-peligro-claro);
+  color: var(--color-peligro-oscuro);
+  font-size: var(--texto-ayuda);
+  font-weight: 600;
+}
+
+.mc-caja__acciones {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+/* El botón de confirmar peligroso va en rojo lleno: el `ds-boton--cancelar`
+   del sistema es de contorno, y acá tiene que pesar más que "Volver". */
+.mc-boton-peligro {
+  background: var(--color-peligro);
+  color: #fff;
+}
+
+.mc-boton-peligro:hover:not(:disabled) {
+  background: var(--color-peligro-oscuro);
+}

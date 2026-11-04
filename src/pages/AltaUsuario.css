@@ -1,0 +1,88 @@
+.au-contenido {
+  max-width: 660px;
+  margin: 0 auto;
+  padding: 28px;
+}
+
+.au-titulo {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: var(--texto-titulo);
+  font-weight: 700;
+  color: var(--color-primario);
+  margin: 0 0 24px;
+}
+
+.au-formulario {
+  background: var(--color-fondo);
+  border: 2px solid var(--color-borde-suave);
+  border-radius: var(--radio);
+}
+
+.au-body {
+  padding: 24px 26px 8px;
+}
+
+/* --- Mensajes de estado arriba del formulario --- */
+.au-aviso {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 14px 16px;
+  border-radius: var(--radio-chico);
+  font-size: var(--texto-base);
+  font-weight: 600;
+  margin-bottom: 20px;
+  border: 2px solid transparent;
+}
+
+.au-aviso--exito {
+  background: var(--color-confirmar-claro);
+  color: var(--color-confirmar-oscuro);
+  border-color: var(--color-confirmar);
+}
+
+.au-aviso--error {
+  background: var(--color-peligro-claro);
+  color: var(--color-peligro-oscuro);
+  border-color: var(--color-peligro);
+}
+
+/* --- Bloque diferenciado para datos de camionero --- */
+.au-bloque-camionero {
+  background: var(--color-fondo-alt);
+  border: 2px dashed var(--color-borde);
+  border-radius: var(--radio);
+  padding: 18px 18px 2px;
+  margin-bottom: 20px;
+}
+
+.au-bloque-camionero__titulo {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: var(--texto-label);
+  font-weight: 700;
+  color: var(--color-primario);
+  margin: 0 0 16px;
+}
+
+/* --- Pie con las acciones --- */
+.au-footer {
+  display: flex;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+  gap: 12px;
+  padding: 18px 26px 24px;
+  border-top: 2px solid var(--color-fondo-alt);
+}
+
+@media (max-width: 620px) {
+  .au-footer {
+    flex-direction: column-reverse;
+  }
+  .au-footer .ds-boton {
+    width: 100%;
+  }
+}

@@ -1,0 +1,64 @@
+/* En una pantalla angosta el acceso a las notificaciones no entra al lado de
+   la marca: lleva texto además del ícono (regla del sistema de diseño), así
+   que pasa a un segundo renglón en vez de desbordar la barra. */
+.bs-barra {
+  flex-wrap: wrap;
+  row-gap: 12px;
+}
+
+/* Accesos de la navegación principal (HU 15), uno por pantalla alcanzable
+   desde la barra. Mismo tratamiento que el acceso a notificaciones: texto +
+   ícono en blanco sobre el azul de la barra. */
+.bs-enlace {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 44px;
+  padding: 8px 14px;
+  border: 2px solid rgba(255, 255, 255, 0.6);
+  border-radius: var(--radio-chico);
+  background: none;
+  color: #fff;
+  font-family: var(--fuente);
+  font-size: var(--texto-base);
+  font-weight: 700;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.bs-enlace:hover {
+  border-color: #fff;
+  background: rgba(255, 255, 255, 0.14);
+}
+
+.bs-enlace:focus-visible {
+  outline: 3px solid #fff;
+  outline-offset: 2px;
+}
+
+/* La sección actual (HU 15): fondo blanco sólido y texto azul, para que se
+   distinga del resto incluso sin color (no depende sólo del tono). */
+.bs-enlace--activo {
+  border-color: #fff;
+  background: #fff;
+  color: var(--color-primario);
+}
+
+.bs-enlace--activo:hover {
+  background: #fff;
+}
+
+/* Aviso de "sin permiso" (HU 15) que deja `RutaProtegida` al redirigir a un
+   usuario que abrió una pantalla de otro rol. Mismo criterio visual que los
+   avisos de error de cada pantalla (`.nt-aviso-error` y análogos). */
+.bs-aviso-acceso {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 0;
+  padding: 14px 28px;
+  border-bottom: 2px solid var(--color-peligro);
+  background: var(--color-peligro-claro);
+  color: var(--color-peligro-oscuro);
+  font-weight: 600;
+}

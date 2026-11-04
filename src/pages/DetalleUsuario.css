@@ -1,0 +1,20 @@
+/* ==========================================================================
+   Ficha de usuario (HU 1.3) — reutiliza el layout de DetalleCarga.css
+   (.dc-contenido, .dc-card, .dc-datos, etc.) y agrega lo propio de usuarios.
+   ========================================================================== */
+
+.du-badges {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.du-card-vehiculo {
+  margin-top: 20px;
+}
+
+.du-card-vehiculo .dc-card__titulo {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}

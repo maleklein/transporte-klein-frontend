@@ -1,0 +1,264 @@
+/**
+ * Íconos en SVG embebido (sin dependencias externas).
+ * Son decorativos: siempre acompañan a un texto, nunca lo reemplazan.
+ */
+
+const base = {
+  width: 22,
+  height: 22,
+  viewBox: '0 0 24 24',
+  fill: 'none',
+  stroke: 'currentColor',
+  strokeWidth: 2.2,
+  strokeLinecap: 'round',
+  strokeLinejoin: 'round',
+  'aria-hidden': true,
+  focusable: false,
+};
+
+export function IconoUsuarioMas(props) {
+  return (
+    <svg {...base} {...props}>
+      <path d="M15 20v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
+      <circle cx="8.5" cy="7" r="4" />
+      <path d="M19 8v6M22 11h-6" />
+    </svg>
+  );
+}
+
+export function IconoUsuario(props) {
+  return (
+    <svg {...base} {...props}>
+      <path d="M15 20v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
+      <circle cx="8.5" cy="7" r="4" />
+    </svg>
+  );
+}
+
+export function IconoCerrar(props) {
+  return (
+    <svg {...base} {...props}>
+      <path d="M18 6 6 18M6 6l12 12" />
+    </svg>
+  );
+}
+
+export function IconoCheck(props) {
+  return (
+    <svg {...base} {...props}>
+      <path d="M20 6 9 17l-5-5" />
+    </svg>
+  );
+}
+
+export function IconoAlerta(props) {
+  return (
+    <svg {...base} width={18} height={18} {...props}>
+      <circle cx="12" cy="12" r="10" />
+      <path d="M12 8v5M12 16h.01" />
+    </svg>
+  );
+}
+
+export function IconoCamion(props) {
+  return (
+    <svg {...base} {...props}>
+      <path d="M1 3h13v13H1zM14 8h4l3 3v5h-7" />
+      <circle cx="5.5" cy="18.5" r="2.5" />
+      <circle cx="17.5" cy="18.5" r="2.5" />
+    </svg>
+  );
+}
+
+export function IconoCajaMas(props) {
+  return (
+    <svg {...base} {...props}>
+      <path d="M12 21 3 16.5v-9L12 3l9 4.5v4" />
+      <path d="M3 7.5 12 12l9-4.5M12 12v9" />
+      <path d="M18 15v6M21 18h-6" />
+    </svg>
+  );
+}
+
+export function IconoGuardar(props) {
+  return (
+    <svg {...base} {...props}>
+      <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z" />
+      <path d="M17 21v-8H7v8M7 3v5h8" />
+    </svg>
+  );
+}
+
+export function IconoUbicacion(props) {
+  return (
+    <svg {...base} {...props}>
+      <path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z" />
+      <circle cx="12" cy="10" r="3" />
+    </svg>
+  );
+}
+
+export function IconoCalendario(props) {
+  return (
+    <svg {...base} {...props}>
+      <rect x="3" y="4" width="18" height="18" rx="2" />
+      <path d="M16 2v4M8 2v4M3 10h18" />
+    </svg>
+  );
+}
+
+export function IconoPeso(props) {
+  return (
+    <svg {...base} {...props}>
+      <path d="M9 7a3 3 0 1 1 6 0" />
+      <path d="M6 7h12l1.8 12.9a1 1 0 0 1-1 1.1H5.2a1 1 0 0 1-1-1.1L6 7Z" />
+    </svg>
+  );
+}
+
+export function IconoOjo(props) {
+  return (
+    <svg {...base} {...props}>
+      <path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7Z" />
+      <circle cx="12" cy="12" r="3" />
+    </svg>
+  );
+}
+
+export function IconoFlechaAtras(props) {
+  return (
+    <svg {...base} {...props}>
+      <path d="M19 12H5M12 19l-7-7 7-7" />
+    </svg>
+  );
+}
+
+export function IconoCaja(props) {
+  return (
+    <svg {...base} {...props}>
+      <path d="M12 2 3 7v10l9 5 9-5V7z" />
+      <path d="M3 7l9 5 9-5M12 12v10" />
+    </svg>
+  );
+}
+
+export function IconoEtiqueta(props) {
+  return (
+    <svg {...base} {...props}>
+      <path d="M20.6 13.4 13.4 20.6a2 2 0 0 1-2.8 0l-7-7A2 2 0 0 1 3 12.2V5a2 2 0 0 1 2-2h7.2a2 2 0 0 1 1.4.6l7 7a2 2 0 0 1 0 2.8Z" />
+      <circle cx="7.5" cy="7.5" r="1.5" />
+    </svg>
+  );
+}
+
+export function IconoEditar(props) {
+  return (
+    <svg {...base} {...props}>
+      <path d="M12 20h9" />
+      <path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z" />
+    </svg>
+  );
+}
+
+export function IconoCorreo(props) {
+  return (
+    <svg {...base} {...props}>
+      <rect x="2" y="4" width="20" height="16" rx="2" />
+      <path d="m2 6 10 7 10-7" />
+    </svg>
+  );
+}
+
+export function IconoDocumento(props) {
+  return (
+    <svg {...base} {...props}>
+      <path d="M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z" />
+      <path d="M14 3v6h6M9 13h6M9 17h6" />
+    </svg>
+  );
+}
+
+/** Ruta entre dos puntos: la distancia estimada de una carga (HU 9). */
+export function IconoRuta(props) {
+  return (
+    <svg {...base} {...props}>
+      <circle cx="6" cy="19" r="3" />
+      <circle cx="18" cy="5" r="3" />
+      <path d="M9 19h8.5a3.5 3.5 0 0 0 0-7h-11a3.5 3.5 0 0 1 0-7H15" />
+    </svg>
+  );
+}
+
+/** Flecha circular: reintentar una operación que no se completó. */
+export function IconoReintentar(props) {
+  return (
+    <svg {...base} {...props}>
+      <path d="M3 12a9 9 0 0 1 15.5-6.2L21 8" />
+      <path d="M21 3v5h-5" />
+      <path d="M21 12a9 9 0 0 1-15.5 6.2L3 16" />
+      <path d="M3 21v-5h5" />
+    </svg>
+  );
+}
+
+/** Signo pesos: montos de la estimación económica (HU 10). */
+export function IconoPesos(props) {
+  return (
+    <svg {...base} {...props}>
+      <path d="M12 2v20" />
+      <path d="M17 6H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" />
+    </svg>
+  );
+}
+
+/** Controles deslizantes: parámetros configurables (HU 10). */
+export function IconoAjustes(props) {
+  return (
+    <svg {...base} {...props}>
+      <path d="M4 6h10M18 6h2M4 12h4M12 12h8M4 18h12" />
+      <circle cx="16" cy="6" r="2" />
+      <circle cx="10" cy="12" r="2" />
+      <circle cx="18" cy="18" r="2" />
+    </svg>
+  );
+}
+
+export function IconoCampana(props) {
+  return (
+    <svg {...base} {...props}>
+      <path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9" />
+      <path d="M13.7 21a2 2 0 0 1-3.4 0" />
+    </svg>
+  );
+}
+
+export function IconoGrafico(props) {
+  return (
+    <svg {...base} {...props}>
+      <path d="M3 3v18h18" />
+      <path d="M7 16v-4M12 16V8M17 16v-7" />
+    </svg>
+  );
+}
+
+/** Casa: acceso al panel de inicio de cada rol (HU 15). */
+export function IconoInicio(props) {
+  return (
+    <svg {...base} {...props}>
+      <path d="M3 11.5 12 4l9 7.5" />
+      <path d="M5 10v10h14V10" />
+      <path d="M9.5 20v-6h5v6" />
+    </svg>
+  );
+}
+
+/** Puerta con flecha saliendo: cerrar sesión. */
+export function IconoCerrarSesion(props) {
+  return (
+    <svg {...base} {...props}>
+      <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
+      <path d="M16 17l5-5-5-5" />
+      <path d="M21 12H9" />
+    </svg>
+  );
+}
