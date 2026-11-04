@@ -13,6 +13,7 @@ import {
 } from '../components/Iconos';
 import { listarCargas, obtenerMisPostulaciones } from '../api/cargas';
 import { listarNotificaciones } from '../api/notificaciones';
+import { usuarioActual } from '../api/sesion';
 import { ErrorDeApi } from '../api/usuarios';
 import { formatearFecha } from '../utils/carga';
 import { esViajeEnCurso, grupoDePostulacion } from '../utils/postulaciones';
@@ -135,6 +136,8 @@ export default function PanelCamionero() {
 
   const errores = [postulaciones, cargas, noLeidas].filter((dato) => dato.estado === 'error');
   const sinTrabajo = postulaciones.estado === 'ok' && viajesEnCurso.length === 0 && enEspera.length === 0;
+  // Una sesión de antes de que el login devolviera el nombre no lo tiene.
+  const nombre = usuarioActual()?.nombre;
 
   return (
     <>
@@ -142,7 +145,7 @@ export default function PanelCamionero() {
 
       <main className="us-contenido pcm-contenido">
         <div className="us-encabezado">
-          <h1>Mi panel</h1>
+          <h1>{nombre ? `Hola, ${nombre}` : 'Mi panel'}</h1>
         </div>
         <p className="pcm-intro">Así está tu trabajo hoy. Tocá cada tarjeta para ir a esa sección.</p>
 

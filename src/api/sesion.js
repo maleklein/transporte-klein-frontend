@@ -26,7 +26,7 @@ const URL_API = import.meta.env.VITE_API_URL ?? 'http://localhost:3000';
  * el backend destructura.
  *
  * Respuestas del backend:
- *   200 → { token, user: { id, email, rol } }
+ *   200 → { token, user: { id, email, rol, nombre, apellido } }
  *   400 → falta el email o la contraseña
  *   401 → credenciales incorrectas
  *   403 → la cuenta no está activa
@@ -34,7 +34,7 @@ const URL_API = import.meta.env.VITE_API_URL ?? 'http://localhost:3000';
  *
  * @param {string} email
  * @param {string} contrasena - la contraseña tal cual la tipeó el usuario.
- * @returns {Promise<{id: number, email: string, rol: string}>} el usuario logueado.
+ * @returns {Promise<{id: number, email: string, rol: string, nombre: string, apellido: string}>} el usuario logueado.
  * @throws {Error} con un `.message` mostrable si el backend rechaza o no responde.
  */
 export async function iniciarSesion(email, contrasena) {
@@ -89,7 +89,7 @@ export function obtenerSesion() {
  * Guarda la sesión después de un login exitoso.
  *
  * @param {string} token - el JWT que devolvió `POST /auth/login`.
- * @param {{id: number, rol: string}} usuario - los datos del usuario logueado.
+ * @param {{id: number, rol: string, nombre?: string}} usuario - los datos del usuario logueado.
  * @returns {void}
  */
 export function guardarSesion(token, usuario) {
@@ -107,9 +107,11 @@ export function cerrarSesion() {
 }
 
 /**
- * Datos del usuario logueado, para las pantallas que necesitan saber el rol.
+ * Datos del usuario logueado, para las pantallas que necesitan saber el rol
+ * o saludarlo por su nombre. Las sesiones iniciadas antes de que el login
+ * devolviera el nombre no lo tienen: quien lo use necesita un texto de respaldo.
  *
- * @returns {{id: number, rol: string}|null} el usuario, o null si no hay sesión.
+ * @returns {{id: number, rol: string, nombre?: string, apellido?: string}|null} el usuario, o null si no hay sesión.
  */
 export function usuarioActual() {
   return obtenerSesion()?.usuario ?? null;
