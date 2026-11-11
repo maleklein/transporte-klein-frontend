@@ -488,7 +488,7 @@ export default function DetalleCarga() {
             */}
             {esAdministrador && <EconomiaCarga carga={carga} alRecalcular={recalcularKm} />}
 
-            {carga.estado_actual === 'entregada' && <CalificacionCarga key={id} idCarga={id} />}
+            {esAdministrador && carga.estado_actual === 'entregada' && <CalificacionCarga key={id} idCarga={id} />}
 
             {esAdministrador ? (
               <PostulantesCarga
