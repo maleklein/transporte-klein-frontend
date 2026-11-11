@@ -13,9 +13,11 @@ import {
 } from '../components/Iconos';
 import { listarCargas, obtenerMisPostulaciones } from '../api/cargas';
 import { listarNotificaciones } from '../api/notificaciones';
+import { usuarioActual } from '../api/sesion';
 import { ErrorDeApi } from '../api/usuarios';
 import { formatearFecha } from '../utils/carga';
 import { esViajeEnCurso, grupoDePostulacion } from '../utils/postulaciones';
+import { desdeInicio } from '../utils/volver';
 import './PanelCamionero.css';
 
 /** Cuántos viajes en curso se listan en el panel; el resto, en Mis viajes. */
@@ -80,7 +82,7 @@ const pedirNoLeidas = ({ signal }) => listarNotificaciones({ soloNoLeidas: true 
  */
 function TarjetaResumen({ to, Icono, titulo, dato, cantidad, detalle, accion, destacada = false }) {
   return (
-    <Link to={to} className={`pcm-tarjeta${destacada ? ' pcm-tarjeta--destacada' : ''}`}>
+    <Link to={to} state={desdeInicio('camionero')} className={`pcm-tarjeta${destacada ? ' pcm-tarjeta--destacada' : ''}`}>
       <span className="pcm-tarjeta__titulo">
         <Icono width={20} height={20} />
         {titulo}
@@ -134,6 +136,8 @@ export default function PanelCamionero() {
 
   const errores = [postulaciones, cargas, noLeidas].filter((dato) => dato.estado === 'error');
   const sinTrabajo = postulaciones.estado === 'ok' && viajesEnCurso.length === 0 && enEspera.length === 0;
+  // Una sesión de antes de que el login devolviera el nombre no lo tiene.
+  const nombre = usuarioActual()?.nombre;
 
   return (
     <>
@@ -141,7 +145,7 @@ export default function PanelCamionero() {
 
       <main className="us-contenido pcm-contenido">
         <div className="us-encabezado">
-          <h1>Mi panel</h1>
+          <h1>{nombre ? `Hola, ${nombre}` : 'Mi panel'}</h1>
         </div>
         <p className="pcm-intro">Así está tu trabajo hoy. Tocá cada tarjeta para ir a esa sección.</p>
 
@@ -209,7 +213,7 @@ export default function PanelCamionero() {
               Todavía no tenés postulaciones ni viajes. Mirá las cargas disponibles y postulate a la
               que te sirva: si te eligen, te llega un aviso.
             </p>
-            <Link to="/cargas" className="ds-boton ds-boton--primario">
+            <Link to="/cargas" state={desdeInicio('camionero')} className="ds-boton ds-boton--primario">
               <IconoCaja />
               Ver cargas disponibles
             </Link>
@@ -224,7 +228,7 @@ export default function PanelCamionero() {
             <ul className="pcm-viajes__lista">
               {viajesEnCurso.slice(0, MAXIMO_VIAJES_A_LA_VISTA).map((viaje) => (
                 <li key={viaje.id_postulacion}>
-                  <Link to={`/cargas/${viaje.id_carga}`} className="pcm-viaje">
+                  <Link to={`/cargas/${viaje.id_carga}`} state={desdeInicio('camionero')} className="pcm-viaje">
                     <span className="pcm-viaje__cabecera">
                       <span className="pcm-viaje__tipo">{viaje.tipo_carga}</span>
                       <EstadoCarga estado={viaje.estado_actual} />
@@ -241,7 +245,7 @@ export default function PanelCamionero() {
               ))}
             </ul>
             {viajesEnCurso.length > MAXIMO_VIAJES_A_LA_VISTA && (
-              <Link to="/mis-viajes#pos-asignado" className="pcm-viajes__mas">
+              <Link to="/mis-viajes#pos-asignado" state={desdeInicio('camionero')} className="pcm-viajes__mas">
                 Ver los {viajesEnCurso.length} viajes en curso
               </Link>
             )}

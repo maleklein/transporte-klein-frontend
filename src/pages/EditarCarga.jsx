@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import { editarCarga, ErrorDeValidacion, obtenerCarga } from '../api/cargas';
 import { ErrorDeApi } from '../api/usuarios';
 import {
@@ -59,6 +59,7 @@ function valoresDesdeCarga(carga) {
  */
 export default function EditarCarga() {
   const navigate = useNavigate();
+  const location = useLocation();
   const { id } = useParams();
 
   // 'cargando' | 'ok' | 'no-encontrada' | 'error'
@@ -143,7 +144,8 @@ export default function EditarCarga() {
    *
    * @returns {void}
    */
-  const cancelar = () => navigate(`/cargas/${id}`);
+  // El detalle recibe de vuelta el state con el que se abrió, así su botón de volver sigue llevando al mismo lugar.
+  const cancelar = () => navigate(`/cargas/${id}`, { state: location.state });
 
   /**
    * Aplica varios campos de una sola vez y limpia sus errores del backend.
@@ -227,7 +229,7 @@ export default function EditarCarga() {
       );
 
       refTemporizador.current = setTimeout(() => {
-        navigate(`/cargas/${id}`);
+        navigate(`/cargas/${id}`, { state: location.state });
       }, 1500);
     } catch (error) {
       if (error instanceof ErrorDeValidacion) {

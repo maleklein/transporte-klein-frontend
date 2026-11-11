@@ -15,6 +15,7 @@ import { ErrorDeApi } from '../api/usuarios';
 import { formatearFecha } from '../utils/carga';
 import { ESTADOS } from '../utils/estadosCarga';
 import { grupoDePostulacion } from '../utils/postulaciones';
+import { destinoVolver, volverA } from '../utils/volver';
 import './Postulaciones.css';
 
 /** Títulos y textos de cada grupo, en el orden en que se muestran. */
@@ -37,6 +38,8 @@ const GRUPOS = [
 export default function Postulaciones() {
   const navigate = useNavigate();
   const location = useLocation();
+  // Desde el inicio o desde Cargas vuelve ahí; si se entró directo, lleva a buscar cargas.
+  const volver = destinoVolver(location, { ruta: '/cargas', texto: 'Ir a buscar cargas' });
   const [postulaciones, setPostulaciones] = useState([]);
   // 'cargando' | 'ok' | 'error'
   const [estadoPantalla, setEstadoPantalla] = useState('cargando');
@@ -63,10 +66,18 @@ export default function Postulaciones() {
 
   // El panel del camionero (HU 17) enlaza a un grupo puntual, por ejemplo
   // /mis-viajes#pos-espera. Los grupos recién existen cuando llegan los datos,
-  // así que el desplazamiento espera a que la pantalla esté lista.
+  // así que el desplazamiento espera a que la pantalla esté lista. Solo baja si
+  // el grupo arranca en la mitad de abajo y no entra entero: si ya se ve, bajar
+  // escondería la barra, el título y el botón de volver sin mostrar nada nuevo.
   useEffect(() => {
     if (estadoPantalla !== 'ok' || !location.hash) return;
-    document.getElementById(location.hash.slice(1))?.scrollIntoView({ block: 'start' });
+    // El id está en el título; se mide la sección entera, con sus tarjetas.
+    const grupo = document.getElementById(location.hash.slice(1))?.closest('section');
+    if (!grupo) return;
+    const { top, bottom } = grupo.getBoundingClientRect();
+    if (top > window.innerHeight / 2 && bottom > window.innerHeight) {
+      grupo.scrollIntoView({ block: 'start' });
+    }
   }, [estadoPantalla, location.hash]);
 
   return (
@@ -74,9 +85,9 @@ export default function Postulaciones() {
       <BarraSuperior />
 
       <main className="pos-contenido">
-        <button type="button" className="dc-volver" onClick={() => navigate('/cargas')}>
+        <button type="button" className="dc-volver" onClick={() => navigate(volver.ruta, { state: volver.estado })}>
           <IconoFlechaAtras width={20} height={20} />
-          Ir a buscar cargas
+          {volver.texto}
         </button>
 
         <h1 className="pos-titulo">Mis viajes</h1>
@@ -151,7 +162,9 @@ export default function Postulaciones() {
                           <button
                             type="button"
                             className="ds-boton ds-boton--secundario pos-card__ver"
-                            onClick={() => navigate(`/cargas/${p.id_carga}`)}
+                            onClick={() => navigate(`/cargas/${p.id_carga}`, {
+                              state: volverA('/mis-viajes', 'Volver a Mis viajes', location.state),
+                            })}
                             aria-label={`Ver la carga de ${p.origen} a ${p.destino}`}
                           >
                             <IconoOjo width={18} height={18} />

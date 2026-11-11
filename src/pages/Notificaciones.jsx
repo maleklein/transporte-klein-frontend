@@ -19,6 +19,7 @@ import {
 import { ErrorDeApi } from '../api/usuarios';
 import { rutaInicio, usuarioActual } from '../api/sesion';
 import { formatearFechaHora, formatearMarcaCorta } from '../utils/carga';
+import { destinoVolver, volverA } from '../utils/volver';
 import './Notificaciones.css';
 
 /**
@@ -92,13 +93,21 @@ export default function Notificaciones() {
   // mensaje de lista vacía no se los promete.
   const esAdministrador = usuarioActual()?.rol === 'administrador';
 
+  // Llegando desde el inicio, el botón lo dice ("Volver al inicio").
+  const destino = destinoVolver(location, null);
+
   /**
-   * Vuelve a la pantalla anterior. Si se entró a esta directo (sin pantalla
-   * anterior en la app), va al inicio de cada rol: el mismo al que lleva el login.
+   * Vuelve a la pantalla desde la que se entró. Si no se sabe cuál, a la
+   * anterior; y si se entró a esta directo (sin pantalla anterior en la app),
+   * al inicio de cada rol: el mismo al que lleva el login.
    *
    * @returns {void}
    */
   const volver = () => {
+    if (destino) {
+      navigate(destino.ruta, { state: destino.estado });
+      return;
+    }
     if (location.key !== 'default') {
       navigate(-1);
       return;
@@ -168,7 +177,9 @@ export default function Notificaciones() {
     }
 
     if (notificacion.id_carga) {
-      navigate(`/cargas/${notificacion.id_carga}`);
+      navigate(`/cargas/${notificacion.id_carga}`, {
+        state: volverA('/notificaciones', 'Volver a Notificaciones', location.state),
+      });
     }
   };
 
@@ -179,7 +190,7 @@ export default function Notificaciones() {
       <main className="nt-contenido">
         <button type="button" className="nt-volver" onClick={volver}>
           <IconoFlechaAtras width={20} height={20} />
-          Volver
+          {destino?.texto ?? 'Volver'}
         </button>
 
         <header className="nt-encabezado">

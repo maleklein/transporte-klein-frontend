@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import {
   IconoAlerta,
   IconoCaja,
@@ -33,6 +33,7 @@ import { asignarCargaACamionero } from '../api/asignaciones';
 import { ErrorDeApi } from '../api/usuarios';
 import { usuarioActual } from '../api/sesion';
 import { evitarFoco } from '../utils/formulario';
+import { destinoVolver } from '../utils/volver';
 import { ESTADOS_BLOQUEADOS_EDICION, formatearFecha, formatearPeso } from '../utils/carga';
 import {
   ESTADOS,
@@ -78,6 +79,9 @@ import './DetalleCarga.css';
  */
 export default function DetalleCarga() {
   const navigate = useNavigate();
+  const location = useLocation();
+  // Vuelve a la pantalla desde la que se entró (el inicio, Mis viajes, un aviso); si se entró directo, al listado.
+  const volver = destinoVolver(location, { ruta: '/cargas', texto: 'Volver a Cargas' });
   const { id } = useParams();
 
   const [carga, setCarga] = useState(null);
@@ -313,9 +317,9 @@ export default function DetalleCarga() {
       <BarraSuperior />
 
       <main className="dc-contenido">
-        <button type="button" className="dc-volver" onClick={() => navigate('/cargas')}>
+        <button type="button" className="dc-volver" onClick={() => navigate(volver.ruta, { state: volver.estado })}>
           <IconoFlechaAtras width={20} height={20} />
-          Volver a Cargas
+          {volver.texto}
         </button>
 
         {estadoPantalla === 'cargando' && <p className="dc-mensaje">Cargando carga...</p>}
@@ -381,7 +385,7 @@ export default function DetalleCarga() {
                     <button
                       type="button"
                       className="ds-boton ds-boton--secundario"
-                      onClick={() => navigate(`/cargas/${carga.id_carga}/editar`)}
+                      onClick={() => navigate(`/cargas/${carga.id_carga}/editar`, { state: location.state })}
                       onMouseDown={evitarFoco}
                       disabled={ESTADOS_BLOQUEADOS_EDICION.includes(carga.estado_actual)}
                     >

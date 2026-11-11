@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { useNavigate, useSearchParams } from 'react-router-dom';
+import { useLocation, useNavigate, useSearchParams } from 'react-router-dom';
 import { listarCargas } from '../api/cargas';
 import { listarProvincias } from '../api/geografia';
 import ComboBox from '../components/ComboBox';
@@ -20,6 +20,7 @@ import BarraSuperior from '../components/BarraSuperior';
 import EstadoCarga from '../components/EstadoCarga';
 import { formatearFecha, formatearKm, formatearPeso } from '../utils/carga';
 import { etiquetaEstado } from '../utils/estadosCarga';
+import { volverA } from '../utils/volver';
 import './Cargas.css';
 
 /**
@@ -45,6 +46,7 @@ const FILTROS_VACIOS = { estado: '', fecha: '', destino_provincia: '' };
  */
 export default function Cargas() {
   const navigate = useNavigate();
+  const location = useLocation();
   const [parametrosUrl, setParametrosUrl] = useSearchParams();
 
   // Los tres filtros son discretos (se eligen de una lista o de un calendario),
@@ -156,7 +158,10 @@ export default function Cargas() {
    * @returns {void}
    */
   const irAlDetalle = (carga) => {
-    navigate(`/cargas/${carga.id_carga}`);
+    // Con la búsqueda incluida, volver del detalle deja los filtros como estaban.
+    navigate(`/cargas/${carga.id_carga}`, {
+      state: volverA(location.pathname + location.search, 'Volver a Cargas', location.state),
+    });
   };
 
   return (
@@ -171,7 +176,7 @@ export default function Cargas() {
             <button
               type="button"
               className="ds-boton ds-boton--secundario"
-              onClick={() => navigate('/mis-viajes')}
+              onClick={() => navigate('/mis-viajes', { state: volverA('/cargas', 'Volver a Cargas', location.state) })}
             >
               <IconoCamion />
               Mis viajes
