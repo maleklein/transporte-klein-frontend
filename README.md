@@ -1,6 +1,37 @@
 # transporte-klein
 Proyecto de Transporte Klein correspondiente a la materia Informática Aplicada I y II
 
+## Producción
+
+El frontend se publica en Railway, en el mismo proyecto que el backend, como
+un servicio más. Railway mira la rama `main`: cada merge a `main` arma y
+publica una versión nueva. Lo que está en `develop` no llega a producción
+hasta pasar a `main` por un PR.
+
+Se construye con el `Dockerfile` del repo: Node corre `vite build` y nginx
+sirve el resultado (`nginx.conf.template`). nginx devuelve `index.html` para
+cualquier ruta, así que recargar `/panel-administrador` o cualquier otra
+pantalla funciona.
+
+Variable del servicio en Railway:
+
+| Variable | Valor |
+|---|---|
+| `VITE_API_URL` | `https://transporte-klein-backend-production.up.railway.app` |
+
+Vite la mete dentro del JavaScript **al construir**, no al arrancar: si se
+cambia, hay que volver a desplegar. Si falta, el build falla a propósito, para
+que el sitio no quede apuntando a `localhost`.
+
+Para probar la imagen en local (con Docker Desktop abierto):
+
+```bash
+docker build -t transporte-klein-frontend --build-arg VITE_API_URL=https://transporte-klein-backend-production.up.railway.app .
+docker run --rm -p 8080:80 transporte-klein-frontend
+```
+
+y abrir http://localhost:8080.
+
 ## Notificaciones (HU 12)
 
 El acceso a las notificaciones está en la barra superior de todas las pantallas

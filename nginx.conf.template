@@ -1,0 +1,29 @@
+# Configuración de nginx para servir el build de Vite.
+# ${PORT} lo completa la imagen de nginx al arrancar (ver Dockerfile).
+server {
+    listen ${PORT};
+    root /usr/share/nginx/html;
+    index index.html;
+
+    # React Router maneja las rutas en el navegador. Si alguien recarga
+    # /panel-administrador, ese archivo no existe en el servidor: se devuelve
+    # index.html y React muestra la pantalla que corresponde.
+    location / {
+        try_files $uri $uri/ /index.html;
+    }
+
+    # Los archivos de assets/ llevan un hash en el nombre: si cambian, cambia
+    # el nombre. Se pueden guardar en caché sin miedo a mostrar algo viejo.
+    location /assets/ {
+        expires 1y;
+        add_header Cache-Control "public, immutable";
+    }
+
+    # index.html no: siempre se pide de nuevo para tomar el último deploy.
+    location = /index.html {
+        add_header Cache-Control "no-cache";
+    }
+
+    gzip on;
+    gzip_types text/css application/javascript application/json image/svg+xml;
+}
