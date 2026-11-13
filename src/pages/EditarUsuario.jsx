@@ -16,6 +16,7 @@ import { evitarFoco } from '../utils/formulario';
 import { validarNombreApellido } from '../utils/validarNombreApellido';
 import {
   validarCapacidadKg,
+  validarDni,
   validarEmail,
   validarTipoVehiculo,
   validarUbicacion,
@@ -34,6 +35,7 @@ function valoresIniciales(usuario) {
   return {
     nombre: usuario.nombre ?? '',
     apellido: usuario.apellido ?? '',
+    dni: usuario.dni ?? '',
     email: usuario.email ?? '',
     estado: usuario.estado ?? 'activo',
     ubicacion: usuario.camionero?.ubicacion ?? '',
@@ -64,6 +66,11 @@ function validar(valores, esCamionero) {
     errores.apellido = errorApellido;
   }
 
+  const errorDni = validarDni(valores.dni);
+  if (errorDni) {
+    errores.dni = errorDni;
+  }
+
   const errorEmail = validarEmail(valores.email);
   if (errorEmail) {
     errores.email = errorEmail;
@@ -91,7 +98,7 @@ function validar(valores, esCamionero) {
 
 /**
  * Convierte los valores del formulario en el payload que espera `PUT /usuarios/:id`.
- * Nunca incluye `dni`, `rol` ni `contraseña`: el backend rechaza el pedido si vienen.
+ * Nunca incluye `rol` ni `contraseña`: el backend rechaza el pedido si vienen.
  *
  * @param {ReturnType<typeof valoresIniciales>} valores - valores actuales del formulario.
  * @param {boolean} esCamionero - si el usuario que se edita es camionero.
@@ -101,6 +108,7 @@ function armarPayload(valores, esCamionero) {
   const payload = {
     nombre: valores.nombre.trim(),
     apellido: valores.apellido.trim(),
+    dni: valores.dni.trim(),
     email: valores.email.trim(),
     estado: valores.estado,
   };
@@ -121,9 +129,9 @@ function armarPayload(valores, esCamionero) {
  * `GET /usuarios/:id` individual). Si se entra directo a la ruta sin ese
  * state (por ejemplo, refrescando la página), se vuelve al listado.
  *
- * Muestra el formulario precargado con los datos actuales, mantiene el DNI
- * bloqueado (no editable), valida los datos, los envía al backend y, al
- * cancelar o al guardar con éxito, navega de vuelta a /usuarios.
+ * Muestra el formulario precargado con los datos actuales, valida lo que se
+ * escribe, lo envía al backend y, al cancelar o al guardar con éxito, navega
+ * de vuelta a /usuarios. El rol y la contraseña no se editan desde acá.
  *
  * @returns {JSX.Element}
  */
@@ -315,8 +323,17 @@ export default function EditarUsuario() {
             </div>
 
             <div className="ds-fila-2">
-              {/* DNI bloqueado: la HU 1.2 exige que no se pueda modificar desde acá. */}
-              <Campo id="eu-dni" etiqueta="DNI" obligatorio={false} type="text" value={usuario.dni} disabled />
+              <Campo
+                id="eu-dni"
+                etiqueta="DNI"
+                error={errorDe('dni')}
+                type="text"
+                inputMode="numeric"
+                placeholder="Ej: 27845112"
+                value={valores.dni}
+                onChange={alCambiar('dni')}
+                onBlur={alSalirDelCampo('dni')}
+              />
               <Campo
                 id="eu-email"
                 etiqueta="Email"
@@ -329,7 +346,6 @@ export default function EditarUsuario() {
                 autoComplete="email"
               />
             </div>
-            <p className="eu-nota">El DNI no se puede modificar.</p>
 
             <Campo id="eu-estado" etiqueta="Estado" error={errorDe('estado')}>
               {({ id, idError, tieneError }) => (
