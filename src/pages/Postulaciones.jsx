@@ -40,7 +40,9 @@ export default function Postulaciones() {
   const navigate = useNavigate();
   const location = useLocation();
   // Desde el inicio o desde Cargas vuelve ahí; si se entró directo, lleva a buscar cargas.
-  const volver = destinoVolver(location, { ruta: '/cargas', texto: 'Ir a buscar cargas' });
+  // Sin botón de volver si se entró desde la barra superior: no hay a dónde
+  // volver. Sí lo hay si se llegó desde el inicio o desde otra pantalla.
+  const volver = destinoVolver(location, null);
   const [postulaciones, setPostulaciones] = useState([]);
   // 'cargando' | 'ok' | 'error'
   const [estadoPantalla, setEstadoPantalla] = useState('cargando');
@@ -86,10 +88,16 @@ export default function Postulaciones() {
       <BarraSuperior />
 
       <main className="pos-contenido">
-        <button type="button" className="dc-volver" onClick={() => navigate(volver.ruta, { state: volver.estado })}>
-          <IconoFlechaAtras width={20} height={20} />
-          {volver.texto}
-        </button>
+        {volver && (
+          <button
+            type="button"
+            className="dc-volver"
+            onClick={() => navigate(volver.ruta, { state: volver.estado })}
+          >
+            <IconoFlechaAtras width={20} height={20} />
+            {volver.texto}
+          </button>
+        )}
 
         <h1 className="ds-titulo-pagina pos-titulo">
           <IconoCamion width={26} height={26} />

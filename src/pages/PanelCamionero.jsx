@@ -13,6 +13,7 @@ import {
   IconoReintentar,
 } from '../components/Iconos';
 import { listarCargas, obtenerMisPostulaciones } from '../api/cargas';
+import { motivoSinCapacidad } from '../utils/carga';
 import { listarNotificaciones } from '../api/notificaciones';
 import { usuarioActual } from '../api/sesion';
 import { ErrorDeApi } from '../api/usuarios';
@@ -130,7 +131,8 @@ export default function PanelCamionero() {
   const lista = postulaciones.valor ?? [];
   const viajesEnCurso = lista.filter(esViajeEnCurso);
   const enEspera = lista.filter((postulacion) => grupoDePostulacion(postulacion) === 'espera');
-  const cantidadCargas = cargas.valor?.length ?? 0;
+  // Sólo las que su vehículo puede llevar: las demás no son "disponibles" para él.
+  const cantidadCargas = cargas.valor?.filter((carga) => !motivoSinCapacidad(carga)).length ?? 0;
   // El backend devuelve 100 como máximo, igual que para el contador de la barra.
   const cantidadNoLeidas = noLeidas.valor?.length ?? 0;
   const textoNoLeidas = cantidadNoLeidas > 99 ? '99+' : cantidadNoLeidas;

@@ -1,8 +1,9 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { listarUsuarios, ErrorDeApi } from '../api/usuarios';
 import {
   IconoAlerta,
+  IconoCheck,
   IconoCerrar,
   IconoEditar,
   IconoOjo,
@@ -15,16 +16,48 @@ import './Usuarios.css';
 /** Filtros en blanco. Sirve para inicializar el estado y el botón "Limpiar filtros". */
 const FILTROS_VACIOS = { nombre: '', dni: '', rol: '', estado: '' };
 
-/** Espera antes de aplicar lo tipeado en nombre/DNI, para no pegarle al backend en cada tecla. */
-const RETRASO_BUSQUEDA_MS = 350;
+/**
+ * Texto en minúscula y sin acentos, para buscar sin importar cómo se escribió:
+ * "jose" encuentra a "José".
+ *
+ * @param {string} texto
+ * @returns {string}
+ */
+const normalizarBusqueda = (texto) =>
+  String(texto ?? '')
+    .normalize('NFD')
+    .replace(/\p{Diacritic}/gu, '')
+    .toLowerCase()
+    .trim();
+
+/**
+ * Si un usuario pasa los filtros. Nombre y DNI buscan en cualquier parte del
+ * texto; el nombre, también en el apellido.
+ *
+ * @param {object} usuario
+ * @param {typeof FILTROS_VACIOS} filtros
+ * @returns {boolean}
+ */
+const cumpleFiltros = (usuario, filtros) => {
+  const nombre = normalizarBusqueda(filtros.nombre);
+  if (nombre && !normalizarBusqueda(`${usuario.nombre} ${usuario.apellido}`).includes(nombre)) {
+    return false;
+  }
+  const dni = filtros.dni.trim();
+  if (dni && !String(usuario.dni).includes(dni)) return false;
+  if (filtros.rol && usuario.rol !== filtros.rol) return false;
+  if (filtros.estado && usuario.estado !== filtros.estado) return false;
+  return true;
+};
 
 /**
  * Pantalla de gestión de usuarios (HU 1.1, HU 1.2 y HU 1.3).
  *
- * Al entrar pide `GET /usuarios` sin filtros. Cada vez que cambia la búsqueda
- * por nombre/DNI o los filtros de rol/estado, vuelve a pedir con los query
- * params correspondientes y actualiza la tabla. Cada fila tiene una acción
- * para ver la ficha de solo lectura y otra para editar el usuario.
+ * Al entrar pide `GET /usuarios` una sola vez, y la búsqueda por nombre/DNI y
+ * los filtros de rol y estado se aplican sobre esa lista, sin volver a pedirla:
+ * así filtrar es instantáneo y no aparece "Cargando usuarios..." a cada cambio.
+ * Cada fila tiene una acción para ver la ficha de solo lectura y otra para
+ * editar el usuario.
  *
  * @returns {JSX.Element}
  */
@@ -32,15 +65,12 @@ export default function Usuarios() {
   const navigate = useNavigate();
   const location = useLocation();
 
-  // `filtros` son los filtros ya aplicados (los que disparan el pedido).
-  // `nombreTexto`/`dniTexto` son lo que hay escrito en esos inputs ahora
-  // mismo; se vuelcan a `filtros` con un pequeño retraso (debounce).
   const [filtros, setFiltros] = useState(FILTROS_VACIOS);
-  const [nombreTexto, setNombreTexto] = useState('');
-  const [dniTexto, setDniTexto] = useState('');
 
   const [usuarios, setUsuarios] = useState([]);
   const [idDestacado, setIdDestacado] = useState(null);
+  // Qué se acaba de hacer al volver del alta o la edición ("Se guardaron los cambios de...").
+  const [avisoExito, setAvisoExito] = useState('');
   // 'cargando' | 'ok' | 'error'
   const [estadoPantalla, setEstadoPantalla] = useState('cargando');
   const [mensajeError, setMensajeError] = useState('');
@@ -49,36 +79,20 @@ export default function Usuarios() {
   // ante el doble-invoke de <StrictMode> en desarrollo.
   const idProcesadoRef = useRef(null);
 
-  const hayFiltrosAplicados = Boolean(
-    filtros.nombre || filtros.dni || filtros.rol || filtros.estado,
+  const hayAlgunFiltro = Boolean(
+    filtros.nombre.trim() || filtros.dni.trim() || filtros.rol || filtros.estado,
   );
 
-  // Vuelca lo tipeado en nombre a los filtros aplicados, con debounce.
-  useEffect(() => {
-    const id = setTimeout(() => {
-      setFiltros((previos) =>
-        previos.nombre === nombreTexto ? previos : { ...previos, nombre: nombreTexto },
-      );
-    }, RETRASO_BUSQUEDA_MS);
-    return () => clearTimeout(id);
-  }, [nombreTexto]);
+  const usuariosVisibles = useMemo(
+    () => usuarios.filter((usuario) => cumpleFiltros(usuario, filtros)),
+    [usuarios, filtros],
+  );
 
-  // Vuelca lo tipeado en DNI a los filtros aplicados, con debounce.
-  useEffect(() => {
-    const id = setTimeout(() => {
-      setFiltros((previos) => (previos.dni === dniTexto ? previos : { ...previos, dni: dniTexto }));
-    }, RETRASO_BUSQUEDA_MS);
-    return () => clearTimeout(id);
-  }, [dniTexto]);
-
-  // Pide los usuarios cada vez que cambian los filtros aplicados. Si llega un
-  // cambio antes de que responda el pedido anterior, lo cancela (gana el último).
+  // Pide los usuarios una sola vez, al entrar.
   useEffect(() => {
     const controlador = new AbortController();
-    setEstadoPantalla('cargando');
-    setMensajeError('');
 
-    listarUsuarios(filtros, { signal: controlador.signal })
+    listarUsuarios({}, { signal: controlador.signal })
       .then((datos) => {
         setUsuarios(datos);
         setEstadoPantalla('ok');
@@ -94,7 +108,18 @@ export default function Usuarios() {
       });
 
     return () => controlador.abort();
-  }, [filtros]);
+  }, []);
+
+  /**
+   * Cambia un filtro.
+   *
+   * @param {string} campo - 'nombre', 'dni', 'rol' o 'estado'.
+   * @returns {function(evento: Event): void}
+   */
+  const alCambiarFiltro = (campo) => (evento) => {
+    const { value } = evento.target;
+    setFiltros((previos) => ({ ...previos, [campo]: value }));
+  };
 
   // Las pantallas de alta y edición vuelven acá pasando el usuario creado o
   // actualizado por router state, para poder resaltar su fila.
@@ -105,21 +130,22 @@ export default function Usuarios() {
 
     idProcesadoRef.current = usuario.id_usuario;
     setIdDestacado(usuario.id_usuario);
+    setAvisoExito(
+      location.state?.usuarioCreado
+        ? `Se registró a ${usuario.nombre} ${usuario.apellido}.`
+        : `Se guardaron los cambios de ${usuario.nombre} ${usuario.apellido}.`,
+    );
 
     // Limpia el state para no volver a destacarlo si el usuario navega con atrás/adelante.
     navigate(location.pathname, { replace: true, state: null });
   }, [location.state, location.pathname, navigate]);
 
   /**
-   * Deja los filtros en blanco y vuelve a traer el listado completo.
+   * Deja los filtros en blanco: vuelve a verse el listado completo.
    *
    * @returns {void}
    */
-  const limpiarFiltros = () => {
-    setNombreTexto('');
-    setDniTexto('');
-    setFiltros(FILTROS_VACIOS);
-  };
+  const limpiarFiltros = () => setFiltros(FILTROS_VACIOS);
 
   /**
    * Navega a la ficha de solo lectura de un usuario, llevando sus datos por
@@ -144,9 +170,6 @@ export default function Usuarios() {
     navigate('/usuarios/editar', { state: { usuario } });
   };
 
-  // Incluye lo tipeado en nombre/DNI aunque el debounce todavía no lo haya aplicado.
-  const hayAlgunFiltro =
-    hayFiltrosAplicados || nombreTexto.trim() !== '' || dniTexto.trim() !== '';
 
   return (
     <>
@@ -168,7 +191,7 @@ export default function Usuarios() {
           </button>
         </div>
 
-        {/* Búsqueda y filtros (HU 1.3): combinables entre sí. Cada cambio vuelve a pedir GET /usuarios. */}
+        {/* Búsqueda y filtros (HU 1.3): combinables entre sí, sobre la lista ya cargada. */}
         <div className="us-filtros">
           <div className="us-filtro">
             <label className="ds-campo__label" htmlFor="us-nombre">
@@ -180,8 +203,8 @@ export default function Usuarios() {
               className="ds-campo__input"
               placeholder="Buscar por nombre..."
               autoComplete="off"
-              value={nombreTexto}
-              onChange={(evento) => setNombreTexto(evento.target.value)}
+              value={filtros.nombre}
+              onChange={alCambiarFiltro('nombre')}
             />
           </div>
 
@@ -196,8 +219,8 @@ export default function Usuarios() {
               placeholder="Buscar por DNI..."
               inputMode="numeric"
               autoComplete="off"
-              value={dniTexto}
-              onChange={(evento) => setDniTexto(evento.target.value)}
+              value={filtros.dni}
+              onChange={alCambiarFiltro('dni')}
             />
           </div>
 
@@ -209,9 +232,7 @@ export default function Usuarios() {
               id="us-rol"
               className="ds-campo__input"
               value={filtros.rol}
-              onChange={(evento) =>
-                setFiltros((previos) => ({ ...previos, rol: evento.target.value }))
-              }
+              onChange={alCambiarFiltro('rol')}
             >
               <option value="">Todos los roles</option>
               <option value="administrador">Administrador</option>
@@ -227,9 +248,7 @@ export default function Usuarios() {
               id="us-estado"
               className="ds-campo__input"
               value={filtros.estado}
-              onChange={(evento) =>
-                setFiltros((previos) => ({ ...previos, estado: evento.target.value }))
-              }
+              onChange={alCambiarFiltro('estado')}
             >
               <option value="">Todos los estados</option>
               <option value="activo">Activo</option>
@@ -248,9 +267,17 @@ export default function Usuarios() {
           </button>
         </div>
 
-        {estadoPantalla === 'ok' && usuarios.length > 0 && (
+        {avisoExito && (
+          <div className="us-aviso-exito" role="status">
+            <IconoCheck width={20} height={20} />
+            {avisoExito}
+          </div>
+        )}
+
+        {estadoPantalla === 'ok' && usuariosVisibles.length > 0 && (
           <p className="us-contador">
-            {usuarios.length} {usuarios.length === 1 ? 'usuario encontrado' : 'usuarios encontrados'}
+            {usuariosVisibles.length}{' '}
+            {usuariosVisibles.length === 1 ? 'usuario encontrado' : 'usuarios encontrados'}
           </p>
         )}
 
@@ -265,7 +292,7 @@ export default function Usuarios() {
 
         {estadoPantalla === 'ok' && (
           <div className="us-tabla-caja">
-            {usuarios.length === 0 ? (
+            {usuariosVisibles.length === 0 ? (
               <p className="us-vacio">
                 {hayAlgunFiltro ? (
                   'No hay usuarios que coincidan con los filtros aplicados. Probá con otros valores o limpiá los filtros.'
@@ -292,7 +319,7 @@ export default function Usuarios() {
                   </tr>
                 </thead>
                 <tbody>
-                  {usuarios.map((usuario) => (
+                  {usuariosVisibles.map((usuario) => (
                     <tr
                       key={usuario.id_usuario}
                       className={usuario.id_usuario === idDestacado ? 'us-fila--nueva' : undefined}

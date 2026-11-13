@@ -10,7 +10,6 @@ import {
   IconoCaja,
   IconoCajaMas,
   IconoCalendario,
-  IconoCamion,
   IconoCerrar,
   IconoOjo,
   IconoPeso,
@@ -19,7 +18,13 @@ import {
 } from '../components/Iconos';
 import BarraSuperior from '../components/BarraSuperior';
 import EstadoCarga from '../components/EstadoCarga';
-import { formatearFecha, formatearKm, formatearPeso } from '../utils/carga';
+import {
+  formatearFecha,
+  formatearKm,
+  formatearPeso,
+  motivoSinCapacidad,
+  retiroVencido,
+} from '../utils/carga';
 import { etiquetaEstado } from '../utils/estadosCarga';
 import { volverA } from '../utils/volver';
 import './Cargas.css';
@@ -165,6 +170,100 @@ export default function Cargas() {
     });
   };
 
+  // Al camionero se le separan las cargas que no puede llevar (HU 4): pesan
+  // más que su capacidad o no tiene la capacidad cargada. Al administrador
+  // `motivoSinCapacidad` siempre le da null, así que ve todas juntas.
+  const postulables = cargas.filter((carga) => !motivoSinCapacidad(carga));
+  const excedidas = cargas.filter((carga) => motivoSinCapacidad(carga));
+  const sinCapacidadCargada = excedidas.some((carga) => motivoSinCapacidad(carga) === 'sin-capacidad');
+
+  /**
+   * Qué decir cuando no hay ninguna carga en la grilla principal.
+   *
+   * @returns {string}
+   */
+  const mensajeSinCargas = () => {
+    if (excedidas.length > 0) return 'No hay cargas que pueda llevar tu vehículo en este momento.';
+    if (hayAlgunFiltro) {
+      return 'No hay cargas que coincidan con los filtros aplicados. Probá con otros valores o limpiá los filtros.';
+    }
+    return esCamionero ? 'No hay cargas disponibles en este momento.' : 'Todavía no hay cargas registradas.';
+  };
+
+  /**
+   * Tarjeta de una carga del listado.
+   *
+   * @param {object} carga
+   * @param {boolean} [excedida] - si el camionero no la puede llevar: se ve atenuada.
+   * @returns {JSX.Element}
+   */
+  const tarjeta = (carga, excedida = false) => (
+    <article key={carga.id_carga} className={`cg-card${excedida ? ' cg-card--excedida' : ''}`}>
+      <div className="cg-card__top">
+        <h2 className="cg-card__titulo">{carga.tipo_carga}</h2>
+        {/*
+          Al camionero no se le muestra el estado: todas las que ve están
+          abiertas a postulaciones, y una "Pendiente" (que ya tiene postulados)
+          se leería como que no puede postularse.
+        */}
+        {!esCamionero && (
+          <span className="cg-card__etiquetas">
+            {retiroVencido(carga) && <span className="cg-etiqueta-vencida">Retiro vencido</span>}
+            <EstadoCarga estado={carga.estado_actual} />
+          </span>
+        )}
+      </div>
+
+      <p className="cg-card__ruta">
+        <IconoUbicacion width={18} height={18} />
+        <span>{carga.origen}</span>
+        <span className="cg-card__flecha" aria-hidden="true">
+          →
+        </span>
+        <span>{carga.destino}</span>
+      </p>
+
+      <div className="cg-card__meta">
+        <span>
+          <IconoCalendario width={16} height={16} />
+          {formatearFecha(carga.fecha)}
+        </span>
+        <span>
+          <IconoPeso width={16} height={16} />
+          {formatearPeso(carga.peso_kg)}
+        </span>
+        {/*
+          Distancia estimada (HU 9): dato secundario, sólo para el
+          administrador. Si quedó pendiente se avisa acá también, así
+          se ve desde el listado qué cargas hay que reintentar.
+        */}
+        {!esCamionero && (
+          <span>
+            <IconoRuta width={16} height={16} />
+            {carga.estado_calculo_km === 'ok'
+              ? formatearKm(carga.kilometros_estimados)
+              : 'Distancia pendiente'}
+          </span>
+        )}
+      </div>
+
+      {/*
+        El botón "estirado" (::after cubre toda la tarjeta en el CSS) hace
+        que el click en cualquier parte de la tarjeta lleve al detalle, sin
+        perder accesibilidad: sigue siendo un único control enfocable.
+      */}
+      <button
+        type="button"
+        className="ds-boton ds-boton--primario cg-card__vermas"
+        onClick={() => irAlDetalle(carga)}
+        aria-label={`Ver detalle de la carga de ${carga.origen} a ${carga.destino}`}
+      >
+        <IconoOjo width={18} height={18} />
+        Ver detalle
+      </button>
+    </article>
+  );
+
   return (
     <>
       <BarraSuperior />
@@ -175,26 +274,19 @@ export default function Cargas() {
             <IconoCaja width={26} height={26} />
             {esCamionero ? 'Cargas disponibles' : 'Gestión de Cargas'}
           </h1>
-          {/* HU 4 y HU 6: los viajes asignados y las postulaciones del camionero. */}
-          {esCamionero && (
-            <button
-              type="button"
-              className="ds-boton ds-boton--secundario"
-              onClick={() => navigate('/mis-viajes', { state: volverA('/cargas', 'Volver a Cargas', location.state) })}
-            >
-              <IconoCamion />
-              Mis viajes
-            </button>
-          )}
-          {/* HU 2.1 + 2.1.1: alta de carga, también alcanzable desde este listado. */}
+          {/*
+            HU 2.1 + 2.1.1: alta de carga, también alcanzable desde este listado.
+            Mismo estilo que "Nuevo Usuario" en Gestión de Usuarios. El camionero
+            no tiene botón acá: "Mis viajes" ya está en la barra superior.
+          */}
           {!esCamionero && (
             <button
               type="button"
-              className="ds-boton ds-boton--secundario"
+              className="ds-boton ds-boton--primario"
               onClick={() => navigate('/cargas/nueva')}
             >
               <IconoCajaMas />
-              Nueva carga
+              Nueva Carga
             </button>
           )}
         </div>
@@ -288,9 +380,10 @@ export default function Cargas() {
           )}
         </div>
 
-        {estadoPantalla === 'ok' && cargas.length > 0 && (
+        {estadoPantalla === 'ok' && postulables.length > 0 && (
           <p className="cg-contador">
-            {cargas.length} {cargas.length === 1 ? 'carga encontrada' : 'cargas encontradas'}
+            {postulables.length}{' '}
+            {postulables.length === 1 ? 'carga encontrada' : 'cargas encontradas'}
           </p>
         )}
 
@@ -303,81 +396,31 @@ export default function Cargas() {
 
         {estadoPantalla === 'cargando' && <p className="cg-mensaje">Cargando cargas...</p>}
 
-        {estadoPantalla === 'ok' && cargas.length === 0 && (
-          <p className="cg-mensaje">
-            {hayAlgunFiltro
-              ? 'No hay cargas que coincidan con los filtros aplicados. Probá con otros valores o limpiá los filtros.'
-              : 'Todavía no hay cargas registradas.'}
-          </p>
+        {estadoPantalla === 'ok' && postulables.length === 0 && (
+          <p className="cg-mensaje">{mensajeSinCargas()}</p>
         )}
 
-        {estadoPantalla === 'ok' && cargas.length > 0 && (
-          <div className="cg-grilla">
-            {cargas.map((carga) => (
-              <article
-                key={carga.id_carga}
-                className="cg-card"
-              >
-                <div className="cg-card__top">
-                  <h2 className="cg-card__titulo">{carga.tipo_carga}</h2>
-                  {/*
-                    Al camionero no se le muestra el estado: todas las que ve
-                    están abiertas a postulaciones, y una "Pendiente" (que ya
-                    tiene postulados) se leería como que no puede postularse.
-                  */}
-                  {!esCamionero && <EstadoCarga estado={carga.estado_actual} />}
-                </div>
+        {estadoPantalla === 'ok' && postulables.length > 0 && (
+          <div className="cg-grilla">{postulables.map((carga) => tarjeta(carga))}</div>
+        )}
 
-                <p className="cg-card__ruta">
-                  <IconoUbicacion width={18} height={18} />
-                  <span>{carga.origen}</span>
-                  <span className="cg-card__flecha" aria-hidden="true">
-                    →
-                  </span>
-                  <span>{carga.destino}</span>
-                </p>
-
-                <div className="cg-card__meta">
-                  <span>
-                    <IconoCalendario width={16} height={16} />
-                    {formatearFecha(carga.fecha)}
-                  </span>
-                  <span>
-                    <IconoPeso width={16} height={16} />
-                    {formatearPeso(carga.peso_kg)}
-                  </span>
-                  {/*
-                    Distancia estimada (HU 9): dato secundario, sólo para el
-                    administrador. Si quedó pendiente se avisa acá también, así
-                    se ve desde el listado qué cargas hay que reintentar.
-                  */}
-                  {!esCamionero && (
-                    <span>
-                      <IconoRuta width={16} height={16} />
-                      {carga.estado_calculo_km === 'ok'
-                        ? formatearKm(carga.kilometros_estimados)
-                        : 'Distancia pendiente'}
-                    </span>
-                  )}
-                </div>
-
-                {/*
-                  El botón "estirado" (::after cubre toda la tarjeta en el CSS) hace
-                  que el click en cualquier parte de la tarjeta lleve al detalle, sin
-                  perder accesibilidad: sigue siendo un único control enfocable.
-                */}
-                <button
-                  type="button"
-                  className="ds-boton ds-boton--primario cg-card__vermas"
-                  onClick={() => irAlDetalle(carga)}
-                  aria-label={`Ver detalle de la carga de ${carga.origen} a ${carga.destino}`}
-                >
-                  <IconoOjo width={18} height={18} />
-                  Ver detalle
-                </button>
-              </article>
-            ))}
-          </div>
+        {/*
+          Las que el camionero no puede llevar quedan aparte y al final, en vez
+          de ocultarse: así sabe que existen (por ejemplo, para cuando cambie
+          de vehículo), pero no se mezclan con las que sí puede tomar.
+        */}
+        {estadoPantalla === 'ok' && excedidas.length > 0 && (
+          <section className="cg-excedidas" aria-labelledby="cg-excedidas-titulo">
+            <h2 className="cg-excedidas__titulo" id="cg-excedidas-titulo">
+              {sinCapacidadCargada ? 'No podés postularte todavía' : 'Superan la capacidad de tu vehículo'}
+            </h2>
+            <p className="cg-excedidas__texto">
+              {sinCapacidadCargada
+                ? 'Tu vehículo no tiene la capacidad cargada, así que no podés postularte a ninguna carga. Pedile a un administrador que la cargue.'
+                : `Tu vehículo lleva hasta ${formatearPeso(excedidas[0].capacidad_camionero_kg)}. Estas cargas pesan más, así que no podés postularte.`}
+            </p>
+            <div className="cg-grilla">{excedidas.map((carga) => tarjeta(carga, true))}</div>
+          </section>
         )}
       </main>
     </>

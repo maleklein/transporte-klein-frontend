@@ -33,8 +33,10 @@ function valoresDesdeCarga(carga) {
     // precarga es directa: no hay que deducir la provincia a partir del nombre.
     origen_provincia: carga.origen_provincia_id ?? '',
     origen_id: carga.origen_id ?? '',
+    direccion_origen: carga.direccion_origen ?? '',
     destino_provincia: carga.destino_provincia_id ?? '',
     destino_id: carga.destino_id ?? '',
+    direccion_destino: carga.direccion_destino ?? '',
     tipo_carga: carga.tipo_carga ?? '',
     peso: String(carga.peso_kg ?? ''),
     fecha: carga.fecha ?? '',
@@ -49,6 +51,9 @@ function valoresDesdeCarga(carga) {
  * validación, componentes y patrón de estado que `AltaCarga.jsx` (ver
  * `utils/validarCarga.js`: `validar`, `armarPayload`, `LARGOS_MAXIMOS`). Al
  * guardar manda `PUT /cargas/:id` en vez de `POST /cargas`.
+ *
+ * Al guardar se queda en esta pantalla con el mensaje de éxito, por si al
+ * releer aparece algo más para corregir. "Volver al detalle" lleva a la carga.
  *
  * Si la carga ya está en un estado que no admite edición ('en_viaje' o
  * 'entregada') — detectado al cargarla, o devuelto como 409 al guardar si
@@ -78,10 +83,13 @@ export default function EditarCarga() {
   const [intentoEnviar, setIntentoEnviar] = useState(false);
   const [enviando, setEnviando] = useState(false);
 
-  const refPrimerCampo = useRef(null);
-  const refTemporizador = useRef(null);
+  // La fecha que tiene guardada la carga: si no se cambia, se acepta aunque
+  // ya haya pasado (ver `validar`).
+  const [fechaOriginal, setFechaOriginal] = useState('');
 
-  const erroresValidacion = valores ? validar(valores) : {};
+  const refPrimerCampo = useRef(null);
+
+  const erroresValidacion = valores ? validar(valores, { fechaOriginal }) : {};
   const formularioValido = Object.keys(erroresValidacion).length === 0;
 
   /**
@@ -110,6 +118,7 @@ export default function EditarCarga() {
           );
         } else {
           setValores(valoresDesdeCarga(datos));
+          setFechaOriginal(datos.fecha ?? '');
         }
         setEstadoPantalla('ok');
       })
@@ -137,7 +146,6 @@ export default function EditarCarga() {
     return () => clearTimeout(foco);
   }, [estadoPantalla, mensajeBloqueo]);
 
-  useEffect(() => () => clearTimeout(refTemporizador.current), []);
 
   /**
    * Cancela la edición y vuelve al detalle de la carga, sin guardar nada.
@@ -160,6 +168,8 @@ export default function EditarCarga() {
    */
   const alCambiarCampos = (cambios) => {
     setValores((previos) => ({ ...previos, ...cambios }));
+    // Con un cambio nuevo, el "se actualizó" ya no describe lo que hay en pantalla.
+    setMensajeExito('');
 
     // Al corregir un campo, el error del backend deja de aplicar.
     setErroresBackend((previos) => {
@@ -196,7 +206,7 @@ export default function EditarCarga() {
 
   /**
    * Maneja el submit: valida, guarda los cambios con `PUT /cargas/:id` y, si
-   * sale bien, muestra el mensaje de éxito y vuelve al detalle de la carga.
+   * sale bien, muestra el mensaje de éxito sin salir de la pantalla.
    * Un 409 (la carga pasó a un estado que ya no admite edición mientras se
    * completaba el formulario) bloquea el formulario en vez de dejar reintentar.
    *
@@ -219,18 +229,21 @@ export default function EditarCarga() {
     try {
       const cargaActualizada = await editarCarga(id, armarPayload(valores));
 
+      // El formulario pasa a mostrar lo que quedó guardado (el backend limpia
+      // espacios y pone en mayúscula el tipo de carga).
+      setValores(valoresDesdeCarga(cargaActualizada));
+      setFechaOriginal(cargaActualizada.fecha ?? '');
+      setTocados({});
+      setIntentoEnviar(false);
       // Si cambió la ruta y el servicio de mapas no respondió (HU 9), se avisa
-      // acá: el detalle al que se redirige ya muestra el botón Reintentar.
+      // acá: el detalle tiene el botón Reintentar.
       setMensajeExito(
         `La carga ${cargaActualizada.origen} → ${cargaActualizada.destino} se actualizó correctamente.` +
           (cargaActualizada.estado_calculo_km === 'pendiente'
             ? ' La distancia quedó pendiente: podés reintentar el cálculo desde el detalle.'
             : ''),
       );
-
-      refTemporizador.current = setTimeout(() => {
-        navigate(`/cargas/${id}`, { state: location.state });
-      }, 1500);
+      setEnviando(false);
     } catch (error) {
       if (error instanceof ErrorDeValidacion) {
         // El backend devuelve los errores ya agrupados por campo.
@@ -364,7 +377,7 @@ export default function EditarCarga() {
 
               <Campo
                 id="ec-fecha"
-                etiqueta="Fecha"
+                etiqueta="Fecha de retiro"
                 error={errorDe('fecha')}
                 type="date"
                 value={valores.fecha}
@@ -372,7 +385,12 @@ export default function EditarCarga() {
                 onBlur={alSalirDelCampo('fecha')}
               />
 
-              <Campo id="ec-observaciones" etiqueta="Observaciones" error={errorDe('observaciones')}>
+              <Campo
+                id="ec-observaciones"
+                etiqueta="Observaciones"
+                obligatorio={false}
+                error={errorDe('observaciones')}
+              >
                 {({ id: idCampo, idError, tieneError }) => (
                   <textarea
                     id={idCampo}
@@ -393,13 +411,14 @@ export default function EditarCarga() {
             <div className="ac-footer">
               <button
                 type="button"
-                className="ds-boton ds-boton--cancelar"
+                className={`ds-boton ${mensajeExito ? 'ds-boton--secundario' : 'ds-boton--cancelar'}`}
                 onClick={cancelar}
                 onMouseDown={evitarFoco}
                 disabled={enviando}
               >
-                <IconoCerrar />
-                Cancelar
+                {/* Recién guardado no hay nada que cancelar: el botón lleva a la carga. */}
+                {mensajeExito ? <IconoFlechaAtras /> : <IconoCerrar />}
+                {mensajeExito ? 'Volver al detalle' : 'Cancelar'}
               </button>
               <button
                 type="submit"

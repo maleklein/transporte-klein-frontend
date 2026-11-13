@@ -34,7 +34,12 @@ import { ErrorDeApi } from '../api/usuarios';
 import { usuarioActual } from '../api/sesion';
 import { evitarFoco } from '../utils/formulario';
 import { destinoVolver } from '../utils/volver';
-import { ESTADOS_BLOQUEADOS_EDICION, formatearFecha, formatearPeso } from '../utils/carga';
+import {
+  ESTADOS_BLOQUEADOS_EDICION,
+  formatearFecha,
+  formatearPeso,
+  retiroVencido,
+} from '../utils/carga';
 import {
   ESTADOS,
   ESTADOS_BLOQUEADOS_CANCELACION,
@@ -92,6 +97,15 @@ export default function DetalleCarga() {
   const { id } = useParams();
 
   const [carga, setCarga] = useState(null);
+
+  // Mensaje que deja el alta al traer acá la carga recién creada. Se guarda
+  // al entrar y se saca del historial: si no, volvería a aparecer con F5.
+  const [avisoExito] = useState(location.state?.avisoExito ?? '');
+  useEffect(() => {
+    if (!location.state?.avisoExito) return;
+    const { avisoExito: _usado, ...resto } = location.state;
+    navigate(location.pathname, { replace: true, state: Object.keys(resto).length ? resto : null });
+  }, [location, navigate]);
   // 'cargando' | 'ok' | 'no-encontrada' | 'error'
   const [estadoPantalla, setEstadoPantalla] = useState('cargando');
   const [mensajeError, setMensajeError] = useState('');
@@ -463,6 +477,24 @@ export default function DetalleCarga() {
               </div>
             </header>
 
+            {avisoExito && !mensajeCancelacion && (
+              <div className="dc-aviso-exito" role="status">
+                <IconoCheck width={20} height={20} />
+                {avisoExito}
+              </div>
+            )}
+
+            {esAdministrador && retiroVencido(carga) && (
+              <div className="dc-aviso-advertencia" role="status">
+                <IconoAlerta width={20} height={20} />
+                <span>
+                  La fecha de retiro ({formatearFecha(carga.fecha)}) ya pasó y la carga sigue sin
+                  camionero asignado. Los camioneros ya no la ven ni pueden postularse: cambiale la
+                  fecha o cancelala.
+                </span>
+              </div>
+            )}
+
             {mensajeCancelacion && (
               <div
                 className="dc-aviso-exito"
@@ -484,14 +516,24 @@ export default function DetalleCarga() {
                     <IconoUbicacion width={15} height={15} />
                     Origen
                   </dt>
-                  <dd>{carga.origen}</dd>
+                  <dd>
+                    {carga.origen}
+                    {carga.direccion_origen && (
+                      <span className="dc-dato__direccion">{carga.direccion_origen}</span>
+                    )}
+                  </dd>
                 </div>
                 <div className="dc-dato">
                   <dt>
                     <IconoUbicacion width={15} height={15} />
                     Destino
                   </dt>
-                  <dd>{carga.destino}</dd>
+                  <dd>
+                    {carga.destino}
+                    {carga.direccion_destino && (
+                      <span className="dc-dato__direccion">{carga.direccion_destino}</span>
+                    )}
+                  </dd>
                 </div>
                 <div className="dc-dato">
                   <dt>

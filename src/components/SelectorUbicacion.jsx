@@ -1,7 +1,9 @@
 import { useEffect, useMemo, useState } from 'react';
 import Campo from './Campo';
 import ComboBox from './ComboBox';
+import CampoDireccion from './CampoDireccion';
 import { listarLocalidades, listarProvincias } from '../api/geografia';
+import { LARGOS_MAXIMOS } from '../utils/validarCarga';
 import './SelectorUbicacion.css';
 
 /**
@@ -15,6 +17,11 @@ import './SelectorUbicacion.css';
  * Trabaja sobre dos campos del formulario, `<nombre>_provincia` y `<nombre>_id`.
  * El segundo es el que se manda; el primero existe sólo para encadenar los
  * selectores y por eso el backend nunca devuelve errores para él.
+ *
+ * Debajo va la dirección (`direccion_<nombre>`), opcional: a veces el lugar es
+ * un campo y no tiene calle ni número. Sugiere calles de georef para la
+ * localidad elegida (`CampoDireccion`), pero acepta cualquier texto: georef no
+ * tiene los caminos rurales, y si no responde el campo sigue andando.
  *
  * Los dos campos son `ComboBox`: se escribe para filtrar y se elige de la
  * lista. Empezaron siendo `<select>` nativos, pero con 642 localidades en
@@ -46,6 +53,7 @@ export default function SelectorUbicacion({
 }) {
   const campoProvincia = `${nombre}_provincia`;
   const campoLocalidad = `${nombre}_id`;
+  const campoDireccion = `direccion_${nombre}`;
   const idProvinciaElegida = valores[campoProvincia];
 
   const [provincias, setProvincias] = useState([]);
@@ -260,6 +268,27 @@ export default function SelectorUbicacion({
           )}
         </Campo>
       </div>
+
+      <Campo
+        id={`${prefijo}-${campoDireccion}`}
+        etiqueta={`Dirección de ${etiqueta.toLowerCase()}`}
+        obligatorio={false}
+        error={errorDe(campoDireccion)}
+      >
+        {({ id, idError, tieneError }) => (
+          <CampoDireccion
+            id={id}
+            idError={idError}
+            tieneError={tieneError}
+            valor={valores[campoDireccion]}
+            idLocalidad={valores[campoLocalidad]}
+            alCambiar={(texto) => alCambiarCampos({ [campoDireccion]: texto })}
+            alSalir={alSalirDelCampo?.(campoDireccion)}
+            maxLength={LARGOS_MAXIMOS[campoDireccion]}
+            marcador="Ej: Av. Pellegrini 1200"
+          />
+        )}
+      </Campo>
     </fieldset>
   );
 }

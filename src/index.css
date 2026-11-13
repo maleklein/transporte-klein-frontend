@@ -19,6 +19,10 @@
   --color-peligro-oscuro: #8E1F1F;
   --color-peligro-claro: #FDECEC;
 
+  /* Advertencia: algo que pide atención pero no es un error. */
+  --color-advertencia: #8A5300;
+  --color-advertencia-claro: #FFF4E5;
+
   /* Neutros — contraste alto sobre blanco */
   --color-fondo: #FFFFFF;
   --color-fondo-alt: #F1F4F7;
@@ -90,7 +94,7 @@ body {
 
 /* Perfil: sin encabezado alrededor, el título lleva su propio espacio. */
 .pr-titulo {
-  margin: 8px 0 24px;
+  margin: 0 0 24px;
 }
 
 .ds-boton {

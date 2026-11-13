@@ -23,6 +23,7 @@
   font-size: var(--texto-base);
   font-weight: 700;
   color: var(--color-primario);
+  text-decoration: none;
   cursor: pointer;
 }
 

@@ -33,6 +33,17 @@
   color: var(--color-primario);
 }
 
+/* El botón del encabezado ("Nuevo Usuario", "Nueva Carga") es ~20px más alto
+   que el título. Centrados, el título bajaba 10px y la pantalla arrancaba más
+   abajo que las demás. Con este margen negativo el encabezado mide lo que el
+   título, y el título queda a la misma distancia de la barra en todas. Cuando
+   el botón baja a otra línea (celular) no hace falta. */
+@media (min-width: 600px) {
+  .us-encabezado > .ds-boton {
+    margin-block: -10px;
+  }
+}
+
 /* --- Barra de búsqueda y filtros (HU 1.3) --- */
 .us-filtros {
   display: grid;
@@ -113,8 +124,40 @@
 }
 
 /* Resalta brevemente el usuario recién agregado */
+/* La fila del usuario recién creado o editado se resalta y se desvanece sola:
+   alcanza para ubicarla, y no queda verde como si significara otra cosa. */
 .us-tabla tr.us-fila--nueva td {
+  animation: us-resaltado 4s ease-out forwards;
+}
+
+@keyframes us-resaltado {
+  0%,
+  40% {
+    background: var(--color-confirmar-claro);
+  }
+  100% {
+    background: transparent;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .us-tabla tr.us-fila--nueva td {
+    animation-duration: 0.01s;
+    animation-delay: 3s;
+  }
+}
+
+.us-aviso-exito {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 20px;
+  padding: 14px 16px;
+  border: 2px solid var(--color-confirmar);
+  border-radius: var(--radio-chico);
   background: var(--color-confirmar-claro);
+  color: var(--color-confirmar-oscuro);
+  font-weight: 600;
 }
 
 .us-boton-accion {
