@@ -58,7 +58,7 @@ const TEXTOS = Object.freeze({
   },
   [ESTADOS.ENTREGADA]: {
     titulo: 'Carga entregada',
-    detalle: 'Llegó a destino. No quedan más pasos.',
+    detalle: 'Llegó a destino. Si la marcaste por error, podés deshacer la entrega.',
     accion: null,
     aviso: 'Carga marcada como entregada',
   },
@@ -77,8 +77,8 @@ const TEXTOS = Object.freeze({
  * Textos de las transiciones que se confirman antes de aplicarse, por estado
  * destino. Son las dos que no se arreglan con un "Deshacer":
  *
- * - Marcar como entregada. No es destructiva pero sí definitiva —`entregada`
- *   es terminal por RN-01—.
+ * - Marcar como entregada. Se puede deshacer, pero cierra el viaje y habilita
+ *   las calificaciones, así que se pregunta antes.
  * - Volver de aceptada a pendiente, porque deshace la asignación (HU 6): la
  *   carga se queda sin camionero, y volver a aceptada pide asignarla de nuevo.
  *
@@ -90,7 +90,7 @@ const CONFIRMACIONES = Object.freeze({
   [ESTADOS.ENTREGADA]: {
     titulo: '¿Marcarla como entregada?',
     detalle:
-      'Entregada es el último paso: la carga no vuelve a estados anteriores y sus datos quedan como registro de lo que pasó. No se puede deshacer.',
+      'Entregada es el último paso: sus datos quedan como registro de lo que pasó y el camionero y el administrador pueden calificarse. Si te equivocaste, después se puede deshacer.',
     confirmar: 'Sí, marcar entregada',
     volver: 'No, todavía no',
     aviso: 'Carga marcada como entregada',
@@ -158,10 +158,10 @@ function marcasPorEstado(eventos) {
  * recorrido muestra además cuándo se llegó a cada paso, así el administrador
  * ve el avance sin bajar hasta la bitácora.
  *
- * Las transiciones que se pueden deshacer (avanzar y volver) se aplican
- * directo y ofrecen "Deshacer" en un aviso temporal. Marcar como entregada,
- * que lleva a un estado final, pide confirmación en un recuadro dentro del
- * mismo componente y no ofrece vuelta atrás, porque no la tiene.
+ * La mayoría de las transiciones se aplican directo y ofrecen "Deshacer" en un
+ * aviso temporal. Marcar como entregada pide confirmación antes, en un recuadro
+ * dentro del mismo componente, porque cierra el viaje y habilita las
+ * calificaciones; igual se puede deshacer después, desde la misma pantalla.
  *
  * Cancelar la carga no se hace desde acá sino desde el botón del encabezado
  * de `DetalleCarga` (HU 2.4). Este bloque sólo muestra el resultado: el paso

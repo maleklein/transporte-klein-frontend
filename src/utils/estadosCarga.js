@@ -34,22 +34,31 @@ export const FLUJO = Object.freeze([
 /**
  * Transiciones permitidas desde cada estado. Igual que en el backend: además
  * de avanzar se puede retroceder un paso, para corregir un clic equivocado.
- * `entregada` es terminal por RN-01 y `cancelada` por decisión del equipo.
+ * `cancelada` es el único estado del que ya no se vuelve.
  */
 export const TRANSICIONES = Object.freeze({
   [ESTADOS.DISPONIBLE]: [ESTADOS.PENDIENTE, ESTADOS.CANCELADA],
   [ESTADOS.PENDIENTE]: [ESTADOS.ACEPTADA, ESTADOS.DISPONIBLE, ESTADOS.CANCELADA],
   [ESTADOS.ACEPTADA]: [ESTADOS.EN_VIAJE, ESTADOS.PENDIENTE],
   [ESTADOS.EN_VIAJE]: [ESTADOS.ENTREGADA, ESTADOS.ACEPTADA],
-  [ESTADOS.ENTREGADA]: [],
+  // Entregada se puede deshacer: marcarla de más es un error fácil de cometer
+  // y antes dejaba la carga sin ninguna acción posible.
+  [ESTADOS.ENTREGADA]: [ESTADOS.EN_VIAJE],
   [ESTADOS.CANCELADA]: [],
 });
 
 /**
- * Estados de los que ya no se vuelve. Pasar a uno de ellos es irreversible,
- * así que la pantalla pide confirmación antes (HU 2.4 lo exige para cancelar).
+ * Estados de los que ya no se vuelve. Cancelar es la única salida sin retorno:
+ * una entrega marcada por error se deshace volviendo la carga a "En viaje".
  */
-export const ESTADOS_FINALES = Object.freeze([ESTADOS.ENTREGADA, ESTADOS.CANCELADA]);
+export const ESTADOS_FINALES = Object.freeze([ESTADOS.CANCELADA]);
+
+/**
+ * Pasos que la pantalla confirma antes de aplicar. Cancelar no se puede
+ * deshacer (HU 2.4 lo exige); marcar la entrega sí, pero cierra el viaje y
+ * habilita las calificaciones, así que conviene preguntar igual.
+ */
+const ESTADOS_QUE_SE_CONFIRMAN = Object.freeze([ESTADOS.ENTREGADA, ESTADOS.CANCELADA]);
 
 /**
  * Estados en los que una carga recibe postulaciones (HU 4): "disponible"
@@ -156,23 +165,21 @@ export function esCorreccion(estadoActual, estadoNuevo) {
 }
 
 /**
- * Indica si pasar a este estado es irreversible y hay que confirmarlo antes.
+ * Indica si hay que confirmar el paso a este estado antes de aplicarlo.
  *
  * @param {string} estadoNuevo - estado destino.
- * @returns {boolean} true si el destino es un estado final.
+ * @returns {boolean} true si ese paso se confirma.
  */
 export function requiereConfirmacion(estadoNuevo) {
-  return ESTADOS_FINALES.includes(estadoNuevo);
+  return ESTADOS_QUE_SE_CONFIRMAN.includes(estadoNuevo);
 }
 
 /**
  * Explica por qué una carga no se puede editar en su estado actual.
  *
- * Los dos casos no son lo mismo y por eso el texto cambia: una carga en viaje
- * está bloqueada *mientras* esté en ese estado, y si hace falta corregir algo
- * se la puede volver a "Aceptada"; una entregada está bloqueada para siempre,
- * porque es un estado final del que ya no se vuelve (RN-01). Decir "ya no se
- * pueden modificar" en los dos casos era falso para el primero.
+ * En viaje y entregada son bloqueos *mientras* dure ese estado, y el texto
+ * dice cómo salir de cada uno: volver la carga al paso anterior. Cancelada no
+ * tiene salida, y por eso su texto no ofrece ninguna.
  *
  * @param {string} estadoActual - estado en el que está la carga.
  * @returns {string} el motivo, o cadena vacía si en ese estado sí se puede editar.
@@ -182,7 +189,7 @@ export function motivoEdicionBloqueada(estadoActual) {
     return 'Mientras la carga está en viaje no se pueden modificar sus datos. Si necesitás corregir algo, volvé a pasarla a "Aceptada" primero.';
   }
   if (estadoActual === ESTADOS.ENTREGADA) {
-    return 'La carga ya fue entregada: sus datos quedan como registro de lo que pasó y no se pueden modificar.';
+    return 'La carga ya fue entregada: sus datos quedan como registro de lo que pasó. Si necesitás corregir algo, deshacé la entrega primero.';
   }
   if (estadoActual === ESTADOS.CANCELADA) {
     return 'La carga está cancelada: no tiene sentido modificar los datos de un viaje que no va a salir.';
