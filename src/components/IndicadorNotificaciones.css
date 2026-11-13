@@ -22,6 +22,9 @@
   border-radius: 999px;
   background: var(--color-peligro);
   box-shadow: 0 0 0 2px #fff;
+  /* Blanco fijo y no heredado: con el acceso activo el texto del enlace pasa
+     a azul, y un número azul sobre el rojo no se leía. */
+  color: #fff;
   font-size: var(--texto-ayuda);
   font-variant-numeric: tabular-nums;
   line-height: 1;
