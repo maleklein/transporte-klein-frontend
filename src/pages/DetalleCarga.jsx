@@ -44,6 +44,13 @@ import {
 import './DetalleCarga.css';
 
 /**
+ * Cada cuánto se vuelve a consultar una carga disponible, para enterarse de la
+ * primera postulación sin recargar. El mismo intervalo que el contador de
+ * notificaciones.
+ */
+const INTERVALO_CONSULTA_MS = 30_000;
+
+/**
  * Detalle de una carga (HU 2.5), en la ruta /cargas/:id.
  *
  * Replica el bloque "Información de la carga" del mockup: título con el badge de
@@ -278,6 +285,40 @@ export default function DetalleCarga() {
   }, [id]);
 
   const hayCarga = estadoPantalla === 'ok';
+
+  // Mientras la carga está disponible, el administrador espera la primera
+  // postulación: con ella la carga pasa sola a pendiente (HU 4) y aparece
+  // "Asignar camionero". Antes había que recargar la página para verlo. Se
+  // consulta cada 30 segundos, y al volver a la pestaña; en segundo plano no.
+  // Cuando cambia el estado, se reemplaza la carga y se vuelven a pedir el
+  // historial y la lista de postulados (los dos cuelgan de `versionHistorial`).
+  const estadoActual = carga?.estado_actual;
+  useEffect(() => {
+    if (!hayCarga || !esAdministrador || estadoActual !== ESTADOS.DISPONIBLE) return undefined;
+
+    let controlador = null;
+    const consultar = () => {
+      if (document.hidden) return;
+      controlador?.abort();
+      controlador = new AbortController();
+      obtenerCarga(id, { signal: controlador.signal })
+        .then((actualizada) => {
+          if (actualizada.estado_actual === ESTADOS.DISPONIBLE) return;
+          setCarga(actualizada);
+          setVersionHistorial((version) => version + 1);
+        })
+        // Es un refresco de fondo: si falla, queda lo que ya se ve.
+        .catch(() => {});
+    };
+
+    const intervalo = setInterval(consultar, INTERVALO_CONSULTA_MS);
+    document.addEventListener('visibilitychange', consultar);
+    return () => {
+      clearInterval(intervalo);
+      document.removeEventListener('visibilitychange', consultar);
+      controlador?.abort();
+    };
+  }, [hayCarga, esAdministrador, estadoActual, id]);
 
   // Bitácora: se pide cuando la carga ya está, y de nuevo después de cada
   // cambio de estado. En esas recargas no se vuelve a "Cargando...": se deja a
