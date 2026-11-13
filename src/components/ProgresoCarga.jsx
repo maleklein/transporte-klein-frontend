@@ -90,7 +90,7 @@ const CONFIRMACIONES = Object.freeze({
   [ESTADOS.ENTREGADA]: {
     titulo: '¿Marcarla como entregada?',
     detalle:
-      'Entregada es el último paso: sus datos quedan como registro de lo que pasó y podés calificar al camionero. Si te equivocaste, después se puede deshacer.',
+      'Entregada es el último paso: sus datos quedan como registro de lo que pasó y el administrador que la creó puede calificar al camionero. Si te equivocaste, después se puede deshacer.',
     confirmar: 'Sí, marcar entregada',
     volver: 'No, todavía no',
     aviso: 'Carga marcada como entregada',

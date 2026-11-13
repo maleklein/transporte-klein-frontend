@@ -338,7 +338,10 @@ export default function Metricas() {
 
               <section className="mt-grafico-card">
                 <h2 className="mt-grafico-card__titulo">Entregas por semana</h2>
-                {datosPorSemana.length > 0 ? (
+                {/* El backend manda todas las semanas del período, también las de
+                    0 entregas: sin ninguna entrega se muestra el mensaje en lugar
+                    de un gráfico con todas las barras en cero. */}
+                {datosPorSemana.some((fila) => fila.cantidad > 0) ? (
                   <ResponsiveContainer width="100%" height={280}>
                     <BarChart data={datosPorSemana} margin={{ top: 8, right: 8, left: 0, bottom: 8 }}>
                       <CartesianGrid strokeDasharray="3 3" stroke="#D5DBE3" />
