@@ -262,10 +262,7 @@ export default function Notificaciones() {
           notificaciones.length > 0 &&
           agruparPorFecha(notificaciones, (notificacion) => notificacion.creado_en).map((grupo) => (
             <section key={grupo.clave} className="nt-grupo" aria-labelledby={`nt-grupo-${grupo.clave}`}>
-              <h2 className="nt-grupo__titulo" id={`nt-grupo-${grupo.clave}`}>
-                {grupo.titulo}
-                <span className="nt-grupo__cantidad">({grupo.elementos.length})</span>
-              </h2>
+              <h2 className="nt-grupo__titulo" id={`nt-grupo-${grupo.clave}`}>{grupo.titulo}</h2>
               <ul className="nt-lista">
                 {grupo.elementos.map((notificacion) => {
                   const { Icono, nombre } = TIPOS[notificacion.tipo_evento] ?? TIPO_GENERICO;
