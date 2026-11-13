@@ -138,17 +138,52 @@ export function headersDeAuth() {
   return sesion ? { Authorization: `Bearer ${sesion.token}` } : {};
 }
 
+/** Clave donde queda el aviso que el login muestra cuando la sesión se cerró sola. */
+const CLAVE_AVISO = 'aviso_sesion';
+
 /**
- * Reacciona a un 401 del backend: el token falta, venció o dejó de ser válido.
+ * Lee el aviso que dejó el cierre de sesión automático y lo borra, para que
+ * aparezca una sola vez.
+ *
+ * @returns {string} el aviso, o cadena vacía si no había ninguno.
+ */
+export function tomarAvisoDeSesion() {
+  try {
+    const aviso = sessionStorage.getItem(CLAVE_AVISO) ?? '';
+    sessionStorage.removeItem(CLAVE_AVISO);
+    return aviso;
+  } catch {
+    // Sin sessionStorage no se muestra el aviso, pero la sesión igual se cerró.
+    return '';
+  }
+}
+
+/**
+ * Reacciona a una respuesta que deja la sesión sin valor: un 401 (el token
+ * falta, venció o dejó de ser válido) o el 403 de una cuenta dada de baja.
  *
  * Borra la sesión y manda al login. Se hace acá y no en cada pantalla para que
  * el manejo sea uno solo y no haya que acordarse de repetirlo en cada fetch.
  *
+ * El 403 por falta de permisos no entra acá: la sesión sigue sirviendo y lo
+ * único que pasa es que esa pantalla no le corresponde a ese rol. Por eso se
+ * mira el `codigo` que manda el backend y no el código HTTP solo.
+ *
  * @param {number} estado - código HTTP de la respuesta.
+ * @param {object|null} [cuerpo] - cuerpo ya parseado de la respuesta, si lo hubo.
  * @returns {void}
  */
-export function manejarNoAutorizado(estado) {
-  if (estado !== 401) return;
+export function manejarNoAutorizado(estado, cuerpo = null) {
+  const cuentaDeBaja = estado === 403 && cuerpo?.codigo === 'cuenta_inactiva';
+  if (estado !== 401 && !cuentaDeBaja) return;
+
+  if (cuentaDeBaja) {
+    try {
+      sessionStorage.setItem(CLAVE_AVISO, 'Tu cuenta fue dada de baja. Pedile a un administrador que la active.');
+    } catch {
+      // El aviso es opcional: lo importante es cerrar la sesión.
+    }
+  }
 
   cerrarSesion();
 

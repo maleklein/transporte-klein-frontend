@@ -81,9 +81,9 @@ export async function crearUsuario(datos) {
   }
 
   if (!respuesta.ok) {
-    // Un 401 significa que el token falta, vencio o dejo de servir:
-    // se limpia la sesion y se vuelve al login.
-    manejarNoAutorizado(respuesta.status);
+    // Si el token dejó de servir o la cuenta está dada de baja,
+    // se limpia la sesión y se vuelve al login.
+    manejarNoAutorizado(respuesta.status, cuerpo);
     const mensaje =
       cuerpo?.message ??
       cuerpo?.error ??
@@ -142,9 +142,9 @@ export async function listarUsuarios(filtros = {}, opciones = {}) {
   }
 
   if (!respuesta.ok) {
-    // Un 401 significa que el token falta, vencio o dejo de servir:
-    // se limpia la sesion y se vuelve al login.
-    manejarNoAutorizado(respuesta.status);
+    // Si el token dejó de servir o la cuenta está dada de baja,
+    // se limpia la sesión y se vuelve al login.
+    manejarNoAutorizado(respuesta.status, cuerpo);
     const mensaje =
       cuerpo?.message ??
       cuerpo?.error ??
@@ -192,9 +192,9 @@ export async function editarUsuario(idUsuario, datos) {
   }
 
   if (!respuesta.ok) {
-    // Un 401 significa que el token falta, vencio o dejo de servir:
-    // se limpia la sesion y se vuelve al login.
-    manejarNoAutorizado(respuesta.status);
+    // Si el token dejó de servir o la cuenta está dada de baja,
+    // se limpia la sesión y se vuelve al login.
+    manejarNoAutorizado(respuesta.status, cuerpo);
     const mensaje =
       cuerpo?.message ??
       cuerpo?.error ??

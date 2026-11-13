@@ -16,7 +16,7 @@ async function solicitar(ruta, opciones = {}) {
   }
   const cuerpo = await respuesta.json().catch(() => null);
   if (!respuesta.ok) {
-    manejarNoAutorizado(respuesta.status);
+    manejarNoAutorizado(respuesta.status, cuerpo);
     throw new ErrorDeApi(cuerpo?.message ?? 'No se pudo completar la operación.', null, respuesta.status);
   }
   if (!cuerpo) throw new ErrorDeApi('El servidor devolvió una respuesta inesperada.', null, 0);

@@ -57,9 +57,9 @@ async function pedirCatalogo(ruta, queFalló) {
     }
 
     if (!respuesta.ok) {
-        // Un 401 significa que el token falta, venció o dejó de servir:
+        // Si el token dejó de servir o la cuenta está dada de baja,
         // se limpia la sesión y se vuelve al login.
-        manejarNoAutorizado(respuesta.status);
+        manejarNoAutorizado(respuesta.status, cuerpo);
         throw new ErrorDeApi(cuerpo?.message ?? queFalló, null, respuesta.status);
     }
 

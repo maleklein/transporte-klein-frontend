@@ -19,7 +19,7 @@ export async function obtenerSugeridos(idCarga, opciones = {}) {
 
   const cuerpo = await respuesta.json().catch(() => null);
   if (!respuesta.ok) {
-    manejarNoAutorizado(respuesta.status);
+    manejarNoAutorizado(respuesta.status, cuerpo);
     throw new ErrorDeApi(cuerpo?.message ?? 'No se pudieron obtener las sugerencias.', null, respuesta.status);
   }
   if (!Array.isArray(cuerpo?.sugeridos)) {
