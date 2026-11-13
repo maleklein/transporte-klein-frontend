@@ -5,15 +5,15 @@
  * (EditarUsuario.jsx, HU 1.2). Nombre y apellido se validan por separado en
  * `validarNombreApellido.js`.
  *
- * El backend (`usuarioControllers.js`) sólo exige que estos campos no estén
- * vacíos (y que `capacidad_kg` sea numérica); no valida formato de DNI/email
- * ni largos máximos. Estas reglas son del lado del cliente, pensadas para
- * avisar antes de enviar; los largos de email/ubicación/tipo_vehiculo siguen
+ * El backend (`usuarioControllers.js`) aplica las mismas reglas; acá se
+ * repiten para avisar antes de enviar. Los largos de email/ubicación/tipo_vehiculo siguen
  * el tamaño real de la columna en la base (`email VARCHAR(100)`,
  * `ubicacion VARCHAR(150)`, `tipo_vehiculo VARCHAR(100)`, confirmado contra
  * la base viva). El de contraseña (72) es el límite práctico de bcrypt, no
  * una columna: `contraseña_hash` guarda el hash, no el texto.
  */
+
+import isEmail from 'validator/es/lib/isEmail';
 
 /** DNI argentino sin puntos ni espacios: 7 u 8 dígitos. */
 const PATRON_DNI = /^\d{7,8}$/;
@@ -38,8 +38,6 @@ export function validarDni(valor) {
 
 export const LARGO_MAXIMO_EMAIL = 100;
 
-/** nombre@dominio.ext: sin espacios, una sola arroba, extensión de 2+ letras. */
-const PATRON_EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
 
 /**
  * @param {string} valor - lo que escribió el usuario en el campo email.
@@ -56,7 +54,9 @@ export function validarEmail(valor) {
     return `El email no puede superar los ${LARGO_MAXIMO_EMAIL} caracteres.`;
   }
 
-  if (!PATRON_EMAIL.test(limpio)) {
+  // El formato lo valida `isEmail` de validator.js, la misma librería y versión
+  // que usa el backend, así los dos aceptan exactamente lo mismo.
+  if (!isEmail(limpio)) {
     return 'Escribí un email válido. Ejemplo: nombre@mail.com';
   }
 
