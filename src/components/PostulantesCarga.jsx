@@ -8,6 +8,9 @@ import { formatearMarcaCorta, formatearPeso } from '../utils/carga';
 import { ESTADOS } from '../utils/estadosCarga';
 import './PostulantesCarga.css';
 
+/** Cada cuánto se vuelve a pedir la lista mientras la carga espera asignación. */
+const INTERVALO_REFRESCO_MS = 30_000;
+
 /** Cómo se nombra cada estado de una postulación en la lista. */
 const ETIQUETAS_POSTULACION = Object.freeze({
   pendiente: 'En espera',
@@ -51,6 +54,11 @@ export default function PostulantesCarga({ carga, version, modalAbierto, alCerra
   const [mensajeExito, setMensajeExito] = useState('');
   const refPrimeraOpcion = useRef(null);
   const refAviso = useRef(null);
+  // Sube cada 30 segundos mientras la carga está pendiente: vuelve a pedir la
+  // lista para que aparezcan las postulaciones nuevas sin recargar la página.
+  const [refresco, setRefresco] = useState(0);
+  // Si ya se mostró una lista: un refresco que falla no la reemplaza por un error.
+  const refHayLista = useRef(false);
 
   // Se vuelve a pedir después de cada cambio de estado (`version`): asignar o
   // volver a pendiente cambian cómo quedó cada postulación. Mientras llega,
@@ -63,9 +71,13 @@ export default function PostulantesCarga({ carga, version, modalAbierto, alCerra
       .then((datos) => {
         setPostulantes(datos);
         setEstadoPedido('ok');
+        refHayLista.current = true;
       })
       .catch((fallo) => {
         if (fallo?.name === 'AbortError') return;
+        // Si ya había una lista a la vista (un refresco de fondo), se deja:
+        // no vale la pena tapar los postulados con un error pasajero.
+        if (refHayLista.current) return;
         setErrorPedido(
           fallo instanceof ErrorDeApi
             ? fallo.message
@@ -75,7 +87,23 @@ export default function PostulantesCarga({ carga, version, modalAbierto, alCerra
       });
 
     return () => controlador.abort();
-  }, [carga.id_carga, version]);
+  }, [carga.id_carga, version, refresco]);
+
+  // Refresco periódico, solo mientras la carga está pendiente (después de
+  // asignarla ya no llegan postulaciones) y con la pestaña a la vista.
+  useEffect(() => {
+    if (carga.estado_actual !== ESTADOS.PENDIENTE) return undefined;
+
+    const refrescar = () => {
+      if (!document.hidden) setRefresco((valor) => valor + 1);
+    };
+    const intervalo = setInterval(refrescar, INTERVALO_REFRESCO_MS);
+    document.addEventListener('visibilitychange', refrescar);
+    return () => {
+      clearInterval(intervalo);
+      document.removeEventListener('visibilitychange', refrescar);
+    };
+  }, [carga.estado_actual]);
 
   // Cada vez que se abre el modal, arranca sin nadie elegido ni errores viejos.
   useEffect(() => {
