@@ -156,7 +156,7 @@ export default function SelectorUbicacion({
    */
   const textoMarcadorProvincia = () => {
     if (estadoProvincias === 'cargando') return 'Cargando provincias...';
-    if (estadoProvincias === 'error') return 'No se pudieron cargar las provincias';
+    if (estadoProvincias === 'error') return 'No se pudieron cargar';
     return 'Buscá o elegí la provincia';
   };
 
@@ -164,6 +164,10 @@ export default function SelectorUbicacion({
    * Texto que muestra el campo de localidad cuando todavía no hay nada
    * elegido. Cambia según el estado porque es lo que le explica al usuario por
    * qué la lista está vacía.
+   *
+   * Los textos son cortos a propósito: el formulario tiene dos campos por fila
+   * y uno más largo se cortaba ("Elegí primero la provincia de origen"). De qué
+   * provincia se trata ya lo dice el rótulo del campo.
    *
    * El campo NO se deshabilita mientras no haya provincia: un control
    * deshabilitado no recibe foco, y la pantalla enfoca el primer campo con
@@ -173,9 +177,9 @@ export default function SelectorUbicacion({
    * @returns {string}
    */
   const textoMarcadorLocalidad = () => {
-    if (!idProvinciaElegida) return `Elegí primero la provincia de ${etiqueta.toLowerCase()}`;
+    if (!idProvinciaElegida) return 'Primero elegí la provincia';
     if (estadoLocalidades === 'cargando') return 'Cargando localidades...';
-    if (estadoLocalidades === 'error') return 'No se pudieron cargar las localidades';
+    if (estadoLocalidades === 'error') return 'No se pudieron cargar';
     return 'Buscá o elegí la localidad';
   };
 
