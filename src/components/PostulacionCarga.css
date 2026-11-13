@@ -49,3 +49,10 @@
   background: var(--color-primario-claro);
   color: var(--color-primario);
 }
+
+/* No se puede postular (capacidad o retiro vencido): explica por qué. */
+.pc-estado--impedido {
+  border-color: var(--color-advertencia);
+  background: var(--color-advertencia-claro);
+  color: var(--color-advertencia);
+}

@@ -3,6 +3,35 @@
  * y el detalle (DetalleCarga.jsx). No tocan el backend: sólo dan formato.
  */
 
+import { hoyEnArgentina } from './validarCarga';
+import { ESTADOS_ABIERTOS } from './estadosCarga';
+
+/**
+ * Una carga sin asignar cuya fecha de retiro ya pasó. Al camionero el backend
+ * ya no se la muestra; el administrador la ve marcada para cambiarle la fecha
+ * o cancelarla.
+ *
+ * @param {object} carga - con `fecha` (AAAA-MM-DD) y `estado_actual`.
+ * @returns {boolean}
+ */
+export function retiroVencido(carga) {
+  return ESTADOS_ABIERTOS.includes(carga.estado_actual) && carga.fecha < hoyEnArgentina();
+}
+
+/**
+ * Por qué el camionero no puede llevar esta carga, según la capacidad de su
+ * vehículo. Es la misma regla con la que el backend rechaza la postulación
+ * (HU 4): sirve para no ofrecerle postularse y que recién ahí se entere.
+ *
+ * @param {object} carga - con `peso_kg` y `capacidad_camionero_kg`, que el backend sólo manda al camionero.
+ * @returns {'sin-capacidad'|'supera'|null} null si la puede llevar (o si no es camionero).
+ */
+export function motivoSinCapacidad(carga) {
+  if (!('capacidad_camionero_kg' in carga)) return null;
+  if (carga.capacidad_camionero_kg === null) return 'sin-capacidad';
+  return Number(carga.peso_kg) > Number(carga.capacidad_camionero_kg) ? 'supera' : null;
+}
+
 /**
  * Formatea el peso que llega del backend como string decimal ("12500.00") al
  * formato local con separador de miles ("12.500 kg").

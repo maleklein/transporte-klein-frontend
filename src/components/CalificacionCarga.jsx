@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { emitirCalificacion, obtenerCalificacionViaje } from '../api/calificaciones';
 import { IconoGuardar, IconoReintentar } from './Iconos';
+import { volverA } from '../utils/volver';
 import './Calificaciones.css';
 
 /** Se monta para una carga entregada. El servidor determina la contraparte y el permiso. */
@@ -64,7 +65,7 @@ export default function CalificacionCarga({ idCarga }) {
           {!sinPermiso && !datos && <button type="button" className="ds-boton ds-boton--secundario" onClick={() => setVersion((v) => v + 1)}><IconoReintentar />Reintentar</button>}
         </div>}
         {!sinPermiso && datos && <>
-          <p>Contraparte: <Link to={`/perfiles/${datos.contraparte.id_usuario}`}>
+          <p>Contraparte: <Link to={`/perfiles/${datos.contraparte.id_usuario}`} state={volverA(`/cargas/${idCarga}`, 'Volver a la carga')}>
             {datos.contraparte.nombre} {datos.contraparte.apellido}
           </Link>. Consultá su perfil y reputación.</p>
           {datos.emitida ? <div className="cal-evaluacion">

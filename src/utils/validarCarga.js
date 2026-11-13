@@ -15,8 +15,10 @@ export const VALORES_INICIALES = {
   // lo que se manda es el id de localidad.
   origen_provincia: '',
   origen_id: '',
+  direccion_origen: '',
   destino_provincia: '',
   destino_id: '',
+  direccion_destino: '',
   tipo_carga: '',
   peso: '',
   fecha: '',
@@ -34,6 +36,8 @@ export const VALORES_INICIALES = {
 export const LARGOS_MAXIMOS = {
   tipo_carga: 100,
   observaciones: 1000,
+  direccion_origen: 150,
+  direccion_destino: 150,
 };
 
 /**
@@ -59,12 +63,30 @@ export function parsearPeso(valor) {
 }
 
 /**
+ * Fecha de hoy en Argentina, AAAA-MM-DD. Es la misma cuenta que hace el
+ * backend: si la compu del usuario tuviera otra zona horaria, igual coinciden.
+ *
+ * @returns {string}
+ */
+export function hoyEnArgentina() {
+  // en-CA formatea las fechas como AAAA-MM-DD.
+  return new Intl.DateTimeFormat('en-CA', { timeZone: 'America/Argentina/Buenos_Aires' }).format(new Date());
+}
+
+/**
  * Reglas de validación del formulario, evaluadas en tiempo real.
  *
+ * La fecha de retiro no puede ser anterior a hoy. En la edición se pasa la
+ * fecha que ya tenía la carga: si no cambió, se acepta aunque haya pasado,
+ * igual que en el backend (una carga en camino tiene una fecha pasada y eso
+ * no puede impedir corregirle otro dato).
+ *
  * @param {typeof VALORES_INICIALES} valores - valores actuales del formulario.
+ * @param {object} [opciones]
+ * @param {string} [opciones.fechaOriginal] - en la edición, la fecha guardada.
  * @returns {object} mapa `{ campo: mensaje }` con un error por cada campo inválido.
  */
-export function validar(valores) {
+export function validar(valores, { fechaOriginal } = {}) {
   const errores = {};
 
   // Se valida la provincia además de la localidad para poder marcar el campo
@@ -108,13 +130,20 @@ export function validar(valores) {
     const anio = Number(valores.fecha.slice(0, 4));
     if (anio < ANIO_MINIMO || anio > ANIO_MAXIMO) {
       errores.fecha = `El año debe estar entre ${ANIO_MINIMO} y ${ANIO_MAXIMO}.`;
+    } else if (valores.fecha !== fechaOriginal && valores.fecha < hoyEnArgentina()) {
+      // Con el formato AAAA-MM-DD, comparar el texto es comparar las fechas.
+      errores.fecha = 'La fecha de retiro no puede ser anterior a hoy.';
     }
   }
 
-  if (!valores.observaciones.trim()) {
-    errores.observaciones = 'Ingresá las observaciones de la carga.';
-  } else if (valores.observaciones.trim().length > LARGOS_MAXIMOS.observaciones) {
+  // Observaciones y direcciones son opcionales: sólo se controla el largo.
+  if (valores.observaciones.trim().length > LARGOS_MAXIMOS.observaciones) {
     errores.observaciones = `Las observaciones no pueden superar los ${LARGOS_MAXIMOS.observaciones} caracteres.`;
+  }
+  for (const campo of ['direccion_origen', 'direccion_destino']) {
+    if (valores[campo].trim().length > LARGOS_MAXIMOS[campo]) {
+      errores[campo] = `La dirección no puede superar los ${LARGOS_MAXIMOS[campo]} caracteres.`;
+    }
   }
 
   return errores;
@@ -122,8 +151,9 @@ export function validar(valores) {
 
 /**
  * Arma el cuerpo del POST/PUT a partir de los valores del formulario. Mismo
- * payload para el alta y la edición: el backend espera los mismos seis campos
- * en los dos endpoints.
+ * payload para el alta y la edición: el backend espera los mismos campos en
+ * los dos endpoints. Los opcionales vacíos van como texto vacío y el backend
+ * los guarda como NULL.
  *
  * @param {typeof VALORES_INICIALES} valores - valores actuales del formulario.
  * @returns {object} payload listo para `crearCarga` / `editarCarga`.
@@ -133,6 +163,8 @@ export function armarPayload(valores) {
     // Las provincias no se mandan: el backend las deduce de la localidad.
     origen_id: valores.origen_id,
     destino_id: valores.destino_id,
+    direccion_origen: valores.direccion_origen.trim(),
+    direccion_destino: valores.direccion_destino.trim(),
     tipo_carga: valores.tipo_carga.trim(),
     // Se manda como número para que el backend reciba el punto decimal aunque
     // el usuario haya escrito con coma.

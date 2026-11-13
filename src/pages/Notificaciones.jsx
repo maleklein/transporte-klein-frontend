@@ -17,7 +17,7 @@ import {
   marcarTodasLeidas,
 } from '../api/notificaciones';
 import { ErrorDeApi } from '../api/usuarios';
-import { rutaInicio, usuarioActual } from '../api/sesion';
+import { usuarioActual } from '../api/sesion';
 import { formatearFechaHora, formatearMarcaCorta } from '../utils/carga';
 import { agruparPorFecha } from '../utils/agruparPorFecha';
 import { destinoVolver, volverA } from '../utils/volver';
@@ -30,6 +30,7 @@ import './Notificaciones.css';
  */
 const TIPOS = {
   carga_nueva: { Icono: IconoCajaMas, nombre: 'Carga nueva' },
+  carga_cancelada: { Icono: IconoCerrar, nombre: 'Carga cancelada' },
   cambio_estado: { Icono: IconoCamion, nombre: 'Cambio de estado' },
   carga_asignada: { Icono: IconoCheck, nombre: 'Carga asignada' },
   asignacion_confirmada: { Icono: IconoCheck, nombre: 'Asignación confirmada' },
@@ -98,23 +99,11 @@ export default function Notificaciones() {
   const destino = destinoVolver(location, null);
 
   /**
-   * Vuelve a la pantalla desde la que se entró. Si no se sabe cuál, a la
-   * anterior; y si se entró a esta directo (sin pantalla anterior en la app),
-   * al inicio de cada rol: el mismo al que lleva el login.
+   * Vuelve a la pantalla desde la que se entró.
    *
    * @returns {void}
    */
-  const volver = () => {
-    if (destino) {
-      navigate(destino.ruta, { state: destino.estado });
-      return;
-    }
-    if (location.key !== 'default') {
-      navigate(-1);
-      return;
-    }
-    navigate(rutaInicio(usuarioActual()?.rol));
-  };
+  const volver = () => navigate(destino.ruta, { state: destino.estado });
 
   /**
    * Marca como leídas todas las que faltaban, de una vez. Sirve sobre todo al
@@ -189,10 +178,16 @@ export default function Notificaciones() {
       <BarraSuperior />
 
       <main className="nt-contenido">
-        <button type="button" className="nt-volver" onClick={volver}>
-          <IconoFlechaAtras width={20} height={20} />
-          {destino?.texto ?? 'Volver'}
-        </button>
+        {/*
+          Sólo si se llegó desde otra pantalla (el inicio, por ejemplo). Desde
+          la barra superior o la campana no hay a dónde volver.
+        */}
+        {destino && (
+          <button type="button" className="nt-volver" onClick={volver}>
+            <IconoFlechaAtras width={20} height={20} />
+            {destino.texto}
+          </button>
+        )}
 
         <header className="nt-encabezado">
           <h1 className="nt-titulo">

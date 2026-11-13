@@ -2,24 +2,28 @@ import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { crearCarga, ErrorDeValidacion } from '../api/cargas';
 import { ErrorDeApi } from '../api/usuarios';
-import {
-  IconoAlerta,
-  IconoCajaMas,
-  IconoCerrar,
-  IconoCheck,
-  IconoGuardar,
-} from '../components/Iconos';
+import { IconoAlerta, IconoCajaMas, IconoCerrar, IconoGuardar } from '../components/Iconos';
 import BarraSuperior from '../components/BarraSuperior';
 import Campo from '../components/Campo';
 import SelectorUbicacion from '../components/SelectorUbicacion';
 import { evitarFoco } from '../utils/formulario';
 import { formatearKm } from '../utils/carga';
-import { VALORES_INICIALES, LARGOS_MAXIMOS, validar, armarPayload } from '../utils/validarCarga';
+import {
+  VALORES_INICIALES,
+  LARGOS_MAXIMOS,
+  validar,
+  armarPayload,
+  hoyEnArgentina,
+} from '../utils/validarCarga';
 import './AltaCarga.css';
 
 /**
  * Pantalla de alta de cargas (HU 2.1 + 2.1.1), en la ruta /cargas/nueva.
  * La carga se guarda siempre en estado "disponible".
+ *
+ * Al registrarla lleva al detalle de la carga nueva, con el mensaje de éxito
+ * arriba. Antes se quedaba acá con el formulario lleno y un botón "Cargar
+ * otra", y no quedaba claro si la carga ya estaba guardada.
  *
  * @returns {JSX.Element}
  */
@@ -27,21 +31,16 @@ export default function AltaCarga() {
   const navigate = useNavigate();
 
   // Estado del formulario: valores cargados, campos ya tocados por el usuario,
-  // errores devueltos por el backend, mensajes generales y de éxito, y si ya
-  // se intentó enviar o hay un envío en curso.
+  // errores devueltos por el backend, el mensaje general, y si ya se intentó
+  // enviar o hay un envío en curso.
   const [valores, setValores] = useState(VALORES_INICIALES);
   const [tocados, setTocados] = useState({});
   const [erroresBackend, setErroresBackend] = useState({});
   const [errorGeneral, setErrorGeneral] = useState('');
-  const [mensajeExito, setMensajeExito] = useState('');
-  // id de la carga recién creada si su distancia quedó sin calcular (HU 9),
-  // para ofrecer ir a su detalle a reintentarlo. null si no hay nada pendiente.
-  const [idCalculoPendiente, setIdCalculoPendiente] = useState(null);
   const [intentoEnviar, setIntentoEnviar] = useState(false);
   const [enviando, setEnviando] = useState(false);
 
-  // refPrimerCampo: input de "Origen", para ponerle el foco al entrar a la
-  // pantalla y para volver a enfocarlo después de cargar otra carga.
+  // refPrimerCampo: input de "Origen", para ponerle el foco al entrar a la pantalla.
   const refPrimerCampo = useRef(null);
 
   // Se recalculan en cada render: qué campos tienen error ahora mismo,
@@ -73,22 +72,6 @@ export default function AltaCarga() {
    * @returns {void}
    */
   const cancelar = () => navigate(-1);
-
-  /**
-   * Deja el formulario listo para cargar otra carga, conservando el mensaje
-   * de éxito de la anterior.
-   *
-   * @returns {void}
-   */
-  const cargarOtra = () => {
-    setValores(VALORES_INICIALES);
-    setTocados({});
-    setErroresBackend({});
-    setIntentoEnviar(false);
-    setMensajeExito('');
-    setIdCalculoPendiente(null);
-    refPrimerCampo.current?.focus();
-  };
 
   /**
    * Crea el manejador `onChange` de un campo del formulario.
@@ -138,9 +121,10 @@ export default function AltaCarga() {
   };
 
   /**
-   * Maneja el submit: valida, registra la carga contra el backend y muestra
-   * el mensaje de éxito. No navega solo, porque el listado de cargas todavía
-   * no existe (llega con HU 2.5 / GIA-37).
+   * Maneja el submit: valida, registra la carga contra el backend y lleva a
+   * su detalle con el mensaje de éxito. Reemplaza esta pantalla en el
+   * historial: volver atrás desde el detalle no trae un formulario lleno con
+   * una carga que ya está guardada.
    *
    * @param {import('react').FormEvent} evento
    * @returns {Promise<void>}
@@ -161,17 +145,19 @@ export default function AltaCarga() {
 
     try {
       const cargaCreada = await crearCarga(armarPayload(valores));
-      const distanciaCalculada = cargaCreada.estado_calculo_km === 'ok';
-
-      setMensajeExito(
-        `La carga ${cargaCreada.origen} → ${cargaCreada.destino} se registró correctamente y quedó en estado "${cargaCreada.estado_actual}".` +
-          (distanciaCalculada
-            ? ` Distancia estimada: ${formatearKm(cargaCreada.kilometros_estimados)}.`
-            : ''),
-      );
       // Si el servicio de mapas no respondió, la carga igual se guardó (RN-04):
-      // se avisa aparte para que no pase desapercibido entre el mensaje de éxito.
-      setIdCalculoPendiente(distanciaCalculada ? null : cargaCreada.id_carga);
+      // el detalle muestra la distancia pendiente con el botón Reintentar.
+      const distancia =
+        cargaCreada.estado_calculo_km === 'ok'
+          ? ` Distancia estimada: ${formatearKm(cargaCreada.kilometros_estimados)}.`
+          : ' No pudimos calcular la distancia en este momento: podés reintentarlo desde acá.';
+
+      navigate(`/cargas/${cargaCreada.id_carga}`, {
+        replace: true,
+        state: {
+          avisoExito: `La carga ${cargaCreada.origen} → ${cargaCreada.destino} se registró correctamente y quedó disponible.${distancia}`,
+        },
+      });
     } catch (error) {
       if (error instanceof ErrorDeValidacion) {
         // El backend devuelve los errores ya agrupados por campo.
@@ -187,7 +173,6 @@ export default function AltaCarga() {
             : 'Ocurrió un error inesperado al registrar la carga.',
         );
       }
-    } finally {
       setEnviando(false);
     }
   };
@@ -204,32 +189,7 @@ export default function AltaCarga() {
 
         <form onSubmit={alEnviar} noValidate className="ac-formulario">
           <div className="ac-body">
-            {/* Mensajes de estado, arriba del formulario */}
-            {mensajeExito && (
-              <div className="ac-aviso ac-aviso--exito" role="status">
-                <IconoCheck />
-                {mensajeExito}
-              </div>
-            )}
-
-            {idCalculoPendiente !== null && (
-              <div className="ac-aviso ac-aviso--pendiente" role="status">
-                <IconoAlerta width={22} height={22} />
-                <span>
-                  No pudimos calcular la distancia en este momento: la carga quedó guardada con
-                  el cálculo pendiente.{' '}
-                  <button
-                    type="button"
-                    className="ac-aviso__enlace"
-                    onClick={() => navigate(`/cargas/${idCalculoPendiente}`)}
-                    onMouseDown={evitarFoco}
-                  >
-                    Reintentar desde el detalle
-                  </button>
-                </span>
-              </div>
-            )}
-
+            {/* Mensaje de error, arriba del formulario */}
             {errorGeneral && (
               <div className="ac-aviso ac-aviso--error" role="alert">
                 <IconoAlerta width={22} height={22} />
@@ -292,15 +252,21 @@ export default function AltaCarga() {
 
             <Campo
               id="nc-fecha"
-              etiqueta="Fecha"
+              etiqueta="Fecha de retiro"
               error={errorDe('fecha')}
               type="date"
+              min={hoyEnArgentina()}
               value={valores.fecha}
               onChange={alCambiar('fecha')}
               onBlur={alSalirDelCampo('fecha')}
             />
 
-            <Campo id="nc-observaciones" etiqueta="Observaciones" error={errorDe('observaciones')}>
+            <Campo
+              id="nc-observaciones"
+              etiqueta="Observaciones"
+              obligatorio={false}
+              error={errorDe('observaciones')}
+            >
               {({ id, idError, tieneError }) => (
                 <textarea
                   id={id}
@@ -337,27 +303,15 @@ export default function AltaCarga() {
               Cancelar
             </button>
 
-            {mensajeExito ? (
-              <button
-                type="button"
-                className="ds-boton ds-boton--primario"
-                onClick={cargarOtra}
-                onMouseDown={evitarFoco}
-              >
-                <IconoCajaMas />
-                Cargar otra
-              </button>
-            ) : (
-              <button
-                type="submit"
-                className="ds-boton ds-boton--confirmar"
-                onMouseDown={evitarFoco}
-                disabled={enviando}
-              >
-                <IconoGuardar />
-                {enviando ? 'Registrando...' : 'Registrar Carga'}
-              </button>
-            )}
+            <button
+              type="submit"
+              className="ds-boton ds-boton--confirmar"
+              onMouseDown={evitarFoco}
+              disabled={enviando}
+            >
+              <IconoGuardar />
+              {enviando ? 'Registrando...' : 'Registrar Carga'}
+            </button>
           </div>
         </form>
       </main>

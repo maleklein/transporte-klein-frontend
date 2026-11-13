@@ -180,3 +180,50 @@
   margin: -6px 0 18px;
   color: var(--color-texto-suave);
 }
+
+/* --- Etiquetas de la tarjeta: retiro vencido (sólo administrador) + estado --- */
+.cg-card__etiquetas {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 6px;
+}
+
+.cg-etiqueta-vencida {
+  display: inline-block;
+  padding: 4px 12px;
+  border-radius: 999px;
+  font-size: var(--texto-ayuda);
+  font-weight: 700;
+  white-space: nowrap;
+  background: var(--color-advertencia-claro);
+  color: var(--color-advertencia);
+}
+
+/* --- Cargas que el camionero no puede llevar: aparte, al final, atenuadas --- */
+.cg-excedidas {
+  margin-top: 32px;
+  padding-top: 20px;
+  border-top: 2px solid var(--color-borde-suave);
+}
+
+.cg-excedidas__titulo {
+  margin: 0 0 6px;
+  font-size: var(--texto-label);
+  color: var(--color-texto);
+}
+
+.cg-excedidas__texto {
+  margin: 0 0 16px;
+  color: var(--color-texto-suave);
+}
+
+.cg-card--excedida {
+  background: var(--color-fondo-alt);
+}
+
+.cg-card--excedida .cg-card__titulo,
+.cg-card--excedida .cg-card__ruta,
+.cg-card--excedida .cg-card__meta {
+  opacity: 0.75;
+}

@@ -161,7 +161,8 @@ export default function ReputacionUsuario({ idUsuario, mostrarIdentidad = false 
   if (cargando && !datos) {
     return (
       <section className="dc-card cal-seccion">
-        <p role="status">Cargando reputación...</p>
+        {/* En el perfil no dice "reputación": un administrador no tiene. */}
+        <p role="status">{mostrarIdentidad ? 'Cargando perfil...' : 'Cargando reputación...'}</p>
       </section>
     );
   }

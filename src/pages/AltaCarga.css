@@ -52,9 +52,9 @@
 /* Distancia sin calcular (HU 9): la carga se guardó, pero falta algo.
    Mismo ámbar que el badge "en viaje" y el dato pendiente del detalle. */
 .ac-aviso--pendiente {
-  background: #FFF4E5;
-  color: #8A5300;
-  border-color: #8A5300;
+  background: var(--color-advertencia-claro);
+  color: var(--color-advertencia);
+  border-color: var(--color-advertencia);
 }
 
 .ac-aviso__enlace {

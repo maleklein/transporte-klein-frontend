@@ -21,6 +21,7 @@
   font-size: var(--texto-base);
   font-weight: 700;
   color: var(--color-primario);
+  text-decoration: none;
   cursor: pointer;
 }
 
@@ -136,6 +137,33 @@
   background: var(--color-confirmar-claro);
   color: var(--color-confirmar-oscuro);
   font-weight: 600;
+}
+
+.dc-aviso-exito svg,
+.dc-aviso-advertencia svg {
+  flex-shrink: 0;
+}
+
+/* Retiro vencido: pide una acción al administrador, pero no es un error. */
+.dc-aviso-advertencia {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 20px;
+  padding: 14px 16px;
+  border: 2px solid var(--color-advertencia);
+  border-radius: var(--radio-chico);
+  background: var(--color-advertencia-claro);
+  color: var(--color-advertencia);
+  font-weight: 600;
+}
+
+/* Calle y número debajo de la localidad, en el dato de origen y destino. */
+.dc-dato__direccion {
+  display: block;
+  margin-top: 2px;
+  color: var(--color-texto-suave);
+  font-weight: 400;
 }
 
 .dc-titulo {

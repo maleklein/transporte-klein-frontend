@@ -1,11 +1,11 @@
 import { useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import ModalConfirmacion from './ModalConfirmacion';
-import { IconoCamion, IconoCheck } from './Iconos';
+import { IconoAlerta, IconoCamion, IconoCheck } from './Iconos';
 import { obtenerMisPostulaciones, postularACarga } from '../api/cargas';
 import { ErrorDeApi } from '../api/usuarios';
 import { usuarioActual } from '../api/sesion';
-import { formatearFecha } from '../utils/carga';
+import { formatearFecha, formatearPeso, motivoSinCapacidad, retiroVencido } from '../utils/carga';
 import { ESTADOS_ABIERTOS } from '../utils/estadosCarga';
 import { evitarFoco } from '../utils/formulario';
 import './PostulacionCarga.css';
@@ -16,6 +16,9 @@ import './PostulacionCarga.css';
  * - Si la carga sigue abierta y no se postuló: el botón "Postularme", grande y
  *   azul, con un modal de confirmación antes y un aviso de éxito después.
  * - Si ya se postuló: lo dice en lugar del botón.
+ * - Si no la puede llevar (pesa más que la capacidad de su vehículo, o no
+ *   tiene la capacidad cargada) o el retiro ya venció: explica por qué, sin
+ *   ofrecerle el botón para que recién ahí se entere.
  * - Si se la asignaron: le dice que el viaje es suyo.
  *
  * Saber si ya se postuló sale de "Mis postulaciones": no hay un endpoint por
@@ -109,13 +112,31 @@ export default function PostulacionCarga({ carga, alPostularse }) {
 
   if (!abierta) return null;
 
+  const sinCapacidad = motivoSinCapacidad(carga);
+  let impedimento = '';
+  if (retiroVencido(carga)) {
+    impedimento = 'La fecha de retiro de esta carga ya pasó: no recibe más postulaciones.';
+  } else if (sinCapacidad === 'supera') {
+    impedimento = `No podés postularte: la carga pesa ${formatearPeso(carga.peso_kg)} y tu vehículo lleva hasta ${formatearPeso(carga.capacidad_camionero_kg)}.`;
+  } else if (sinCapacidad === 'sin-capacidad') {
+    impedimento =
+      'No podés postularte porque tu vehículo no tiene la capacidad cargada. Pedile a un administrador que la cargue.';
+  }
+
   return (
     <section className="dc-card pc-tarjeta">
       <h2 className="dc-card__titulo">Postularte a esta carga</h2>
 
       {situacion === 'cargando' && <p className="pc-texto">Revisando tus postulaciones...</p>}
 
-      {situacion === 'sin-postular' && (
+      {situacion === 'sin-postular' && impedimento && (
+        <p className="pc-estado pc-estado--impedido">
+          <IconoAlerta width={20} height={20} />
+          {impedimento}
+        </p>
+      )}
+
+      {situacion === 'sin-postular' && !impedimento && (
         <>
           <p className="pc-texto">
             Si te interesa llevarla, postulate. El administrador elige entre los camioneros
