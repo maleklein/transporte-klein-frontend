@@ -13,7 +13,7 @@ import {
 import BarraSuperior from '../components/BarraSuperior';
 import Campo from '../components/Campo';
 import { evitarFoco } from '../utils/formulario';
-import { validarNombreApellido } from '../utils/validarNombreApellido';
+import { aplicarMayusculaInicial, validarNombreApellido } from '../utils/validarNombreApellido';
 import {
   validarCapacidadKg,
   validarDni,
@@ -122,6 +122,9 @@ function armarPayload(valores, esCamionero) {
   return payload;
 }
 
+/** Campos que se escriben con mayúscula inicial en cada palabra. */
+const CAMPOS_CON_MAYUSCULA = ['nombre', 'apellido'];
+
 /**
  * Pantalla de edición de usuarios (HU 1.2), en la ruta /usuarios/editar.
  *
@@ -196,7 +199,11 @@ export default function EditarUsuario() {
    * @returns {function(evento: Event): void}
    */
   const alCambiar = (campo) => (evento) => {
-    const { value } = evento.target;
+    // Nombre y apellido muestran la mayúscula inicial desde la primera letra,
+    // tal como los va a guardar el backend.
+    const value = CAMPOS_CON_MAYUSCULA.includes(campo)
+      ? aplicarMayusculaInicial(evento.target)
+      : evento.target.value;
     setValores((previos) => ({ ...previos, [campo]: value }));
 
     setErroresBackend((previos) => {
