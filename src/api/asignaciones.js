@@ -51,7 +51,7 @@ export async function asignarCargaACamionero(idCarga, idCamionero) {
   if (!respuesta.ok) {
     // Un 401 significa que el token falta, venció o dejó de servir:
     // se limpia la sesión y se vuelve al login.
-    manejarNoAutorizado(respuesta.status);
+    manejarNoAutorizado(respuesta.status, cuerpo);
     const mensaje =
       cuerpo?.message ??
       cuerpo?.error ??

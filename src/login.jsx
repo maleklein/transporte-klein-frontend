@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { iniciarSesion, rutaInicio } from './api/sesion';
+import { iniciarSesion, rutaInicio, tomarAvisoDeSesion } from './api/sesion';
 import './login.css';
 
 /**
@@ -19,7 +19,9 @@ const IniciarSesion = () => {
     //Variables de estado
     const [correo, asignarCorreo] = useState('');
     const [clave, asignarClave] = useState('');
-    const [mensajeError, asignarMensajeError] = useState('');
+    // Si la sesión se cerró sola (la cuenta quedó dada de baja), arranca
+    // explicando por qué, en vez de dejar el login sin motivo aparente.
+    const [mensajeError, asignarMensajeError] = useState(tomarAvisoDeSesion);
     const [enviando, asignarEnviando] = useState(false);
 
     //Función que se ejecuta al apretar el botón

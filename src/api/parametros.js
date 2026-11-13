@@ -45,9 +45,9 @@ async function pedirParametros(opciones = {}) {
   }
 
   if (!respuesta.ok) {
-    // Un 401 significa que el token falta, vencio o dejo de servir:
-    // se limpia la sesion y se vuelve al login.
-    manejarNoAutorizado(respuesta.status);
+    // Si el token dejó de servir o la cuenta está dada de baja,
+    // se limpia la sesión y se vuelve al login.
+    manejarNoAutorizado(respuesta.status, cuerpo);
     const mensaje =
       cuerpo?.message ??
       cuerpo?.error ??

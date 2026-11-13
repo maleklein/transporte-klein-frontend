@@ -61,7 +61,7 @@ export async function listarNotificaciones(filtros = {}, opciones = {}) {
   if (!respuesta.ok) {
     // Un 401 significa que el token falta, venció o dejó de servir:
     // se limpia la sesión y se vuelve al login.
-    manejarNoAutorizado(respuesta.status);
+    manejarNoAutorizado(respuesta.status, cuerpo);
     const mensaje =
       cuerpo?.message ??
       cuerpo?.error ??
@@ -105,7 +105,7 @@ export async function marcarNotificacionLeida(id) {
   }
 
   if (!respuesta.ok) {
-    manejarNoAutorizado(respuesta.status);
+    manejarNoAutorizado(respuesta.status, cuerpo);
     const mensaje =
       cuerpo?.message ??
       cuerpo?.error ??
@@ -150,7 +150,7 @@ export async function marcarTodasLeidas() {
   }
 
   if (!respuesta.ok) {
-    manejarNoAutorizado(respuesta.status);
+    manejarNoAutorizado(respuesta.status, cuerpo);
     const mensaje =
       cuerpo?.message ??
       cuerpo?.error ??

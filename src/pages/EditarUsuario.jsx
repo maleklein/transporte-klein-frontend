@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { Navigate, useLocation, useNavigate } from 'react-router-dom';
 import { editarUsuario, ErrorDeApi } from '../api/usuarios';
+import { usuarioActual } from '../api/sesion';
 import {
   IconoAlerta,
   IconoCamion,
@@ -134,6 +135,9 @@ export default function EditarUsuario() {
   // al final del componente se decide si hay que redirigir.
   const usuario = location.state?.usuario;
   const esCamionero = usuario?.rol === 'camionero';
+  // Darse de baja a uno mismo deja la cuenta sin poder volver a activarse: el
+  // backend lo rechaza (409) y acá directamente no se ofrece la opción.
+  const esMiCuenta = usuario?.id_usuario === usuarioActual()?.id;
 
   const [valores, setValores] = useState(() => (usuario ? valoresIniciales(usuario) : null));
   const [tocados, setTocados] = useState({});
@@ -337,12 +341,16 @@ export default function EditarUsuario() {
                   value={valores.estado}
                   onChange={alCambiar('estado')}
                   onBlur={alSalirDelCampo('estado')}
+                  disabled={esMiCuenta}
                 >
                   <option value="activo">Activo</option>
                   <option value="inactivo">Inactivo</option>
                 </select>
               )}
             </Campo>
+            {esMiCuenta && (
+              <p className="eu-nota">No podés dar de baja tu propia cuenta.</p>
+            )}
 
             {esCamionero && (
               <div className="au-bloque-camionero">
