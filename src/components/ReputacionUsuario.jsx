@@ -213,23 +213,34 @@ export default function ReputacionUsuario({ idUsuario, mostrarIdentidad = false 
               </ol>
               {(pagina > 1 || datos.hay_mas) && (
                 <nav className="cal-paginacion" aria-label="Páginas del historial">
-                  <button
-                    className="ds-boton ds-boton--secundario"
-                    disabled={pagina === 1 || cargando}
-                    onClick={() => setPagina((p) => p - 1)}
-                  >
-                    <IconoFlechaAtras />
-                    Anterior
-                  </button>
+                  {/* En la primera página no hay Anterior ni en la última Siguiente: no se
+                      muestran. El hueco vacío mantiene la página al medio y el otro botón en
+                      su lado. */}
+                  {pagina > 1 ? (
+                    <button
+                      className="ds-boton ds-boton--secundario"
+                      disabled={cargando}
+                      onClick={() => setPagina((p) => p - 1)}
+                    >
+                      <IconoFlechaAtras />
+                      Anterior
+                    </button>
+                  ) : (
+                    <span />
+                  )}
                   <span className="rp-pagina">Página {pagina}</span>
-                  <button
-                    className="ds-boton ds-boton--secundario"
-                    disabled={!datos.hay_mas || cargando}
-                    onClick={() => setPagina((p) => p + 1)}
-                  >
-                    Siguiente
-                    <IconoFlechaAtras style={{ transform: 'rotate(180deg)' }} />
-                  </button>
+                  {datos.hay_mas ? (
+                    <button
+                      className="ds-boton ds-boton--secundario"
+                      disabled={cargando}
+                      onClick={() => setPagina((p) => p + 1)}
+                    >
+                      Siguiente
+                      <IconoFlechaAtras style={{ transform: 'rotate(180deg)' }} />
+                    </button>
+                  ) : (
+                    <span />
+                  )}
                 </nav>
               )}
               {/* Si falla el cambio de página, la anterior sigue a la vista y el error va acá. */}

@@ -59,12 +59,14 @@
 .cal-seccion .rp-error { display: flex; align-items: center; flex-wrap: wrap; gap: 10px; }
 /* Anterior a la izquierda, Siguiente a la derecha y la página al medio. En el
    celular no entran en una fila: la página va arriba y los botones, mitad y mitad. */
-.cal-paginacion { display: grid; grid-template-columns: auto 1fr auto; align-items: center; gap: 8px; margin-top: 24px; }
+.cal-paginacion { display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; gap: 8px; margin-top: 24px; }
 .cal-paginacion .rp-pagina { text-align: center; }
+.cal-paginacion > :first-child { justify-self: start; }
+.cal-paginacion > :last-child { justify-self: end; }
 @media (max-width: 480px) {
   .cal-paginacion { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .cal-paginacion .rp-pagina { grid-column: 1 / -1; order: -1; }
-  .cal-paginacion .ds-boton { justify-content: center; min-width: 0; padding-inline: 12px; }
+  .cal-paginacion .ds-boton { justify-self: stretch; justify-content: center; min-width: 0; padding-inline: 12px; }
 }
 
 /* Barras por puntaje, debajo del promedio: la gris es el total y la oscura, la parte de ese puntaje. */
