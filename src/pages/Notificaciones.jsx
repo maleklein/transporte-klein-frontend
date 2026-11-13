@@ -19,6 +19,7 @@ import {
 import { ErrorDeApi } from '../api/usuarios';
 import { rutaInicio, usuarioActual } from '../api/sesion';
 import { formatearFechaHora, formatearMarcaCorta } from '../utils/carga';
+import { agruparPorFecha } from '../utils/agruparPorFecha';
 import { destinoVolver, volverA } from '../utils/volver';
 import './Notificaciones.css';
 
@@ -252,72 +253,85 @@ export default function Notificaciones() {
           </div>
         )}
 
-        {estadoPantalla === 'ok' && notificaciones.length > 0 && (
-          <ul className="nt-lista">
-            {notificaciones.map((notificacion) => {
-              const { Icono, nombre } = TIPOS[notificacion.tipo_evento] ?? TIPO_GENERICO;
-              const idTexto = `nt-texto-${notificacion.id_notificacion}`;
-              // Una leída que no es de ninguna carga ya no tiene nada que abrir.
-              const tieneAccion = Boolean(notificacion.id_carga) || !notificacion.leida;
+        {/*
+          Agrupadas por antigüedad (Hoy, Ayer, Últimos 7 días...): todas
+          juntas en una sola lista confundían. Dentro de cada grupo siguen de
+          la más nueva a la más vieja, como llegan del backend.
+        */}
+        {estadoPantalla === 'ok' &&
+          notificaciones.length > 0 &&
+          agruparPorFecha(notificaciones, (notificacion) => notificacion.creado_en).map((grupo) => (
+            <section key={grupo.clave} className="nt-grupo" aria-labelledby={`nt-grupo-${grupo.clave}`}>
+              <h2 className="nt-grupo__titulo" id={`nt-grupo-${grupo.clave}`}>
+                {grupo.titulo}
+                <span className="nt-grupo__cantidad">({grupo.elementos.length})</span>
+              </h2>
+              <ul className="nt-lista">
+                {grupo.elementos.map((notificacion) => {
+                  const { Icono, nombre } = TIPOS[notificacion.tipo_evento] ?? TIPO_GENERICO;
+                  const idTexto = `nt-texto-${notificacion.id_notificacion}`;
+                  // Una leída que no es de ninguna carga ya no tiene nada que abrir.
+                  const tieneAccion = Boolean(notificacion.id_carga) || !notificacion.leida;
 
-              return (
-                <li
-                  key={notificacion.id_notificacion}
-                  className={`nt-item${notificacion.leida ? '' : ' nt-item--no-leida'}`}
-                >
-                  <span className="nt-item__icono" aria-hidden="true">
-                    <Icono width={22} height={22} />
-                  </span>
-
-                  <div className="nt-item__cuerpo">
-                    <p className="nt-item__tipo">
-                      {nombre}
-                      {!notificacion.leida && <span className="nt-etiqueta">Sin leer</span>}
-                    </p>
-                    <p className="nt-item__texto" id={idTexto}>
-                      {notificacion.contenido}
-                    </p>
-                    <p className="nt-item__fecha">
-                      <time
-                        dateTime={notificacion.creado_en}
-                        title={formatearFechaHora(notificacion.creado_en)}
-                      >
-                        {formatearMarcaCorta(notificacion.creado_en)}
-                      </time>
-                    </p>
-                  </div>
-
-                  {/*
-                    Mismo botón "estirado" que las tarjetas del listado de
-                    cargas: el click en cualquier parte del aviso lo abre, y
-                    sigue siendo un único control enfocable.
-                  */}
-                  {tieneAccion && (
-                    <button
-                      type="button"
-                      className="ds-boton ds-boton--secundario nt-item__abrir"
-                      onClick={() => abrir(notificacion)}
-                      disabled={abriendo === notificacion.id_notificacion}
-                      aria-describedby={idTexto}
+                  return (
+                    <li
+                      key={notificacion.id_notificacion}
+                      className={`nt-item${notificacion.leida ? '' : ' nt-item--no-leida'}`}
                     >
-                      {notificacion.id_carga ? (
-                        <>
-                          <IconoOjo width={18} height={18} />
-                          Ver carga
-                        </>
-                      ) : (
-                        <>
-                          <IconoCheck width={18} height={18} />
-                          Marcar como leída
-                        </>
+                      <span className="nt-item__icono" aria-hidden="true">
+                        <Icono width={22} height={22} />
+                      </span>
+
+                      <div className="nt-item__cuerpo">
+                        <p className="nt-item__tipo">
+                          {nombre}
+                          {!notificacion.leida && <span className="nt-etiqueta">Sin leer</span>}
+                        </p>
+                        <p className="nt-item__texto" id={idTexto}>
+                          {notificacion.contenido}
+                        </p>
+                        <p className="nt-item__fecha">
+                          <time
+                            dateTime={notificacion.creado_en}
+                            title={formatearFechaHora(notificacion.creado_en)}
+                          >
+                            {formatearMarcaCorta(notificacion.creado_en)}
+                          </time>
+                        </p>
+                      </div>
+
+                      {/*
+                        Mismo botón "estirado" que las tarjetas del listado de
+                        cargas: el click en cualquier parte del aviso lo abre, y
+                        sigue siendo un único control enfocable.
+                      */}
+                      {tieneAccion && (
+                        <button
+                          type="button"
+                          className="ds-boton ds-boton--secundario nt-item__abrir"
+                          onClick={() => abrir(notificacion)}
+                          disabled={abriendo === notificacion.id_notificacion}
+                          aria-describedby={idTexto}
+                        >
+                          {notificacion.id_carga ? (
+                            <>
+                              <IconoOjo width={18} height={18} />
+                              Ver carga
+                            </>
+                          ) : (
+                            <>
+                              <IconoCheck width={18} height={18} />
+                              Marcar como leída
+                            </>
+                          )}
+                        </button>
                       )}
-                    </button>
-                  )}
-                </li>
-              );
-            })}
-          </ul>
-        )}
+                    </li>
+                  );
+                })}
+              </ul>
+            </section>
+          ))}
       </main>
     </>
   );

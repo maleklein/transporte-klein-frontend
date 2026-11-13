@@ -107,6 +107,24 @@
    Cada aviso.
    -------------------------------------------------------------------------- */
 
+/* Un grupo por antigüedad: Hoy, Ayer, Últimos 7 días, Últimos 30 días, Anteriores. */
+.nt-grupo + .nt-grupo {
+  margin-top: 28px;
+}
+
+.nt-grupo__titulo {
+  margin: 0 0 12px;
+  font-size: var(--texto-label);
+  font-weight: 700;
+  color: var(--color-texto);
+}
+
+.nt-grupo__cantidad {
+  margin-left: 8px;
+  font-weight: 400;
+  color: var(--color-texto-suave);
+}
+
 .nt-lista {
   display: flex;
   flex-direction: column;
