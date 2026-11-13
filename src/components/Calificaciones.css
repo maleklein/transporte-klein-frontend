@@ -1,21 +1,78 @@
 .cal-seccion { margin-top: 24px; }
 .cal-seccion h2 { font-size: 1.35rem; margin: 0 0 16px; }
 .cal-seccion h3 { font-size: 1.1rem; margin: 18px 0 10px; }
+/* En la ficha del administrador, el título igual al de las otras tarjetas ("Datos del vehículo"). */
+.cal-seccion .dc-card__titulo { display: flex; align-items: center; gap: 8px; font-size: var(--texto-label); }
 .cal-seccion p { line-height: 1.6; margin: 8px 0; }
-.cal-seccion details { margin: 14px 0 20px; }
 .cal-seccion a { color: var(--color-primario, #204f78); text-decoration: underline; }
 .cal-campos { border: 0; padding: 0; display: flex; flex-direction: column; gap: 14px; min-width: 0; }
 .cal-campos legend { font-weight: 700; margin-bottom: 8px; }
-.cal-campos textarea { box-sizing: border-box; width: 100%; padding: 12px; border: 2px solid #8794a3; border-radius: 8px; font: inherit; resize: vertical; }
+.cal-campos textarea { box-sizing: border-box; width: 100%; padding: 12px; border: 2px solid var(--color-borde); border-radius: var(--radio-chico); font: inherit; resize: vertical; }
 .cal-puntajes { display: flex; flex-wrap: wrap; gap: 10px; }
-.cal-puntaje { display: flex; align-items: center; justify-content: center; gap: 6px; min-width: 52px; min-height: 48px; border: 2px solid #8794a3; border-radius: 8px; cursor: pointer; font-weight: 700; }
-.cal-puntaje--activo { background: #e4eef7; border-color: #204f78; }
-.cal-puntaje:focus-within { outline: 3px solid #204f78; outline-offset: 3px; }
-.cal-historial { list-style: none; padding: 0; }
-.cal-evaluacion { padding: 16px; margin-bottom: 14px; border: 1px solid #cbd5df; border-radius: 8px; }
+.cal-puntaje { display: flex; align-items: center; justify-content: center; gap: 6px; min-width: 52px; min-height: 48px; border: 2px solid var(--color-borde); border-radius: var(--radio-chico); cursor: pointer; font-weight: 700; }
+.cal-puntaje--activo { background: var(--color-primario-claro); border-color: var(--color-primario); }
+.cal-puntaje:focus-within { outline: 3px solid var(--color-primario); outline-offset: 3px; }
+.cal-historial { list-style: none; padding: 0; margin: 0; }
+.cal-evaluacion { padding: 14px 16px; margin-bottom: 12px; border: 1px solid var(--color-borde-suave); border-radius: var(--radio-chico); }
 .cal-evaluacion p:last-child { margin-bottom: 0; }
 .cal-comentario { white-space: pre-wrap; overflow-wrap: anywhere; }
 .cal-aviso { background: #e7f3e9; padding: 12px; border-radius: 8px; }
-.cal-promedio { font-size: 1.7rem; font-weight: 700; color: #204f78; }
-.cal-seccion summary { cursor: pointer; font-weight: 700; }
-.cal-paginacion { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px; }
+
+/* ---------- Perfil y reputación (ReputacionUsuario.jsx) ---------- */
+
+/* Encabezado: iniciales en un círculo, nombre y rol. */
+.rp-identidad { display: flex; align-items: center; gap: 16px; padding-bottom: 20px; margin-bottom: 20px; border-bottom: 1px solid var(--color-borde-suave); }
+.rp-avatar { display: grid; place-items: center; flex-shrink: 0; width: 56px; height: 56px; border-radius: 50%; background: var(--color-primario); color: #fff; font-size: 1.25rem; font-weight: 700; letter-spacing: 0.02em; }
+.cal-seccion .rp-nombre { margin: 0 0 6px; font-size: var(--texto-titulo); }
+.rp-rol { display: inline-block; padding: 2px 10px; border-radius: 999px; background: var(--color-primario-claro); color: var(--color-primario); font-size: var(--texto-ayuda); font-weight: 700; }
+
+/* Cada bloque lleva un rótulo chico en mayúsculas, como las tarjetas de los paneles. */
+.rp-bloque + .rp-bloque { margin-top: 24px; }
+.cal-seccion .rp-etiqueta { margin: 0 0 8px; font-size: var(--texto-ayuda); font-weight: 700; text-transform: uppercase; letter-spacing: 0.03em; color: var(--color-texto-suave); }
+
+/* El número grande a la izquierda; a su derecha, las estrellas y debajo cuántas calificaciones hay. */
+/* Promedio y barras lado a lado; en pantallas angostas las barras bajan solas. */
+.rp-resumen { display: flex; flex-wrap: wrap; align-items: center; gap: 16px 40px; }
+.rp-promedio { display: flex; align-items: center; gap: 12px; }
+.rp-promedio__numero { font-size: 2.5rem; font-weight: 700; line-height: 1; color: var(--color-primario); font-variant-numeric: tabular-nums; }
+.rp-promedio__detalle { display: flex; flex-direction: column; gap: 2px; }
+.rp-promedio .rp-estrellas { font-size: 1.45rem; gap: 2px; }
+.rp-promedio__total { color: var(--color-texto-suave); font-size: var(--texto-ayuda); }
+.cal-seccion .rp-vacio { margin: 0; color: var(--color-texto-suave); }
+.cal-seccion .rp-meta { margin: 6px 0 0; font-size: var(--texto-ayuda); color: var(--color-texto-suave); }
+
+.rp-estrellas { display: inline-flex; gap: 2px; font-size: 1.25rem; line-height: 1; }
+/* El gris de borde, no el suave: el suave casi no se distingue del blanco. */
+.rp-estrella { color: var(--color-borde); }
+.rp-estrella--llena { color: var(--color-primario); }
+
+.rp-evaluacion__cabecera { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 4px 16px; }
+.rp-evaluacion__quien { display: inline-flex; align-items: center; flex-wrap: wrap; gap: 4px 10px; }
+.rp-evaluacion__quien strong { font-weight: 600; }
+.rp-evaluacion__cabecera .rp-meta { margin: 0; }
+.cal-evaluacion .cal-comentario { margin: 8px 0 0; }
+.rp-cargando { opacity: 0.6; transition: opacity 0.15s; }
+.rp-pagina { font-size: var(--texto-ayuda); color: var(--color-texto-suave); }
+.cal-seccion .rp-error { display: flex; align-items: center; flex-wrap: wrap; gap: 10px; }
+/* Anterior a la izquierda, Siguiente a la derecha y la página al medio. En el
+   celular no entran en una fila: la página va arriba y los botones, mitad y mitad. */
+.cal-paginacion { display: grid; grid-template-columns: auto 1fr auto; align-items: center; gap: 8px; margin-top: 4px; }
+.cal-paginacion .rp-pagina { text-align: center; }
+@media (max-width: 480px) {
+  .cal-paginacion { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .cal-paginacion .rp-pagina { grid-column: 1 / -1; order: -1; }
+  .cal-paginacion .ds-boton { justify-content: center; min-width: 0; padding-inline: 12px; }
+}
+
+/* Barras por puntaje, debajo del promedio: la gris es el total y la oscura, la parte de ese puntaje. */
+.rp-distribucion { list-style: none; flex: 1 1 220px; max-width: 320px; padding: 0; margin: 0; }
+.rp-distribucion__fila { display: grid; grid-template-columns: 2.2em 1fr 2ch; align-items: center; gap: 8px; font-size: var(--texto-ayuda); line-height: 1.2; }
+.rp-distribucion__fila + .rp-distribucion__fila { margin-top: 2px; }
+.rp-distribucion__barra { height: 6px; overflow: hidden; border-radius: 999px; background: var(--color-borde-suave); }
+.rp-distribucion__barra > span { display: block; height: 100%; border-radius: 999px; background: var(--color-primario); }
+.rp-distribucion__puntaje { display: inline-flex; align-items: center; gap: 4px; min-width: 2.2em; justify-content: flex-end; color: var(--color-texto-suave); font-variant-numeric: tabular-nums; }
+.rp-distribucion__cantidad { text-align: right; color: var(--color-texto-suave); font-variant-numeric: tabular-nums; }
+.rp-distribucion__puntaje .rp-estrella { font-size: 0.9rem; }
+
+/* Solo para lectores de pantalla. */
+.rp-oculto { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }

@@ -262,3 +262,16 @@ export function IconoCerrarSesion(props) {
     </svg>
   );
 }
+
+/**
+ * Estrella rellena, del tamaño del texto que la rodea (1em): así se agranda o
+ * achica con `font-size`, como el carácter ★ que reemplaza. Se usa SVG porque
+ * algunos celulares muestran ★ como emoji.
+ */
+export function IconoEstrella(props) {
+  return (
+    <svg {...base} width="1em" height="1em" fill="currentColor" stroke="none" {...props}>
+      <path d="M12 2.5l2.94 5.96 6.56.95-4.75 4.63 1.12 6.54L12 17.5l-5.87 3.08 1.12-6.54L2.5 9.41l6.56-.95z" />
+    </svg>
+  );
+}
