@@ -157,7 +157,7 @@ export default function PanelCamionero() {
           <div className="pcm-aviso-error" role="alert">
             <IconoAlerta width={22} height={22} />
             <span className="pcm-aviso-error__texto">
-              {errores.map((dato) => dato.error).join(' ')} Los accesos siguen funcionando.
+              {errores.map((dato) => dato.error.replace(/([^.!?])$/, '$1.')).join(' ')} Los accesos siguen funcionando.
             </span>
             <button
               type="button"

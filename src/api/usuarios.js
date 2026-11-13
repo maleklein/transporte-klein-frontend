@@ -156,11 +156,11 @@ export async function listarUsuarios(filtros = {}, opciones = {}) {
 }
 
 /**
- * PUT /usuarios/:id (HU 1.2) — edita nombre, apellido, email y estado de un
- * usuario existente (y, si es camionero, sus datos de vehículo).
+ * PUT /usuarios/:id (HU 1.2) — edita nombre, apellido, DNI, email y estado de
+ * un usuario existente (y, si es camionero, sus datos de vehículo).
  *
- * El backend rechaza con 400 si el payload incluye `dni`, `rol` o `contraseña`:
- * esos campos no se pueden tocar desde este endpoint.
+ * El backend rechaza con 400 si el payload incluye `rol` o `contraseña`: esos
+ * campos no se pueden tocar desde este endpoint.
  *
  * @param {number} idUsuario - id del usuario a editar.
  * @param {object} datos - `{ nombre, apellido, email, estado, ubicacion?, tipo_vehiculo?, capacidad_kg? }`.
