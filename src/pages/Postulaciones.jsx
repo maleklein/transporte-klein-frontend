@@ -3,6 +3,7 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import {
   IconoAlerta,
   IconoCalendario,
+  IconoCamion,
   IconoEtiqueta,
   IconoFlechaAtras,
   IconoOjo,
@@ -90,7 +91,10 @@ export default function Postulaciones() {
           {volver.texto}
         </button>
 
-        <h1 className="pos-titulo">Mis viajes</h1>
+        <h1 className="ds-titulo-pagina pos-titulo">
+          <IconoCamion width={26} height={26} />
+          Mis viajes
+        </h1>
 
         {estadoPantalla === 'cargando' && (
           <p className="pos-mensaje">Cargando tus viajes y postulaciones...</p>

@@ -39,6 +39,12 @@
   --radio-chico: 8px;
   --sombra-modal: 0 12px 44px rgba(0, 0, 0, 0.32);
   --foco: 0 0 0 4px rgba(31, 78, 121, 0.35);
+
+  /* Ancho máximo del contenido, según el tipo de pantalla. Cada pantalla usa
+     uno de estos tres, así el título no salta de lugar sin motivo. */
+  --ancho-amplio: 1200px;   /* tablas, grillas y tarjetas: listados, métricas, paneles */
+  --ancho-medio: 800px;     /* lectura: detalles, perfil, notificaciones, mis viajes */
+  --ancho-angosto: 660px;   /* formularios */
 }
 
 * {
@@ -66,6 +72,27 @@ body {
 /* --------------------------------------------------------------------------
    Botones — regla del proyecto: SIEMPRE ícono + texto, nunca solo ícono.
    -------------------------------------------------------------------------- */
+/* Título de cada pantalla: azul, con el ícono que la representa en la barra.
+   No fija margen: lo pone cada pantalla, según lo que tenga alrededor. */
+.ds-titulo-pagina {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: var(--texto-titulo);
+  font-weight: 700;
+  color: var(--color-primario);
+}
+
+/* El ícono no se achica si el título ocupa dos líneas en el celular. */
+.ds-titulo-pagina svg {
+  flex-shrink: 0;
+}
+
+/* Perfil: sin encabezado alrededor, el título lleva su propio espacio. */
+.pr-titulo {
+  margin: 8px 0 24px;
+}
+
 .ds-boton {
   display: inline-flex;
   align-items: center;

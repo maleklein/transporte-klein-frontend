@@ -6,6 +6,7 @@ import {
   IconoCerrar,
   IconoEditar,
   IconoOjo,
+  IconoUsuario,
   IconoUsuarioMas,
 } from '../components/Iconos';
 import BarraSuperior from '../components/BarraSuperior';
@@ -153,7 +154,10 @@ export default function Usuarios() {
 
       <main className="us-contenido">
         <div className="us-encabezado">
-          <h1>Gestión de Usuarios</h1>
+          <h1 className="ds-titulo-pagina">
+            <IconoUsuario width={26} height={26} />
+            Gestión de Usuarios
+          </h1>
           <button
             type="button"
             className="ds-boton ds-boton--primario"

@@ -1,5 +1,5 @@
 .au-contenido {
-  max-width: 660px;
+  max-width: var(--ancho-angosto);
   margin: 0 auto;
   padding: 28px;
 }

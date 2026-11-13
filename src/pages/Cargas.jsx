@@ -7,6 +7,7 @@ import { ErrorDeApi } from '../api/usuarios';
 import { usuarioActual } from '../api/sesion';
 import {
   IconoAlerta,
+  IconoCaja,
   IconoCajaMas,
   IconoCalendario,
   IconoCamion,
@@ -170,7 +171,10 @@ export default function Cargas() {
 
       <main className="us-contenido">
         <div className="us-encabezado">
-          <h1>{esCamionero ? 'Cargas disponibles' : 'Gestión de Cargas'}</h1>
+          <h1 className="ds-titulo-pagina">
+            <IconoCaja width={26} height={26} />
+            {esCamionero ? 'Cargas disponibles' : 'Gestión de Cargas'}
+          </h1>
           {/* HU 4 y HU 6: los viajes asignados y las postulaciones del camionero. */}
           {esCamionero && (
             <button
