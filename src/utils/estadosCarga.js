@@ -38,7 +38,8 @@ export const FLUJO = Object.freeze([
  */
 export const TRANSICIONES = Object.freeze({
   [ESTADOS.DISPONIBLE]: [ESTADOS.PENDIENTE, ESTADOS.CANCELADA],
-  [ESTADOS.PENDIENTE]: [ESTADOS.ACEPTADA, ESTADOS.DISPONIBLE, ESTADOS.CANCELADA],
+  // Pendiente no vuelve a disponible: ver la nota en el backend (domain/estadosCarga.js).
+  [ESTADOS.PENDIENTE]: [ESTADOS.ACEPTADA, ESTADOS.CANCELADA],
   [ESTADOS.ACEPTADA]: [ESTADOS.EN_VIAJE, ESTADOS.PENDIENTE],
   [ESTADOS.EN_VIAJE]: [ESTADOS.ENTREGADA, ESTADOS.ACEPTADA],
   // Entregada se puede deshacer: marcarla de más es un error fácil de cometer
