@@ -33,8 +33,8 @@ const TEXTOS = Object.freeze({
     detalle: 'Los transportistas ya la pueden ver. Cuando se postule el primero, pasa sola a pendiente.',
     // Sin botón: a "pendiente" la lleva la primera postulación (HU 4).
     accion: null,
-    // A "disponible" sólo se llega volviendo atrás, y ese aviso se arma con el
-    // nombre del estado, así que acá no hace falta.
+    // A "disponible" no se llega con un cambio de estado (pendiente ya no
+    // vuelve atrás), así que nunca hace falta un aviso.
     aviso: null,
   },
   [ESTADOS.PENDIENTE]: {
