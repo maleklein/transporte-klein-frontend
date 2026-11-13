@@ -201,10 +201,14 @@ export default function Notificaciones() {
           </h1>
           {estadoPantalla === 'ok' && notificaciones.length > 0 && (
             <div className="nt-encabezado__acciones">
+              {/*
+                No repite cuántas faltan leer: ya lo dice el contador del botón
+                Notificaciones. Sólo confirma cuando no queda ninguna. El
+                párrafo está siempre, aunque vacío, para que el lector de
+                pantalla anuncie el cambio al marcar todas.
+              */}
               <p className="nt-resumen" role="status" tabIndex={-1} ref={refResumen}>
-                {cantidadNoLeidas === 0
-                  ? 'Ya leíste todas.'
-                  : `${cantidadNoLeidas} sin leer.`}
+                {cantidadNoLeidas === 0 ? 'Ya leíste todas.' : ''}
               </p>
               {cantidadNoLeidas > 0 && (
                 <button
