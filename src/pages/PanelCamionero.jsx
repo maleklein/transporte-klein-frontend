@@ -9,6 +9,7 @@ import {
   IconoCamion,
   IconoCampana,
   IconoEtiqueta,
+  IconoInicio,
   IconoReintentar,
 } from '../components/Iconos';
 import { listarCargas, obtenerMisPostulaciones } from '../api/cargas';
@@ -145,7 +146,10 @@ export default function PanelCamionero() {
 
       <main className="us-contenido pcm-contenido">
         <div className="us-encabezado">
-          <h1>{nombre ? `Hola, ${nombre}` : 'Mi panel'}</h1>
+          <h1 className="ds-titulo-pagina">
+            <IconoInicio width={26} height={26} />
+            {nombre ? `Hola, ${nombre}` : 'Mi panel'}
+          </h1>
         </div>
         <p className="pcm-intro">Así está tu trabajo hoy. Tocá cada tarjeta para ir a esa sección.</p>
 

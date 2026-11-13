@@ -10,6 +10,7 @@ import {
   IconoCampana,
   IconoEtiqueta,
   IconoGrafico,
+  IconoInicio,
   IconoReintentar,
   IconoUsuario,
 } from '../components/Iconos';
@@ -188,7 +189,10 @@ export default function PanelAdministrador() {
 
       <main className="us-contenido pcm-contenido">
         <div className="us-encabezado">
-          <h1>Panel del administrador</h1>
+          <h1 className="ds-titulo-pagina">
+            <IconoInicio width={26} height={26} />
+            Panel del administrador
+          </h1>
         </div>
         <p className="pcm-intro">Así está la operación hoy. Tocá cada tarjeta para ir a esa sección.</p>
 

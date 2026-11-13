@@ -5,7 +5,7 @@
    ========================================================================== */
 
 .pos-contenido {
-  max-width: 800px;
+  max-width: var(--ancho-medio);
   margin: 0 auto;
   padding: 28px;
 }

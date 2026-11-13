@@ -5,7 +5,7 @@
    ========================================================================== */
 
 .nt-contenido {
-  max-width: 760px;
+  max-width: var(--ancho-medio);
   margin: 0 auto;
   padding: 28px;
 }

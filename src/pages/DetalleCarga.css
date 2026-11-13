@@ -3,7 +3,7 @@
    ========================================================================== */
 
 .dc-contenido {
-  max-width: 720px;
+  max-width: var(--ancho-medio);
   margin: 0 auto;
   padding: 28px;
 }

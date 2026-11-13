@@ -13,7 +13,7 @@
 }
 
 .us-contenido {
-  max-width: 1320px;
+  max-width: var(--ancho-amplio);
   margin: 0 auto;
   padding: 28px;
 }
