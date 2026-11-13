@@ -1,7 +1,15 @@
 import { useEffect, useState } from 'react';
 import { obtenerReputacion } from '../api/calificaciones';
-import { formatearMarcaCorta } from '../utils/carga';
-import { IconoEstrella, IconoFlechaAtras, IconoReintentar } from './Iconos';
+import { usuarioActual } from '../api/sesion';
+import { formatearFecha, formatearMarcaCorta } from '../utils/carga';
+import {
+  IconoCalendario,
+  IconoCorreo,
+  IconoDocumento,
+  IconoEstrella,
+  IconoFlechaAtras,
+  IconoReintentar,
+} from './Iconos';
 import './Calificaciones.css';
 
 /**
@@ -61,6 +69,45 @@ function Distribucion({ distribucion, total }) {
         );
       })}
     </ul>
+  );
+}
+
+/**
+ * Email, DNI y fecha de alta. Solo en el perfil propio: son datos personales y
+ * el perfil también lo puede ver la contraparte de un viaje.
+ *
+ * @param {object} props
+ * @param {{ email: string, dni: string, creado_en: string }} props.usuario
+ * @returns {JSX.Element}
+ */
+function DatosCuenta({ usuario }) {
+  return (
+    <div className="rp-bloque">
+      <h3 className="rp-etiqueta">Datos de la cuenta</h3>
+      <dl className="dc-datos">
+        <div className="dc-dato">
+          <dt>
+            <IconoCorreo width={15} height={15} />
+            Email
+          </dt>
+          <dd>{usuario.email}</dd>
+        </div>
+        <div className="dc-dato">
+          <dt>
+            <IconoDocumento width={15} height={15} />
+            DNI
+          </dt>
+          <dd>{usuario.dni}</dd>
+        </div>
+        <div className="dc-dato">
+          <dt>
+            <IconoCalendario width={15} height={15} />
+            Alta
+          </dt>
+          <dd>{usuario.creado_en ? formatearFecha(usuario.creado_en) : '—'}</dd>
+        </div>
+      </dl>
+    </div>
   );
 }
 
@@ -137,11 +184,17 @@ export default function ReputacionUsuario({ idUsuario, mostrarIdentidad = false 
   const esCamionero = usuario.rol !== 'administrador';
   const tieneCalificaciones = reputacion.total > 0;
   const promedioTexto = reputacion.promedio?.toLocaleString('es-AR', { minimumFractionDigits: 2 });
+  // Los datos de la cuenta son solo para quien mira su propio perfil: el perfil
+  // también lo puede ver la contraparte de un viaje.
+  const esPropio = mostrarIdentidad && String(usuarioActual()?.id) === String(idUsuario);
+  const verCuenta = esPropio && Boolean(usuario.email);
+  // Sin nada debajo del encabezado (un administrador visto por otro), la línea divisoria sobra.
+  const encabezadoSolo = !verCuenta && !esCamionero;
 
   return (
     <section className="dc-card cal-seccion" aria-label="Perfil y reputación">
       {mostrarIdentidad && (
-        <header className="rp-identidad">
+        <header className={encabezadoSolo ? 'rp-identidad rp-identidad--sola' : 'rp-identidad'}>
           <span className="rp-avatar" aria-hidden="true">
             {iniciales(usuario)}
           </span>
@@ -153,6 +206,8 @@ export default function ReputacionUsuario({ idUsuario, mostrarIdentidad = false 
           </div>
         </header>
       )}
+
+      {verCuenta && <DatosCuenta usuario={usuario} />}
 
       {esCamionero && (
         <>

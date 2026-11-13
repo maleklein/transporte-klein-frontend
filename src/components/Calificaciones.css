@@ -23,13 +23,15 @@
 
 /* Encabezado: iniciales en un círculo, nombre y rol. */
 .rp-identidad { display: flex; align-items: center; gap: 16px; padding-bottom: 20px; margin-bottom: 20px; border-bottom: 1px solid var(--color-borde-suave); }
+.rp-identidad--sola { padding-bottom: 0; margin-bottom: 0; border-bottom: 0; }
 .rp-avatar { display: grid; place-items: center; flex-shrink: 0; width: 56px; height: 56px; border-radius: 50%; background: var(--color-primario); color: #fff; font-size: 1.25rem; font-weight: 700; letter-spacing: 0.02em; }
 .cal-seccion .rp-nombre { margin: 0 0 6px; font-size: var(--texto-titulo); }
 .rp-rol { display: inline-block; padding: 2px 10px; border-radius: 999px; background: var(--color-primario-claro); color: var(--color-primario); font-size: var(--texto-ayuda); font-weight: 700; }
 
 /* Cada bloque lleva un rótulo chico en mayúsculas, como las tarjetas de los paneles,
    con el mismo espacio debajo que los títulos de tarjeta ("Datos personales"). */
-.rp-bloque + .rp-bloque { margin-top: 32px; }
+/* Entre secciones, la misma línea que separa el encabezado. */
+.rp-bloque + .rp-bloque { margin-top: 20px; padding-top: 20px; border-top: 1px solid var(--color-borde-suave); }
 .cal-seccion .rp-etiqueta { margin: 0 0 16px; font-size: var(--texto-ayuda); font-weight: 700; text-transform: uppercase; letter-spacing: 0.03em; color: var(--color-texto-suave); }
 
 /* El número grande a la izquierda; a su derecha, las estrellas y debajo cuántas calificaciones hay. */
