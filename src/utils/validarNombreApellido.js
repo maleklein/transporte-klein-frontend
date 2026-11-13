@@ -42,3 +42,42 @@ export function validarNombreApellido(valor, etiqueta) {
 
   return undefined;
 }
+
+/**
+ * Pone en mayúscula la primera letra de cada palabra y el resto en minúscula,
+ * igual que lo guarda el backend. Las palabras se separan por espacio, guion o
+ * apóstrofe, así "ana-lucía" y "o'brien" también quedan bien.
+ *
+ * A diferencia del backend, no colapsa los espacios: mientras se escribe, un
+ * espacio al final es el comienzo de la palabra siguiente, no un error.
+ *
+ * @param {string} texto - lo que hay en el campo.
+ * @returns {string} el texto con cada palabra en mayúscula inicial.
+ */
+export function conMayusculaInicial(texto) {
+  return texto
+    .toLowerCase()
+    .replace(/(^|[\s'-])(\p{L})/gu, (_, separador, letra) => separador + letra.toUpperCase());
+}
+
+/**
+ * Aplica `conMayusculaInicial` al campo mientras se escribe, sin mover el
+ * cursor: si se corrige una letra del medio, el cursor queda ahí y no salta
+ * al final.
+ *
+ * Se escribe el valor nuevo en el propio input antes de que React lo
+ * actualice; como después el estado coincide con lo que ya muestra el campo,
+ * React no lo vuelve a pisar y la posición del cursor se conserva.
+ *
+ * @param {HTMLInputElement} campo - el input que disparó el cambio.
+ * @returns {string} el valor ya transformado, para guardarlo en el estado.
+ */
+export function aplicarMayusculaInicial(campo) {
+  const transformado = conMayusculaInicial(campo.value);
+  if (transformado !== campo.value) {
+    const { selectionStart, selectionEnd } = campo;
+    campo.value = transformado;
+    campo.setSelectionRange(selectionStart, selectionEnd);
+  }
+  return transformado;
+}
