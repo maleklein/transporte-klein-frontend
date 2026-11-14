@@ -63,7 +63,9 @@ export default function CampoDireccion({
           );
           setSugerencias(utiles);
           setResaltado(-1);
-          setAbierto(utiles.length > 0);
+          // georef puede contestar cuando el usuario ya pasó a otro campo:
+          // ahí la lista no se abre, porque quedaría encima del campo siguiente.
+          setAbierto(utiles.length > 0 && document.activeElement === refInput.current);
         })
         .catch(() => {});
     }, RETRASO_MS);
