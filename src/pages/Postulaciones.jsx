@@ -24,7 +24,7 @@ const GRUPOS = [
   { clave: 'asignado', titulo: 'Viajes asignados', vacio: 'No tenés viajes por hacer.' },
   { clave: 'espera', titulo: 'Postulaciones en espera', vacio: 'No tenés postulaciones esperando respuesta.' },
   // Los entregados van aparte: "Viajes asignados" es sólo lo que falta hacer.
-  { clave: 'entregado', titulo: 'Viajes entregados', vacio: null },
+  { clave: 'entregado', titulo: 'Viajes completados', vacio: null },
   { clave: 'cerrada', titulo: 'No salieron', vacio: null },
 ];
 
