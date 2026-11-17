@@ -103,7 +103,21 @@ export default function Notificaciones() {
     return () => controlador.abort();
   }, []);
 
-  const cantidadNoLeidas = notificaciones.filter((notificacion) => !notificacion.leida).length;
+  // Las sin leer cuentan sobre todas, no sólo sobre las 20 que se ven: si no,
+  // con avisos sin leer más viejos decía "Ya leíste todas." y escondía
+  // "Marcar todas como leídas". Lo da el servidor; mientras no llega, se usan
+  // las que se ven.
+  const [noLeidasTotal, setNoLeidasTotal] = useState(null);
+  const cantidadNoLeidas =
+    noLeidasTotal ?? notificaciones.filter((notificacion) => !notificacion.leida).length;
+
+  useEffect(() => {
+    const controlador = new AbortController();
+    listarNotificaciones({ soloNoLeidas: true }, { signal: controlador.signal })
+      .then((datos) => setNoLeidasTotal(datos.length))
+      .catch(() => {});
+    return () => controlador.abort();
+  }, []);
   // Al administrador no le llegan avisos de cargas nuevas (las crea él): el
   // mensaje de lista vacía no se los promete.
   const esAdministrador = usuarioActual()?.rol === 'administrador';
@@ -134,6 +148,7 @@ export default function Notificaciones() {
     try {
       await marcarTodasLeidas();
       setNotificaciones((previas) => previas.map((otra) => ({ ...otra, leida: true })));
+      setNoLeidasTotal(0);
       refResumen.current?.focus({ preventScroll: true });
     } catch (error) {
       setErrorAlAbrir(
@@ -206,6 +221,7 @@ export default function Notificaciones() {
           otra.id_notificacion === notificacion.id_notificacion ? { ...otra, leida: true } : otra,
         ),
       );
+      setNoLeidasTotal((total) => (total === null ? null : Math.max(0, total - 1)));
     }
 
     if (notificacion.id_carga) {
