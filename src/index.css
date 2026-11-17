@@ -9,14 +9,19 @@
   /* Colores institucionales */
   --color-primario: #1F4E79;
   --color-primario-oscuro: #17395A;
+  /* Hover de los botones llenos: un poco más claro, como los de la barra
+     superior. Los tres mantienen el texto blanco en al menos 4,5:1. */
+  --color-primario-hover: #2968A2;
   --color-primario-claro: #E8EFF6;
 
   --color-confirmar: #2E7D32;
   --color-confirmar-oscuro: #1B5E20;
+  --color-confirmar-hover: #3B853E;
   --color-confirmar-claro: #E7F3E8;
 
   --color-peligro: #C62828;
   --color-peligro-oscuro: #8E1F1F;
+  --color-peligro-hover: #D63636;
   --color-peligro-claro: #FDECEC;
 
   /* Advertencia: algo que pide atención pero no es un error. */
@@ -112,6 +117,9 @@ body {
    - Cancelar (blanco con borde rojo): salir de un formulario sin guardar.
    - Peligro (rojo lleno): una acción destructiva que no se deshace
      (Cancelar carga).
+
+   Al pasar el mouse, los llenos se aclaran (`--color-*-hover`), como los
+   botones de la barra superior; los blancos toman un fondo celeste.
    -------------------------------------------------------------------------- */
 
 .ds-boton {
@@ -140,7 +148,7 @@ body {
   color: #FFFFFF;
 }
 .ds-boton--primario:hover:not(:disabled) {
-  background: var(--color-primario-oscuro);
+  background: var(--color-primario-hover);
 }
 
 .ds-boton--confirmar {
@@ -148,7 +156,7 @@ body {
   color: #FFFFFF;
 }
 .ds-boton--confirmar:hover:not(:disabled) {
-  background: var(--color-confirmar-oscuro);
+  background: var(--color-confirmar-hover);
 }
 
 .ds-boton--cancelar {

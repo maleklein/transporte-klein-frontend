@@ -62,5 +62,5 @@
 }
 
 .mc-boton-peligro:hover:not(:disabled) {
-  background: var(--color-peligro-oscuro);
+  background: var(--color-peligro-hover);
 }
