@@ -126,6 +126,17 @@
   margin: 0;
 }
 
+/* Excepción a "ícono en el primer renglón": en la ruta, el ícono queda
+   centrado con el texto aunque ocupe varios renglones, como en Cargas. */
+.pos-card-dato--ruta {
+  align-items: center;
+}
+
+.pos-card-dato.pos-card-dato--ruta > svg {
+  top: 0;
+  translate: none;
+}
+
 .pos-card-dato svg {
   flex-shrink: 0;
   color: var(--color-primario);

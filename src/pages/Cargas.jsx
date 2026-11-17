@@ -16,6 +16,7 @@ import {
   IconoPeso,
   IconoRuta,
   IconoUbicacion,
+  IconoUsuario,
 } from '../components/Iconos';
 import BarraSuperior from '../components/BarraSuperior';
 import EstadoCarga from '../components/EstadoCarga';
@@ -26,7 +27,7 @@ import {
   motivoSinCapacidad,
   retiroVencido,
 } from '../utils/carga';
-import { etiquetaEstado } from '../utils/estadosCarga';
+import { ESTADOS, etiquetaEstado } from '../utils/estadosCarga';
 import { destinoVolver, volverA } from '../utils/volver';
 import './DetalleCarga.css';
 import './Cargas.css';
@@ -253,6 +254,19 @@ export default function Cargas() {
           </span>
         )}
       </div>
+
+      {/*
+        Cuántos camioneros esperan la asignación: se ve desde el listado cuál
+        conviene resolver primero, sin abrir cada carga. Sólo en las
+        pendientes y para el administrador (el backend no se lo manda al
+        camionero).
+      */}
+      {!esCamionero && carga.estado_actual === ESTADOS.PENDIENTE && carga.cantidad_postulados > 0 && (
+        <span className="cg-postulados">
+          <IconoUsuario width={16} height={16} />
+          {carga.cantidad_postulados === 1 ? '1 postulado' : `${carga.cantidad_postulados} postulados`}
+        </span>
+      )}
 
       {/*
         El botón "estirado" (::after cubre toda la tarjeta en el CSS) hace

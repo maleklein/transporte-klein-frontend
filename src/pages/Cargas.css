@@ -166,6 +166,20 @@
 
 /* Acción principal de la tarjeta. El ::after la estira sobre toda la tarjeta,
    así el click funciona en cualquier parte sin duplicar controles. */
+/* "3 postulados" en las cargas pendientes (sólo administrador). */
+.cg-postulados {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  align-self: flex-start;
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: var(--color-primario-claro);
+  color: var(--color-primario);
+  font-weight: 700;
+  font-size: var(--texto-ayuda);
+}
+
 .cg-card__vermas {
   align-self: flex-end;
   min-height: 44px;
