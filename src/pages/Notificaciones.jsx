@@ -333,18 +333,21 @@ export default function Notificaciones() {
                 <IconoEtiqueta width={22} height={22} />
               </span>
               <span className="nt-item__cuerpo">
-                <span className="nt-item__tipo">
-                  Pendientes de asignación
-                  <span className="nt-contador">{pendientesAsignacion}</span>
-                </span>
+                <span className="nt-item__tipo">Pendientes de asignación</span>
                 <span className="nt-item__texto">
                   {pendientesAsignacion === 1
                     ? '1 carga tiene camioneros postulados esperando que elijas uno.'
                     : `${pendientesAsignacion} cargas tienen camioneros postulados esperando que elijas uno.`}
                 </span>
               </span>
-              <span className="nt-item__flecha" aria-hidden="true">
-                <IconoChevronDerecha width={22} height={22} />
+              {/* El número va a la derecha, junto a la flecha, y no pegado al
+                  título: en el celular el título ocupa dos renglones y el
+                  número quedaba solo debajo. */}
+              <span className="nt-item__fin">
+                <span className="nt-contador">{pendientesAsignacion}</span>
+                <span className="nt-item__flecha" aria-hidden="true">
+                  <IconoChevronDerecha width={22} height={22} />
+                </span>
               </span>
             </Link>
           </section>

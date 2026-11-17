@@ -121,6 +121,35 @@
   overflow-x: auto;
 }
 
+/* Barra de desplazamiento horizontal siempre a la vista cuando la tabla no
+   entra (en el celular, por ejemplo): la del sistema, en la Mac, sólo
+   aparece mientras se desplaza, y "Ver" y "Editar" quedaban afuera sin que
+   se notara. Chrome y Safari la dibujan con estas reglas; Firefox, con la de
+   abajo. */
+.us-tabla-caja::-webkit-scrollbar {
+  height: 14px;
+}
+
+.us-tabla-caja::-webkit-scrollbar-track {
+  background: var(--color-fondo-alt);
+}
+
+.us-tabla-caja::-webkit-scrollbar-thumb {
+  border: 3px solid var(--color-fondo-alt);
+  border-radius: 999px;
+  background: var(--color-borde);
+}
+
+.us-tabla-caja::-webkit-scrollbar-thumb:hover {
+  background: var(--color-primario);
+}
+
+@supports not selector(::-webkit-scrollbar) {
+  .us-tabla-caja {
+    scrollbar-color: var(--color-borde) var(--color-fondo-alt);
+  }
+}
+
 .us-tabla {
   width: 100%;
   border-collapse: collapse;
