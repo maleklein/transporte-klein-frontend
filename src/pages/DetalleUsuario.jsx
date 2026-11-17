@@ -13,6 +13,7 @@ import {
 import BarraSuperior from '../components/BarraSuperior';
 import ReputacionUsuario from '../components/ReputacionUsuario';
 import { formatearFecha } from '../utils/carga';
+import { destinoVolver } from '../utils/volver';
 import './DetalleCarga.css';
 import './DetalleUsuario.css';
 
@@ -34,6 +35,8 @@ export default function DetalleUsuario() {
   const navigate = useNavigate();
   const location = useLocation();
   const usuario = location.state?.usuario;
+  // Vuelve al listado con la búsqueda y los filtros que tenía (`/usuarios?buscar=...`).
+  const volver = destinoVolver(location, { ruta: '/usuarios', texto: 'Volver a Usuarios' });
 
   if (!usuario) return <Navigate to="/usuarios" replace />;
 
@@ -44,9 +47,9 @@ export default function DetalleUsuario() {
       <BarraSuperior />
 
       <main className="dc-contenido">
-        <button type="button" className="dc-volver" onClick={() => navigate('/usuarios')}>
+        <button type="button" className="dc-volver" onClick={() => navigate(volver.ruta)}>
           <IconoFlechaAtras width={20} height={20} />
-          Volver a Usuarios
+          {volver.texto}
         </button>
 
         <header className="dc-encabezado">

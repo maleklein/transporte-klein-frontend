@@ -299,26 +299,25 @@ export default function Cargas() {
         )}
 
         {/* Filtros: combinables entre sí. Cada cambio vuelve a pedir GET /cargas. */}
-        <div className="cg-filtros">
+        <div className={`cg-filtros${esCamionero ? ' cg-filtros--camionero' : ''}`}>
           {/* El filtro por estado es sólo para el administrador (ver `esCamionero`). */}
           {!esCamionero && (
             <div className="cg-filtro">
               <label className="ds-campo__label" htmlFor="cg-estado">
                 Estado
               </label>
-              <select
+              <ComboBox
                 id="cg-estado"
-                className="ds-campo__input"
-                value={filtros.estado}
-                onChange={(evento) => cambiarEstadoFiltro(evento.target.value)}
-              >
-                <option value="">Todos los estados</option>
-                {estadosDisponibles.map((estado) => (
-                  <option key={estado} value={estado}>
-                    {etiquetaEstado(estado)}
-                  </option>
-                ))}
-              </select>
+                buscable={false}
+                opciones={estadosDisponibles.map((estado) => ({
+                  valor: estado,
+                  etiqueta: etiquetaEstado(estado),
+                }))}
+                valor={filtros.estado}
+                alElegir={cambiarEstadoFiltro}
+                marcador="Todos los estados"
+                textoOpcionVacia="Todos los estados"
+              />
             </div>
           )}
 
@@ -363,21 +362,19 @@ export default function Cargas() {
           </div>
 
           {/*
-            El botón aparece sólo cuando hay algo que limpiar. Deshabilitado no
-            aportaba nada: ocupaba lugar en la barra de filtros sin poder
-            hacer nada, y en la vista del camionero —que tiene un filtro menos—
-            quedaba especialmente fuera de lugar.
+            Siempre a la vista y deshabilitado mientras no haya filtros, igual
+            que en Gestión de Usuarios: se ve que la opción existe y la barra
+            no cambia de forma al elegir el primer filtro.
           */}
-          {hayAlgunFiltro && (
-            <button
-              type="button"
-              className="ds-boton ds-boton--secundario cg-limpiar"
-              onClick={limpiarFiltros}
-            >
-              <IconoCerrar />
-              Limpiar filtros
-            </button>
-          )}
+          <button
+            type="button"
+            className="ds-boton ds-boton--secundario cg-limpiar"
+            onClick={limpiarFiltros}
+            disabled={!hayAlgunFiltro}
+          >
+            <IconoCerrar />
+            Limpiar filtros
+          </button>
         </div>
 
         {estadoPantalla === 'ok' && postulables.length > 0 && (
