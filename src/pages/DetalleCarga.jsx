@@ -385,7 +385,7 @@ export default function DetalleCarga() {
           viejo de "carga nueva" (HU 12): para él, lo que pasó es eso.
         */}
         {estadoPantalla === 'no-encontrada' && (
-          <div className="dc-aviso-error" role="alert">
+          <div className="ds-aviso ds-aviso--error" role="alert">
             <IconoAlerta width={22} height={22} />
             {esAdministrador
               ? `No encontramos la carga #${id}. Puede que se haya eliminado o que la dirección sea incorrecta.`
@@ -394,7 +394,7 @@ export default function DetalleCarga() {
         )}
 
         {estadoPantalla === 'error' && (
-          <div className="dc-aviso-error" role="alert">
+          <div className="ds-aviso ds-aviso--error" role="alert">
             <IconoAlerta width={22} height={22} />
             {mensajeError}
           </div>
@@ -475,21 +475,21 @@ export default function DetalleCarga() {
             </header>
 
             {esAdministrador && motivoAccionesBloqueadas(carga.estado_actual) && (
-              <p className="dc-aviso-info" id="dc-motivo-bloqueo">
+              <p className="ds-aviso ds-aviso--info" id="dc-motivo-bloqueo">
                 <IconoInfo width={20} height={20} />
                 <span>{motivoAccionesBloqueadas(carga.estado_actual)}</span>
               </p>
             )}
 
             {avisoExito && !mensajeCancelacion && (
-              <div className="dc-aviso-exito" role="status">
+              <div className="ds-aviso ds-aviso--exito" role="status">
                 <IconoCheck width={20} height={20} />
                 {avisoExito}
               </div>
             )}
 
             {esAdministrador && retiroVencido(carga) && (
-              <div className="dc-aviso-advertencia" role="status">
+              <div className="ds-aviso ds-aviso--advertencia" role="status">
                 <IconoAlerta width={20} height={20} />
                 <span>
                   La fecha de retiro ({formatearFecha(carga.fecha)}) ya pasó y la carga sigue sin
@@ -501,7 +501,7 @@ export default function DetalleCarga() {
 
             {mensajeCancelacion && (
               <div
-                className="dc-aviso-exito"
+                className="ds-aviso ds-aviso--exito"
                 role="status"
                 tabIndex={-1}
                 ref={refAvisoCancelacion}

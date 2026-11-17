@@ -17,7 +17,6 @@
 .cal-evaluacion p:last-child { margin-bottom: 0; }
 .cal-evaluacion:last-child { margin-bottom: 0; }
 .cal-comentario { white-space: pre-wrap; overflow-wrap: anywhere; }
-.cal-aviso { background: #e7f3e9; padding: 12px; border-radius: 8px; }
 
 /* ---------- Perfil y reputación (ReputacionUsuario.jsx) ---------- */
 

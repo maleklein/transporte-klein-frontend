@@ -125,6 +125,15 @@ export function IconoPeso(props) {
   );
 }
 
+export function IconoBuscar(props) {
+  return (
+    <svg {...base} {...props}>
+      <circle cx="11" cy="11" r="7" />
+      <path d="m20 20-4-4" />
+    </svg>
+  );
+}
+
 export function IconoOjo(props) {
   return (
     <svg {...base} {...props}>

@@ -1,0 +1,8 @@
+/* Parte del texto que coincide con la búsqueda. */
+.texto-resaltado {
+  padding: 0 1px;
+  border-radius: 3px;
+  background: var(--color-resaltado);
+  color: inherit;
+  font-weight: 600;
+}

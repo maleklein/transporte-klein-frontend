@@ -32,18 +32,6 @@
   text-align: left;
 }
 
-.pos-aviso-error {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 14px 16px;
-  border: 2px solid var(--color-peligro);
-  border-radius: var(--radio-chico);
-  background: var(--color-peligro-claro);
-  color: var(--color-peligro-oscuro);
-  font-weight: 600;
-}
-
 .pos-grupo + .pos-grupo {
   margin-top: 28px;
 }
@@ -96,7 +84,7 @@
 
 .pos-card-tipo {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   gap: 8px;
   font-size: var(--texto-label);
   color: var(--color-texto);
@@ -132,7 +120,7 @@
 
 .pos-card-dato {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   flex-wrap: wrap;
   gap: 8px;
   margin: 0;

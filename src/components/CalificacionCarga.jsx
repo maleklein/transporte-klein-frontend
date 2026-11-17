@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { emitirCalificacion, obtenerCalificacionViaje } from '../api/calificaciones';
-import { IconoGuardar, IconoReintentar } from './Iconos';
+import { IconoCheck, IconoGuardar, IconoInfo, IconoReintentar } from './Iconos';
 import { volverA } from '../utils/volver';
 import './Calificaciones.css';
 
@@ -9,7 +9,8 @@ import './Calificaciones.css';
 export default function CalificacionCarga({ idCarga }) {
   const [datos, setDatos] = useState(null);
   const [error, setError] = useState('');
-  const [aviso, setAviso] = useState('');
+  // { tipo: 'exito' | 'info', texto } o null.
+  const [aviso, setAviso] = useState(null);
   const [puntaje, setPuntaje] = useState('');
   const [comentario, setComentario] = useState('');
   const [guardando, setGuardando] = useState(false);
@@ -43,10 +44,11 @@ export default function CalificacionCarga({ idCarga }) {
     try {
       const emitida = await emitirCalificacion({ id_carga: Number(idCarga), puntaje: Number(puntaje), comentario });
       setDatos((anterior) => ({ ...anterior, emitida, puede_calificar: false }));
-      setAviso('Tu calificación se guardó correctamente.');
+      setAviso({ tipo: 'exito', texto: 'Tu calificación se guardó correctamente.' });
     } catch (e) {
       if (e.estado === 409) {
-        setAviso(e.message);
+        // 409: el viaje ya se calificó (por ejemplo, desde otra pestaña). Informa, no es un error.
+        setAviso({ tipo: 'info', texto: e.message });
         setVersion((v) => v + 1);
       } else setError(e.message);
     } finally {
@@ -58,7 +60,12 @@ export default function CalificacionCarga({ idCarga }) {
   return (
     <section className="dc-card cal-seccion" aria-labelledby="cal-titulo">
       <h2 id="cal-titulo">Calificación del viaje</h2>
-      {aviso && <p role="status" className="cal-aviso">{aviso}</p>}
+      {aviso && (
+        <p role="status" className={`ds-aviso ds-aviso--${aviso.tipo}`}>
+          {aviso.tipo === 'exito' ? <IconoCheck width={20} height={20} /> : <IconoInfo width={20} height={20} />}
+          <span>{aviso.texto}</span>
+        </p>
+      )}
       {cargando ? <p role="status">Consultando la calificación...</p> : <>
         {error && <div role={sinPermiso ? 'status' : 'alert'}>
           <p>{error}</p>
@@ -85,7 +92,7 @@ export default function CalificacionCarga({ idCarga }) {
               <label htmlFor="cal-comentario">Comentario (opcional)</label>
               <textarea id="cal-comentario" rows={4} maxLength={1000} value={comentario} onChange={(e) => setComentario(e.target.value)} aria-describedby="cal-limite" />
               <small id="cal-limite">Hasta 1000 caracteres. Describí tu experiencia con el viaje.</small>
-              <button className="ds-boton ds-boton--primario" type="submit" disabled={!puntaje || guardando}><IconoGuardar />{guardando ? 'Guardando...' : 'Enviar calificación'}</button>
+              <button className="ds-boton ds-boton--confirmar" type="submit" disabled={!puntaje || guardando}><IconoGuardar />{guardando ? 'Guardando...' : 'Enviar calificación'}</button>
             </fieldset>
           </form> : <p>{datos.motivo}</p>}
         </>}

@@ -47,7 +47,9 @@
 /* --- Barra de búsqueda y filtros (HU 1.3) --- */
 .us-filtros {
   display: grid;
-  grid-template-columns: 1fr 1fr 1fr 1fr auto;
+  /* La búsqueda (nombre, apellido, DNI o email) ocupa lo que antes eran dos campos. */
+  /* Rol y Estado con un mínimo, para que "Todos los estados" no se corte. */
+  grid-template-columns: minmax(0, 2fr) minmax(205px, 1fr) minmax(205px, 1fr) auto;
   gap: 16px;
   align-items: end;
   padding: 20px;
@@ -69,10 +71,32 @@
 .us-limpiar {
   white-space: nowrap;
 }
+/* Campo de búsqueda con la lupa adentro, a la izquierda. */
+.us-buscar {
+  position: relative;
+}
 
-@media (max-width: 900px) {
+.us-buscar__icono {
+  position: absolute;
+  left: 14px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--color-texto-suave);
+  pointer-events: none;
+}
+
+/* Con el contenedor adelante, para ganarle al padding de `.ds-campo__input`. */
+.us-buscar .us-buscar__input {
+  padding-left: 44px;
+}
+
+@media (max-width: 1060px) {
   .us-filtros {
     grid-template-columns: 1fr 1fr;
+  }
+  /* En dos columnas, la búsqueda va sola en su fila y Rol y Estado debajo. */
+  .us-filtro--buscar {
+    grid-column: 1 / -1;
   }
 }
 
@@ -147,19 +171,6 @@
   }
 }
 
-.us-aviso-exito {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  margin-bottom: 20px;
-  padding: 14px 16px;
-  border: 2px solid var(--color-confirmar);
-  border-radius: var(--radio-chico);
-  background: var(--color-confirmar-claro);
-  color: var(--color-confirmar-oscuro);
-  font-weight: 600;
-}
-
 .us-boton-accion {
   padding: 8px 12px;
   min-height: 36px;
@@ -173,7 +184,9 @@
 }
 
 /* Encabezado de la columna de acciones: sin texto visible, solo para lectores de pantalla. */
-.us-columna-oculta {
+/* Texto que no se ve pero sí lee el lector de pantalla. */
+.us-columna-oculta,
+.us-solo-lectores {
   position: absolute;
   width: 1px;
   height: 1px;
@@ -182,18 +195,32 @@
   white-space: nowrap;
 }
 
-.us-aviso-error {
+/* Aviso de "sin resultados": qué no coincidió y la salida, ahí mismo. */
+.us-sin-resultados {
   display: flex;
-  align-items: flex-start;
-  gap: 10px;
-  padding: 14px 16px;
-  border-radius: var(--radio-chico);
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 40px 24px;
+  text-align: center;
+}
+
+.us-sin-resultados__icono {
+  color: var(--color-texto-suave);
+}
+
+.us-sin-resultados__titulo {
+  margin: 0;
   font-size: var(--texto-base);
   font-weight: 600;
-  margin-bottom: 20px;
-  border: 2px solid var(--color-peligro);
-  background: var(--color-peligro-claro);
-  color: var(--color-peligro-oscuro);
+  color: var(--color-texto);
+}
+
+.us-sin-resultados__ayuda {
+  margin: 0 0 8px;
+  max-width: 460px;
+  font-size: var(--texto-base);
+  color: var(--color-texto-suave);
 }
 
 .us-vacio {

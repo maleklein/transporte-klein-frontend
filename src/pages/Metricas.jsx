@@ -264,9 +264,11 @@ export default function Metricas() {
         {estadoPantalla === 'cargando' && <p className="mt-mensaje">Cargando métricas...</p>}
 
         {estadoPantalla === 'error' && (
-          <div className="mt-aviso-error" role="alert">
-            <IconoAlerta width={22} height={22} />
-            <span className="mt-aviso-error__texto">{mensajeError}</span>
+          <div className="ds-aviso ds-aviso--error mt-aviso-error" role="alert">
+            <span className="mt-aviso-error__texto">
+              <IconoAlerta width={22} height={22} />
+              <span>{mensajeError}</span>
+            </span>
             <button
               type="button"
               className="ds-boton ds-boton--secundario"

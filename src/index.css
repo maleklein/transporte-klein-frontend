@@ -9,6 +9,12 @@
   /* Colores institucionales */
   --color-primario: #1F4E79;
   --color-primario-oscuro: #17395A;
+
+  /* Hover de lo que va sobre un color lleno: un blanco al 14% encima, el
+     mismo que usan los botones de la barra superior. El verde lleva menos
+     (6%): con 14% el texto blanco bajaría de 4,5:1. */
+  --aclarado-hover: rgba(255, 255, 255, 0.14);
+  --aclarado-hover-suave: rgba(255, 255, 255, 0.06);
   --color-primario-claro: #E8EFF6;
 
   --color-confirmar: #2E7D32;
@@ -22,6 +28,9 @@
   /* Advertencia: algo que pide atención pero no es un error. */
   --color-advertencia: #8A5300;
   --color-advertencia-claro: #FFF4E5;
+
+  /* Resaltado: la parte de un texto que coincide con una búsqueda. */
+  --color-resaltado: #FFE58F;
 
   /* Neutros — contraste alto sobre blanco */
   --color-fondo: #FFFFFF;
@@ -80,7 +89,7 @@ body {
    No fija margen: lo pone cada pantalla, según lo que tenga alrededor. */
 .ds-titulo-pagina {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   gap: 12px;
   font-size: var(--texto-titulo);
   font-weight: 700;
@@ -92,10 +101,57 @@ body {
   flex-shrink: 0;
 }
 
+/* --------------------------------------------------------------------------
+   Ícono al lado de un texto que puede ocupar más de un renglón (títulos,
+   etiquetas, avisos, mensajes de error): el ícono queda a la altura del
+   primer renglón, arriba a la izquierda, y no en el medio del bloque.
+
+   Los contenedores alinean arriba (`align-items: flex-start`) y el ícono baja
+   medio renglón (`0.5lh`) y sube la mitad de su alto: así queda centrado con
+   el primer renglón sea del tamaño que sea. Para sumar una pieza nueva con
+   ícono y texto, agregá su clase a esta lista y alineala arriba.
+   -------------------------------------------------------------------------- */
+:is(
+  .ds-titulo-pagina, .ds-campo__error, .ds-aviso,
+  .ac-titulo, .au-titulo, .au-bloque-camionero__titulo,
+  .bs-aviso-acceso, .cg-card__ruta,
+  .dc-titulo, .dc-descripcion__titulo, .dc-dato dt,
+  .mc-caja__error, .mt-titulo, .mt-error-validacion, .nt-titulo,
+  .pc-estado, .pcm-tarjeta__titulo, .pcm-tarjeta__error, .pcm-viaje__fecha,
+  .pg-error, .pos-card-tipo, .pos-card-dato, .pp-error, .pp-item__dato,
+  .mt-aviso-error__texto, .pcm-aviso-error__texto, .pm-error-carga__texto
+) > svg {
+  flex-shrink: 0;
+  position: relative;
+  top: 0.5lh;
+  translate: 0 -50%;
+}
+
 /* Perfil: sin encabezado alrededor, el título lleva su propio espacio. */
 .pr-titulo {
   margin: 0 0 24px;
 }
+
+/* --------------------------------------------------------------------------
+   Botones: qué estilo lleva cada uno.
+
+   - Primario (azul lleno): la acción principal de la pantalla o del bloque,
+     para lo que existe esa pantalla (Nuevo Usuario, Nueva Carga, Aplicar,
+     Postularme, avanzar el estado). Como mucho uno a la vista.
+   - Confirmar (verde lleno): cerrar un formulario guardando datos (Guardar,
+     Registrar, Crear, Enviar calificación).
+   - Secundario (blanco): todo lo demás. Siempre las acciones que se repiten
+     en cada fila o tarjeta (Ver, Editar, Ver detalle): en azul lleno, una
+     lista de veinte tendría veinte "principales". También filtros,
+     Reintentar, paginación y volver.
+   - Cancelar (blanco con borde rojo): salir de un formulario sin guardar.
+   - Peligro (rojo lleno): una acción destructiva que no se deshace
+     (Cancelar carga).
+
+   Al pasar el mouse, los llenos se aclaran con el mismo blanco translúcido
+   que los botones de la barra superior (`--aclarado-hover`); los blancos
+   toman un fondo celeste.
+   -------------------------------------------------------------------------- */
 
 .ds-boton {
   display: inline-flex;
@@ -123,7 +179,7 @@ body {
   color: #FFFFFF;
 }
 .ds-boton--primario:hover:not(:disabled) {
-  background: var(--color-primario-oscuro);
+  background-image: linear-gradient(var(--aclarado-hover), var(--aclarado-hover));
 }
 
 .ds-boton--confirmar {
@@ -131,7 +187,7 @@ body {
   color: #FFFFFF;
 }
 .ds-boton--confirmar:hover:not(:disabled) {
-  background: var(--color-confirmar-oscuro);
+  background-image: linear-gradient(var(--aclarado-hover-suave), var(--aclarado-hover-suave));
 }
 
 .ds-boton--cancelar {
@@ -152,6 +208,60 @@ body {
 .ds-boton--secundario:hover:not(:disabled) {
   background: var(--color-primario-claro);
   border-color: var(--color-primario);
+}
+
+/* --------------------------------------------------------------------------
+   Avisos: un recuadro con ícono para decir algo sobre lo que se está viendo.
+   Uno solo para todo el sistema; cada pantalla agrega, si hace falta, sólo
+   su acomodo (por ejemplo, un botón Reintentar al lado del texto).
+
+   - Éxito (verde): algo salió bien ("Se guardaron los cambios de...").
+   - Error (rojo): algo falló y hay que hacer algo ("No se pudo cargar...").
+   - Advertencia (amarillo): pide una acción, pero no es un error (retiro
+     vencido).
+   - Info (azul): explica algo, sin urgencia (por qué un botón está
+     deshabilitado, qué pasa al cambiar un parámetro). Texto en peso normal:
+     suele ser más largo que los otros.
+
+   No incluye la notificación flotante de "Deshacer" (`.pg-aviso`), que es
+   otra cosa: aparece sola y se va.
+   -------------------------------------------------------------------------- */
+.ds-aviso {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  margin: 0 0 20px;
+  padding: 14px 16px;
+  border: 2px solid transparent;
+  border-radius: var(--radio-chico);
+  font-size: var(--texto-base);
+  font-weight: 600;
+}
+
+
+.ds-aviso--exito {
+  border-color: var(--color-confirmar);
+  background: var(--color-confirmar-claro);
+  color: var(--color-confirmar-oscuro);
+}
+
+.ds-aviso--error {
+  border-color: var(--color-peligro);
+  background: var(--color-peligro-claro);
+  color: var(--color-peligro-oscuro);
+}
+
+.ds-aviso--advertencia {
+  border-color: var(--color-advertencia);
+  background: var(--color-advertencia-claro);
+  color: var(--color-advertencia);
+}
+
+.ds-aviso--info {
+  border-color: var(--color-primario);
+  background: var(--color-primario-claro);
+  color: var(--color-primario-oscuro);
+  font-weight: 400;
 }
 
 /* --------------------------------------------------------------------------
@@ -187,6 +297,22 @@ body {
   background: #FFFFFF;
 }
 
+/* Flecha de los campos desplegables: los <select> y el ComboBox (que la pide
+   con `ds-campo__input--desplegable`). Una sola, para que en todos quede del
+   mismo tamaño y a la misma distancia del borde; la del navegador se ve
+   chiquita y pegada al borde. Va como fondo porque un <select> no admite
+   elementos adentro; el color es el de --color-texto-suave (un fondo SVG no
+   puede leer variables). */
+select.ds-campo__input,
+.ds-campo__input--desplegable {
+  appearance: none;
+  padding-right: 44px;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='9' viewBox='0 0 14 9'%3E%3Cpath d='M1 1.5l6 6 6-6' fill='none' stroke='%234A5568' stroke-width='2'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 16px center;
+  background-size: 14px 9px;
+}
+
 .ds-campo__input::placeholder {
   color: #6B7280;
 }
@@ -198,8 +324,9 @@ body {
 }
 
 /* Campo bloqueado (ej: DNI en la edición de usuarios) */
+/* `background-color` y no `background`: el atajo borraría la flecha de los desplegables. */
 .ds-campo__input:disabled {
-  background: var(--color-fondo-alt);
+  background-color: var(--color-fondo-alt);
   color: var(--color-texto-suave);
   cursor: not-allowed;
 }
@@ -207,7 +334,7 @@ body {
 /* Estado de error: borde rojo + mensaje rojo debajo del campo */
 .ds-campo__input--error {
   border-color: var(--color-peligro);
-  background: var(--color-peligro-claro);
+  background-color: var(--color-peligro-claro);
 }
 
 .ds-campo__input--error:focus {
@@ -217,7 +344,7 @@ body {
 
 .ds-campo__error {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   gap: 6px;
   color: var(--color-peligro);
   font-size: var(--texto-ayuda);

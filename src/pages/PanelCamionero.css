@@ -12,21 +12,19 @@
   color: var(--color-texto-suave);
 }
 
-.pcm-aviso-error {
-  display: flex;
+/* El aviso de error (`.ds-aviso`) lleva el botón Reintentar al lado del texto. */
+.ds-aviso.pcm-aviso-error {
   align-items: center;
   flex-wrap: wrap;
   gap: 10px 14px;
-  margin-bottom: 20px;
-  padding: 14px 16px;
-  border: 2px solid var(--color-peligro);
-  border-radius: var(--radio-chico);
-  background: var(--color-peligro-claro);
-  color: var(--color-peligro-oscuro);
-  font-weight: 600;
 }
 
+/* Ícono y texto van juntos: el aviso centra el grupo con el botón, y dentro
+   del grupo el ícono queda en el primer renglón. */
 .pcm-aviso-error__texto {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
   flex: 1 1 260px;
 }
 
@@ -84,7 +82,7 @@
 
 .pcm-tarjeta__titulo {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   gap: 8px;
   font-size: var(--texto-ayuda);
   font-weight: 700;
@@ -112,7 +110,7 @@
 
 .pcm-tarjeta__error {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   gap: 6px;
   margin: 8px 0;
   color: var(--color-peligro-oscuro);
@@ -220,7 +218,7 @@
 
 .pcm-viaje__fecha {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   gap: 6px;
   font-size: var(--texto-ayuda);
   color: var(--color-texto-suave);
@@ -232,3 +230,4 @@
   font-weight: 700;
   color: var(--color-primario);
 }
+

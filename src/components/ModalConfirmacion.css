@@ -36,7 +36,7 @@
 
 .mc-caja__error {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   gap: 8px;
   margin: 0 0 18px;
   padding: 10px 14px;
@@ -62,5 +62,5 @@
 }
 
 .mc-boton-peligro:hover:not(:disabled) {
-  background: var(--color-peligro-oscuro);
+  background-image: linear-gradient(var(--aclarado-hover), var(--aclarado-hover));
 }

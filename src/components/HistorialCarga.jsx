@@ -66,7 +66,7 @@ export default function HistorialCarga({
       {estadoPedido === 'cargando' && <p className="dc-mensaje">Cargando historial...</p>}
 
       {estadoPedido === 'error' && (
-        <div className="dc-aviso-error" role="alert">
+        <div className="ds-aviso ds-aviso--error" role="alert">
           <IconoAlerta width={22} height={22} />
           {mensajeError}
         </div>
