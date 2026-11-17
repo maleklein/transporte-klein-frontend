@@ -5,7 +5,9 @@
 
 .cg-filtros {
   display: grid;
-  grid-template-columns: 1fr 1fr 1fr auto;
+  /* Administrador: cuatro filtros en un renglón y "Limpiar filtros" abajo a
+     la derecha (con el botón al lado, los textos de los filtros se cortaban). */
+  grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 16px;
   align-items: end;
   padding: 20px;
@@ -35,12 +37,24 @@
   white-space: nowrap;
 }
 
+.cg-filtros:not(.cg-filtros--camionero) .cg-limpiar {
+  grid-column: -2;
+  justify-self: end;
+}
+
 /* En anchos medios, de a dos por fila: con los tres filtros y el botón en
    una sola fila, los selectores cortaban su texto ("Todos lo..."). */
 @media (max-width: 1060px) {
   .cg-filtros,
   .cg-filtros--camionero {
     grid-template-columns: 1fr 1fr;
+  }
+}
+
+@media (max-width: 720px) {
+  .cg-filtros:not(.cg-filtros--camionero) .cg-limpiar {
+    grid-column: auto;
+    justify-self: stretch;
   }
 }
 

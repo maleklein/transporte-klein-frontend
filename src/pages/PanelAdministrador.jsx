@@ -18,8 +18,8 @@ import { listarCargas } from '../api/cargas';
 import { obtenerMetricas } from '../api/metricas';
 import { listarNotificaciones } from '../api/notificaciones';
 import { ErrorDeApi } from '../api/usuarios';
-import { formatearFecha, rutaPendientesAsignacion } from '../utils/carga';
-import { ESTADOS } from '../utils/estadosCarga';
+import { formatearFecha, rangoDePeriodo, rutaCargasPorEstado, rutaPendientesAsignacion } from '../utils/carga';
+import { ESTADOS, etiquetaEstado } from '../utils/estadosCarga';
 import { desdeInicio } from '../utils/volver';
 // Las tarjetas de resumen (`pcm-tarjeta`) son las del panel del camionero
 // (HU 17): se reusan sus estilos para que los dos paneles se vean igual.
@@ -49,24 +49,16 @@ const ACCESOS = [
   { to: '/parametros', titulo: 'Parámetros operativos', detalle: 'Costo, peaje y tarifa por kilómetro.', Icono: IconoAjustes },
 ];
 
-/** Días que abarca el conteo por estado: los mismos que el panel de métricas por defecto. */
-const DIAS_PERIODO = 30;
-
 /**
- * Los últimos `DIAS_PERIODO` días, incluido hoy, en hora local del navegador.
- * Mismo criterio que el período por defecto de `Metricas.jsx`, para que el
- * panel y las estadísticas den el mismo número. Se arma con los getters
- * locales y no con `toISOString`, que pasa a UTC y puede correr el día.
+ * Los últimos 30 días, incluido hoy: el mismo período que Métricas por
+ * defecto y que el acceso "Últimos 30 días" del filtro "Creada" de Gestión de
+ * Cargas, para que los tres den el mismo número.
  *
  * @returns {{fechaDesde: string, fechaHasta: string}} fechas AAAA-MM-DD.
  */
 function periodoDelConteo() {
-  const aTexto = (fecha) =>
-    `${fecha.getFullYear()}-${String(fecha.getMonth() + 1).padStart(2, '0')}-${String(fecha.getDate()).padStart(2, '0')}`;
-  const hoy = new Date();
-  const desde = new Date(hoy);
-  desde.setDate(hoy.getDate() - (DIAS_PERIODO - 1));
-  return { fechaDesde: aTexto(desde), fechaHasta: aTexto(hoy) };
+  const { desde, hasta } = rangoDePeriodo('ultimos-30');
+  return { fechaDesde: desde, fechaHasta: hasta };
 }
 
 /*
@@ -272,12 +264,27 @@ export default function PanelAdministrador() {
                 </p>
               ) : (
                 <ul className="pa-estados">
-                  {ORDEN_ESTADOS.map((estado) => (
-                    <li key={estado} className="pa-estado">
-                      <span className="pa-estado__valor">{metricas.valor.cargas_por_estado?.[estado] ?? 0}</span>
-                      <EstadoCarga estado={estado} />
-                    </li>
-                  ))}
+                  {/*
+                    Cada casilla lleva a Gestión de Cargas filtrada por ese
+                    estado y por el mismo período de creación con el que se
+                    contó: el listado muestra exactamente esas cargas.
+                  */}
+                  {ORDEN_ESTADOS.map((estado) => {
+                    const cantidad = metricas.valor.cargas_por_estado?.[estado] ?? 0;
+                    return (
+                      <li key={estado}>
+                        <Link
+                          to={rutaCargasPorEstado(estado, periodo)}
+                          state={desdeInicio('administrador')}
+                          className="pa-estado"
+                          aria-label={`${cantidad} ${cantidad === 1 ? 'carga' : 'cargas'} en estado ${etiquetaEstado(estado)}: ver en Gestión de Cargas`}
+                        >
+                          <span className="pa-estado__valor">{cantidad}</span>
+                          <EstadoCarga estado={estado} />
+                        </Link>
+                      </li>
+                    );
+                  })}
                 </ul>
               )}
             </>

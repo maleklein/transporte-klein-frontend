@@ -277,7 +277,7 @@ export default function AltaUsuario() {
 
       // Se deja ver el mensaje de éxito antes de volver a la lista de usuarios.
       refTemporizador.current = setTimeout(() => {
-        navigate('/usuarios', { state: { usuarioCreado } });
+        navigate('/usuarios', { state: { ...(volver.estado ?? {}), usuarioCreado } });
       }, 1800);
     } catch (error) {
       const esDeApi = error instanceof ErrorDeApi;

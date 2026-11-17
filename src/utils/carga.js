@@ -228,3 +228,98 @@ export function rutaPendientesAsignacion(cargasPendientes) {
     ? `/cargas/${cargasPendientes[0].id_carga}`
     : '/cargas?estado=pendiente';
 }
+
+/**
+ * A dónde lleva cada casilla de "Cargas por estado" del panel del
+ * administrador: a Gestión de Cargas filtrada por ese estado y por el mismo
+ * período de creación con el que se contó, así el listado muestra exactamente
+ * esas cargas.
+ *
+ * @param {string} estado - el estado de la casilla ("disponible", ...).
+ * @param {{fecha_desde?: string, fecha_hasta?: string}} [periodo] - el período del conteo (AAAA-MM-DD).
+ * @returns {string} la ruta, con la búsqueda.
+ */
+export function rutaCargasPorEstado(estado, periodo = {}) {
+  const params = new URLSearchParams({ estado });
+  if (periodo.fecha_desde) params.set('creada_desde', periodo.fecha_desde);
+  if (periodo.fecha_hasta) params.set('creada_hasta', periodo.fecha_hasta);
+  return `/cargas?${params}`;
+}
+
+/**
+ * Un `Date` (hora local) como texto AAAA-MM-DD. Con los getters locales y no
+ * con `toISOString`, que pasa a UTC y puede correr el día.
+ *
+ * @param {Date} fecha
+ * @returns {string}
+ */
+export function fechaATexto(fecha) {
+  const dos = (numero) => String(numero).padStart(2, '0');
+  return `${fecha.getFullYear()}-${dos(fecha.getMonth() + 1)}-${dos(fecha.getDate())}`;
+}
+
+/**
+ * Texto AAAA-MM-DD como `Date` a la medianoche local, o `undefined` si no es
+ * una fecha con ese formato.
+ *
+ * @param {string} texto
+ * @returns {Date|undefined}
+ */
+export function textoAFecha(texto) {
+  const partes = /^(\d{4})-(\d{2})-(\d{2})$/.exec(texto ?? '');
+  if (!partes) return undefined;
+  return new Date(Number(partes[1]), Number(partes[2]) - 1, Number(partes[3]));
+}
+
+/**
+ * Accesos rápidos del filtro "Creada" de Gestión de Cargas. "Últimos 30 días"
+ * es el mismo período que cuentan el panel del administrador y Métricas.
+ */
+export const PERIODOS_CREACION = [
+  { id: 'ultimos-7', texto: 'Últimos 7 días' },
+  { id: 'ultimos-30', texto: 'Últimos 30 días' },
+  { id: 'este-mes', texto: 'Este mes' },
+];
+
+/**
+ * Las fechas de un acceso rápido, contadas desde `hoy` (incluido).
+ *
+ * @param {string} id - uno de `PERIODOS_CREACION`.
+ * @param {Date} [hoy]
+ * @returns {{desde: string, hasta: string}} fechas AAAA-MM-DD.
+ */
+export function rangoDePeriodo(id, hoy = new Date()) {
+  const hasta = fechaATexto(hoy);
+  const haceDias = (dias) => {
+    const fecha = new Date(hoy.getFullYear(), hoy.getMonth(), hoy.getDate());
+    fecha.setDate(fecha.getDate() - dias);
+    return fechaATexto(fecha);
+  };
+  if (id === 'ultimos-7') return { desde: haceDias(6), hasta };
+  if (id === 'ultimos-30') return { desde: haceDias(29), hasta };
+  if (id === 'este-mes') return { desde: fechaATexto(new Date(hoy.getFullYear(), hoy.getMonth(), 1)), hasta };
+  throw new Error(`Período desconocido: ${id}`);
+}
+
+/**
+ * Qué muestra el filtro "Creada": el nombre del acceso rápido si las fechas
+ * coinciden con uno ("Últimos 30 días"), si no el rango ("01/11/2026 –
+ * 15/11/2026"), y '' si no hay período (el filtro muestra "Cualquier fecha").
+ *
+ * @param {string} desde - AAAA-MM-DD o ''.
+ * @param {string} hasta - AAAA-MM-DD o ''.
+ * @param {Date} [hoy]
+ * @returns {string}
+ */
+export function nombrePeriodoCreacion(desde, hasta, hoy = new Date()) {
+  if (!desde && !hasta) return '';
+  const coincide = PERIODOS_CREACION.find(({ id }) => {
+    const rango = rangoDePeriodo(id, hoy);
+    return rango.desde === desde && rango.hasta === hasta;
+  });
+  if (coincide) return coincide.texto;
+  if (desde && hasta) {
+    return desde === hasta ? formatearFecha(desde) : `${formatearFecha(desde)} – ${formatearFecha(hasta)}`;
+  }
+  return desde ? `Desde el ${formatearFecha(desde)}` : `Hasta el ${formatearFecha(hasta)}`;
+}

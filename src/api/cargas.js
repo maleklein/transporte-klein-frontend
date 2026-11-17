@@ -140,13 +140,15 @@ export async function editarCarga(id, datos) {
 /**
  * GET /cargas (HU 2.5 - GIANNA) — lista las cargas registradas.
  *
- * Los tres filtros son opcionales y combinables entre sí. El que llega vacío no
+ * Los filtros son opcionales y combinables entre sí. El que llega vacío no
  * se manda como query param.
  *
  * @param {object} [filtros]
  * @param {string} [filtros.estado]  - `estado_actual` exacto ("disponible", "publicada", ...).
  * @param {string} [filtros.fecha]   - fecha exacta en formato AAAA-MM-DD.
  * @param {string} [filtros.destino_provincia] - id de provincia de destino (2 dígitos).
+ * @param {string} [filtros.creada_desde] - cargas creadas desde ese día (AAAA-MM-DD), incluido.
+ * @param {string} [filtros.creada_hasta] - cargas creadas hasta ese día (AAAA-MM-DD), incluido.
  * @param {object} [opciones]
  * @param {AbortSignal} [opciones.signal] - para cancelar el pedido si se dispara otro antes.
  * @returns {Promise<object[]>} las cargas que cumplen los filtros; `[]` si ninguna coincide.
@@ -155,7 +157,7 @@ export async function editarCarga(id, datos) {
  */
 export async function listarCargas(filtros = {}, opciones = {}) {
   const params = new URLSearchParams();
-  for (const clave of ['estado', 'fecha', 'destino_provincia']) {
+  for (const clave of ['estado', 'fecha', 'destino_provincia', 'creada_desde', 'creada_hasta']) {
     const valor = String(filtros[clave] ?? '').trim();
     if (valor) params.set(clave, valor);
   }

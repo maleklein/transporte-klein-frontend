@@ -47,7 +47,7 @@ export default function DetalleUsuario() {
       <BarraSuperior volver={volver} />
 
       <main className="dc-contenido">
-        <button type="button" className="dc-volver bs-volver-pantalla" onClick={() => navigate(volver.ruta)}>
+        <button type="button" className="dc-volver bs-volver-pantalla" onClick={() => navigate(volver.ruta, { state: volver.estado ?? null })}>
           <IconoFlechaAtras width={20} height={20} />
           {volver.texto}
         </button>

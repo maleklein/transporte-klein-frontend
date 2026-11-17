@@ -148,7 +148,10 @@ export default function EditarUsuario() {
   // al final del componente se decide si hay que redirigir.
   const usuario = location.state?.usuario;
   // Al cancelar o guardar, el listado vuelve con la búsqueda y los filtros que tenía.
-  const rutaListado = destinoVolver(location, { ruta: '/usuarios' }).ruta;
+  // A dónde vuelve, con el `state` del listado (si se había entrado desde el
+  // inicio, el listado sigue ofreciendo "Volver al inicio").
+  const listado = destinoVolver(location, { ruta: '/usuarios' });
+  const rutaListado = listado.ruta;
   const esCamionero = usuario?.rol === 'camionero';
   // Darse de baja a uno mismo deja la cuenta sin poder volver a activarse: el
   // backend lo rechaza (409) y acá directamente no se ofrece la opción.
@@ -194,7 +197,7 @@ export default function EditarUsuario() {
    *
    * @returns {void}
    */
-  const cancelar = () => navigate(rutaListado);
+  const cancelar = () => navigate(rutaListado, { state: listado.estado ?? null });
 
   /**
    * Maneja el cambio en un campo del formulario y limpia errores previos.
@@ -259,7 +262,7 @@ export default function EditarUsuario() {
       );
 
       refTemporizador.current = setTimeout(() => {
-        navigate(rutaListado, { state: { usuarioActualizado } });
+        navigate(rutaListado, { state: { ...(listado.estado ?? {}), usuarioActualizado } });
       }, 1800);
     } catch (error) {
       const esDeApi = error instanceof ErrorDeApi;
