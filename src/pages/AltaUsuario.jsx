@@ -308,14 +308,14 @@ export default function AltaUsuario() {
           <div className="au-body">
             {/* Mensajes de estado, arriba del formulario */}
             {mensajeExito && (
-              <div className="au-aviso au-aviso--exito" role="status">
+              <div className="ds-aviso ds-aviso--exito" role="status">
                 <IconoCheck />
                 {mensajeExito}
               </div>
             )}
 
             {errorGeneral && (
-              <div className="au-aviso au-aviso--error" role="alert">
+              <div className="ds-aviso ds-aviso--error" role="alert">
                 <IconoAlerta width={22} height={22} />
                 {errorGeneral}
               </div>

@@ -61,19 +61,6 @@
   color: var(--color-texto-suave);
 }
 
-.cg-aviso-error {
-  display: flex;
-  align-items: flex-start;
-  gap: 10px;
-  padding: 14px 16px;
-  margin-bottom: 16px;
-  border: 2px solid var(--color-peligro);
-  border-radius: var(--radio-chico);
-  background: var(--color-peligro-claro);
-  color: var(--color-peligro-oscuro);
-  font-weight: 600;
-}
-
 /* Mensajes de estado (cargando / sin resultados / vacío). */
 .cg-mensaje {
   margin: 0;

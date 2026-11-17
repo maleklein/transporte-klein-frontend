@@ -9,6 +9,7 @@ import {
   IconoDocumento,
   IconoEditar,
   IconoFlechaAtras,
+  IconoInfo,
   IconoPeso,
   IconoUbicacion,
 } from '../components/Iconos';
@@ -43,8 +44,7 @@ import {
 import {
   ESTADOS,
   ESTADOS_BLOQUEADOS_CANCELACION,
-  motivoCancelacionBloqueada,
-  motivoEdicionBloqueada,
+  motivoAccionesBloqueadas,
 } from '../utils/estadosCarga';
 import './DetalleCarga.css';
 
@@ -385,7 +385,7 @@ export default function DetalleCarga() {
           viejo de "carga nueva" (HU 12): para él, lo que pasó es eso.
         */}
         {estadoPantalla === 'no-encontrada' && (
-          <div className="dc-aviso-error" role="alert">
+          <div className="ds-aviso ds-aviso--error" role="alert">
             <IconoAlerta width={22} height={22} />
             {esAdministrador
               ? `No encontramos la carga #${id}. Puede que se haya eliminado o que la dirección sea incorrecta.`
@@ -394,7 +394,7 @@ export default function DetalleCarga() {
         )}
 
         {estadoPantalla === 'error' && (
-          <div className="dc-aviso-error" role="alert">
+          <div className="ds-aviso ds-aviso--error" role="alert">
             <IconoAlerta width={22} height={22} />
             {mensajeError}
           </div>
@@ -435,57 +435,61 @@ export default function DetalleCarga() {
                 {!esAdministrador && carga.id_camionero_asignado === usuarioActual()?.id && (
                   <EstadoCarga estado={carga.estado_actual} />
                 )}
+                {/*
+                  Los dos botones están siempre acá, en todos los estados; si
+                  no se pueden usar, quedan deshabilitados y el motivo va en
+                  el recuadro de abajo (`aria-describedby` lo asocia).
+                */}
                 {esAdministrador && (
-                  <div className="dc-accion-editar">
-                    <button
-                      type="button"
-                      className="ds-boton ds-boton--secundario"
-                      onClick={() => navigate(`/cargas/${carga.id_carga}/editar`, { state: location.state })}
-                      onMouseDown={evitarFoco}
-                      disabled={ESTADOS_BLOQUEADOS_EDICION.includes(carga.estado_actual)}
-                    >
-                      <IconoEditar />
-                      Editar
-                    </button>
-                    {ESTADOS_BLOQUEADOS_EDICION.includes(carga.estado_actual) && (
-                      <p className="dc-accion-editar__motivo">
-                        {motivoEdicionBloqueada(carga.estado_actual)}
-                      </p>
-                    )}
-                  </div>
+                  <button
+                    type="button"
+                    className="ds-boton ds-boton--secundario"
+                    onClick={() => navigate(`/cargas/${carga.id_carga}/editar`, { state: location.state })}
+                    onMouseDown={evitarFoco}
+                    disabled={ESTADOS_BLOQUEADOS_EDICION.includes(carga.estado_actual)}
+                    aria-describedby={
+                      ESTADOS_BLOQUEADOS_EDICION.includes(carga.estado_actual) ? 'dc-motivo-bloqueo' : undefined
+                    }
+                  >
+                    <IconoEditar />
+                    Editar
+                  </button>
                 )}
                 {esAdministrador && (
-                  <div className="dc-accion-cancelar">
-                    <button
-                      type="button"
-                      ref={refBotonCancelar}
-                      className="ds-boton dc-boton-peligro"
-                      onClick={pedirCancelacion}
-                      onMouseDown={evitarFoco}
-                      disabled={ESTADOS_BLOQUEADOS_CANCELACION.includes(carga.estado_actual)}
-                    >
-                      <IconoCerrar />
-                      Cancelar carga
-                    </button>
-                    {ESTADOS_BLOQUEADOS_CANCELACION.includes(carga.estado_actual) && (
-                      <p className="dc-accion-cancelar__motivo">
-                        {motivoCancelacionBloqueada(carga.estado_actual)}
-                      </p>
-                    )}
-                  </div>
+                  <button
+                    type="button"
+                    ref={refBotonCancelar}
+                    className="ds-boton dc-boton-peligro"
+                    onClick={pedirCancelacion}
+                    onMouseDown={evitarFoco}
+                    disabled={ESTADOS_BLOQUEADOS_CANCELACION.includes(carga.estado_actual)}
+                    aria-describedby={
+                      ESTADOS_BLOQUEADOS_CANCELACION.includes(carga.estado_actual) ? 'dc-motivo-bloqueo' : undefined
+                    }
+                  >
+                    <IconoCerrar />
+                    Cancelar carga
+                  </button>
                 )}
               </div>
             </header>
 
+            {esAdministrador && motivoAccionesBloqueadas(carga.estado_actual) && (
+              <p className="ds-aviso ds-aviso--info" id="dc-motivo-bloqueo">
+                <IconoInfo width={20} height={20} />
+                <span>{motivoAccionesBloqueadas(carga.estado_actual)}</span>
+              </p>
+            )}
+
             {avisoExito && !mensajeCancelacion && (
-              <div className="dc-aviso-exito" role="status">
+              <div className="ds-aviso ds-aviso--exito" role="status">
                 <IconoCheck width={20} height={20} />
                 {avisoExito}
               </div>
             )}
 
             {esAdministrador && retiroVencido(carga) && (
-              <div className="dc-aviso-advertencia" role="status">
+              <div className="ds-aviso ds-aviso--advertencia" role="status">
                 <IconoAlerta width={20} height={20} />
                 <span>
                   La fecha de retiro ({formatearFecha(carga.fecha)}) ya pasó y la carga sigue sin
@@ -497,7 +501,7 @@ export default function DetalleCarga() {
 
             {mensajeCancelacion && (
               <div
-                className="dc-aviso-exito"
+                className="ds-aviso ds-aviso--exito"
                 role="status"
                 tabIndex={-1}
                 ref={refAvisoCancelacion}

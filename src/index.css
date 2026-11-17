@@ -113,15 +113,13 @@ body {
    -------------------------------------------------------------------------- */
 :is(
   .ds-titulo-pagina, .ds-campo__error, .ds-aviso,
-  .ac-titulo, .ac-aviso, .au-titulo, .au-aviso, .au-bloque-camionero__titulo,
-  .bs-aviso-acceso, .cg-aviso-error,
-  .dc-titulo, .dc-descripcion__titulo, .dc-aviso-error, .dc-aviso-exito,
-  .dc-aviso-advertencia, .dc-aviso-info, .dc-dato dt,
-  .mc-caja__error, .mt-titulo, .mt-error-validacion, .nt-titulo, .nt-aviso-error,
+  .ac-titulo, .au-titulo, .au-bloque-camionero__titulo,
+  .bs-aviso-acceso,
+  .dc-titulo, .dc-descripcion__titulo, .dc-dato dt,
+  .mc-caja__error, .mt-titulo, .mt-error-validacion, .nt-titulo,
   .pc-estado, .pcm-tarjeta__titulo, .pcm-tarjeta__error, .pcm-viaje__fecha,
-  .pg-error, .pos-aviso-error, .pos-card-tipo, .pos-card-dato,
-  .mt-aviso-error__texto, .pcm-aviso-error__texto, .pm-error-carga__texto,
-  .pp-error, .pp-item__dato, .us-aviso-exito, .us-aviso-error
+  .pg-error, .pos-card-tipo, .pos-card-dato, .pp-error, .pp-item__dato,
+  .mt-aviso-error__texto, .pcm-aviso-error__texto, .pm-error-carga__texto
 ) > svg {
   flex-shrink: 0;
   position: relative;
@@ -210,6 +208,60 @@ body {
 .ds-boton--secundario:hover:not(:disabled) {
   background: var(--color-primario-claro);
   border-color: var(--color-primario);
+}
+
+/* --------------------------------------------------------------------------
+   Avisos: un recuadro con ícono para decir algo sobre lo que se está viendo.
+   Uno solo para todo el sistema; cada pantalla agrega, si hace falta, sólo
+   su acomodo (por ejemplo, un botón Reintentar al lado del texto).
+
+   - Éxito (verde): algo salió bien ("Se guardaron los cambios de...").
+   - Error (rojo): algo falló y hay que hacer algo ("No se pudo cargar...").
+   - Advertencia (amarillo): pide una acción, pero no es un error (retiro
+     vencido).
+   - Info (azul): explica algo, sin urgencia (por qué un botón está
+     deshabilitado, qué pasa al cambiar un parámetro). Texto en peso normal:
+     suele ser más largo que los otros.
+
+   No incluye la notificación flotante de "Deshacer" (`.pg-aviso`), que es
+   otra cosa: aparece sola y se va.
+   -------------------------------------------------------------------------- */
+.ds-aviso {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  margin: 0 0 20px;
+  padding: 14px 16px;
+  border: 2px solid transparent;
+  border-radius: var(--radio-chico);
+  font-size: var(--texto-base);
+  font-weight: 600;
+}
+
+
+.ds-aviso--exito {
+  border-color: var(--color-confirmar);
+  background: var(--color-confirmar-claro);
+  color: var(--color-confirmar-oscuro);
+}
+
+.ds-aviso--error {
+  border-color: var(--color-peligro);
+  background: var(--color-peligro-claro);
+  color: var(--color-peligro-oscuro);
+}
+
+.ds-aviso--advertencia {
+  border-color: var(--color-advertencia);
+  background: var(--color-advertencia-claro);
+  color: var(--color-advertencia);
+}
+
+.ds-aviso--info {
+  border-color: var(--color-primario);
+  background: var(--color-primario-claro);
+  color: var(--color-primario-oscuro);
+  font-weight: 400;
 }
 
 /* --------------------------------------------------------------------------

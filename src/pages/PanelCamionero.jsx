@@ -156,7 +156,7 @@ export default function PanelCamionero() {
         <p className="pcm-intro">Así está tu trabajo hoy. Tocá cada tarjeta para ir a esa sección.</p>
 
         {errores.length > 0 && (
-          <div className="pcm-aviso-error" role="alert">
+          <div className="ds-aviso ds-aviso--error pcm-aviso-error" role="alert">
             <span className="pcm-aviso-error__texto">
               <IconoAlerta width={22} height={22} />
               <span>

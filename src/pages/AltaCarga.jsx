@@ -191,7 +191,7 @@ export default function AltaCarga() {
           <div className="ac-body">
             {/* Mensaje de error, arriba del formulario */}
             {errorGeneral && (
-              <div className="ac-aviso ac-aviso--error" role="alert">
+              <div className="ds-aviso ds-aviso--error" role="alert">
                 <IconoAlerta width={22} height={22} />
                 {errorGeneral}
               </div>

@@ -49,8 +49,9 @@
 }
 
 /* Aviso de "sin permiso" (HU 15) que deja `RutaProtegida` al redirigir a un
-   usuario que abrió una pantalla de otro rol. Mismo criterio visual que los
-   avisos de error de cada pantalla (`.nt-aviso-error` y análogos). */
+   usuario que abrió una pantalla de otro rol. Mismos colores que el aviso de
+   error (`.ds-aviso--error`), pero como franja de todo el ancho, debajo de la
+   barra: por eso sólo lleva el borde de abajo. */
 .bs-aviso-acceso {
   display: flex;
   align-items: flex-start;

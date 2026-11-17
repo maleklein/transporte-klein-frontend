@@ -109,7 +109,7 @@ export default function Postulaciones() {
         )}
 
         {estadoPantalla === 'error' && (
-          <div className="pos-aviso-error" role="alert">
+          <div className="ds-aviso ds-aviso--error" role="alert">
             <IconoAlerta width={22} height={22} />
             {mensajeError}
           </div>

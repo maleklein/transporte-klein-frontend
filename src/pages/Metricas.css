@@ -72,18 +72,11 @@
   font-size: var(--texto-base);
 }
 
-.mt-aviso-error {
-  display: flex;
+/* El aviso de error (`.ds-aviso`) lleva el botón Reintentar al lado del texto. */
+.ds-aviso.mt-aviso-error {
   align-items: center;
   flex-wrap: wrap;
   gap: 12px;
-  padding: 14px 16px;
-  margin-bottom: 16px;
-  border: 2px solid var(--color-peligro);
-  border-radius: var(--radio-chico);
-  background: var(--color-peligro-claro);
-  color: var(--color-peligro-oscuro);
-  font-weight: 600;
 }
 
 /* Ícono y texto van juntos: el aviso centra el grupo con el botón, y dentro
@@ -163,3 +156,4 @@
   font-weight: 700;
   color: var(--color-texto);
 }
+
