@@ -301,7 +301,11 @@ export default function Cargas() {
             <button
               type="button"
               className="ds-boton ds-boton--primario"
-              onClick={() => navigate('/cargas/nueva')}
+              onClick={() =>
+                navigate('/cargas/nueva', {
+                  state: volverA(location.pathname + location.search, 'Volver a Cargas', location.state),
+                })
+              }
             >
               <IconoCajaMas />
               Nueva Carga
