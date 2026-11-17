@@ -1,5 +1,12 @@
 import { describe, expect, it } from 'vitest';
-import { rutaCargasPorEstado, rutaPendientesAsignacion, textoPeriodoCreacion } from '../src/utils/carga';
+import {
+  fechaATexto,
+  nombrePeriodoCreacion,
+  rangoDePeriodo,
+  rutaCargasPorEstado,
+  rutaPendientesAsignacion,
+  textoAFecha,
+} from '../src/utils/carga';
 
 describe('rutaPendientesAsignacion', () => {
   it('con una sola carga pendiente, lleva directo a su detalle', () => {
@@ -26,17 +33,49 @@ describe('rutaCargasPorEstado', () => {
   });
 });
 
-describe('textoPeriodoCreacion', () => {
-  it('con las dos fechas', () => {
-    expect(textoPeriodoCreacion('2026-10-19', '2026-11-17')).toBe('Creadas del 19/10/2026 al 17/11/2026');
+// Martes 17/11/2026, al mediodía: el día no cambia por la zona horaria.
+const HOY = new Date(2026, 10, 17, 12, 0);
+
+describe('fechaATexto y textoAFecha', () => {
+  it('ida y vuelta en hora local', () => {
+    expect(fechaATexto(new Date(2026, 0, 5))).toBe('2026-01-05');
+    expect(fechaATexto(textoAFecha('2026-11-01'))).toBe('2026-11-01');
   });
 
-  it('con una sola', () => {
-    expect(textoPeriodoCreacion('2026-10-19', '')).toBe('Creadas desde el 19/10/2026');
-    expect(textoPeriodoCreacion('', '2026-11-17')).toBe('Creadas hasta el 17/11/2026');
+  it('un texto que no es AAAA-MM-DD no es una fecha', () => {
+    expect(textoAFecha('01/11/2026')).toBeUndefined();
+    expect(textoAFecha('')).toBeUndefined();
+  });
+});
+
+describe('rangoDePeriodo', () => {
+  it('últimos 7 y 30 días incluyen hoy', () => {
+    expect(rangoDePeriodo('ultimos-7', HOY)).toEqual({ desde: '2026-11-11', hasta: '2026-11-17' });
+    expect(rangoDePeriodo('ultimos-30', HOY)).toEqual({ desde: '2026-10-19', hasta: '2026-11-17' });
   });
 
-  it('sin ninguna, vacío', () => {
-    expect(textoPeriodoCreacion('', '')).toBe('');
+  it('este mes arranca el día 1', () => {
+    expect(rangoDePeriodo('este-mes', HOY)).toEqual({ desde: '2026-11-01', hasta: '2026-11-17' });
+  });
+});
+
+describe('nombrePeriodoCreacion', () => {
+  it('sin fechas, vacío ("Cualquier fecha")', () => {
+    expect(nombrePeriodoCreacion('', '', HOY)).toBe('');
+  });
+
+  it('el nombre del acceso rápido si coincide', () => {
+    expect(nombrePeriodoCreacion('2026-10-19', '2026-11-17', HOY)).toBe('Últimos 30 días');
+    expect(nombrePeriodoCreacion('2026-11-01', '2026-11-17', HOY)).toBe('Este mes');
+  });
+
+  it('si no, el rango', () => {
+    expect(nombrePeriodoCreacion('2026-11-01', '2026-11-15', HOY)).toBe('01/11/2026 – 15/11/2026');
+    expect(nombrePeriodoCreacion('2026-11-03', '2026-11-03', HOY)).toBe('03/11/2026');
+  });
+
+  it('con una sola punta', () => {
+    expect(nombrePeriodoCreacion('2026-11-01', '', HOY)).toBe('Desde el 01/11/2026');
+    expect(nombrePeriodoCreacion('', '2026-11-15', HOY)).toBe('Hasta el 15/11/2026');
   });
 });

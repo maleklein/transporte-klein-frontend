@@ -1,0 +1,210 @@
+/* Filtro "Creada" de Gestión de Cargas: campo con forma de desplegable y un
+   panel con accesos rápidos y un calendario de rango (react-day-picker). */
+
+.ffc {
+  position: relative;
+}
+
+/* El campo es un botón con la misma forma y flecha que los desplegables. */
+.ffc-campo {
+  text-align: left;
+  cursor: pointer;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.ffc-campo--vacio {
+  color: #6B7280;
+}
+
+.ffc-panel {
+  position: absolute;
+  z-index: 40;
+  top: calc(100% + 4px);
+  left: 0;
+  display: flex;
+  gap: 4px;
+  width: max-content;
+  max-width: calc(100vw - 32px);
+  padding: 12px;
+  border: 2px solid var(--color-borde-suave);
+  border-radius: var(--radio);
+  background: var(--color-fondo);
+  box-shadow: 0 10px 30px rgba(31, 78, 121, 0.18);
+}
+
+/* --- Accesos rápidos ---------------------------------------------------- */
+
+.ffc-accesos {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 160px;
+  margin: 0;
+  padding: 0 12px 0 0;
+  border-right: 2px solid var(--color-borde-suave);
+  list-style: none;
+}
+
+.ffc-acceso {
+  width: 100%;
+  min-height: 40px;
+  padding: 8px 12px;
+  border: none;
+  border-radius: var(--radio-chico);
+  background: transparent;
+  color: var(--color-texto);
+  font-family: var(--fuente);
+  font-size: var(--texto-base);
+  text-align: left;
+  cursor: pointer;
+}
+
+.ffc-acceso--elegido {
+  background: var(--color-primario-claro);
+  color: var(--color-primario);
+  font-weight: 700;
+}
+
+@media (hover: hover) {
+  .ffc-acceso:hover {
+    background: var(--color-primario);
+    color: #fff;
+  }
+}
+
+.ffc-acceso:focus-visible {
+  outline: 3px solid var(--color-primario);
+  outline-offset: 1px;
+}
+
+/* --- Calendario ----------------------------------------------------------- */
+
+.ffc-calendario {
+  display: flex;
+  flex-direction: column;
+  padding-left: 8px;
+}
+
+/* Colores del sistema para react-day-picker: extremos del rango en azul,
+   días del medio en celeste, hoy en negrita azul. */
+.ffc-calendario .rdp-root {
+  --rdp-accent-color: var(--color-primario);
+  --rdp-accent-background-color: var(--color-primario-claro);
+  --rdp-range_middle-background-color: var(--color-primario-claro);
+  --rdp-range_middle-color: var(--color-primario);
+  --rdp-range_start-date-background-color: var(--color-primario);
+  --rdp-range_end-date-background-color: var(--color-primario);
+  --rdp-today-color: var(--color-primario);
+  --rdp-day-height: 40px;
+  --rdp-day-width: 40px;
+  --rdp-day_button-height: 38px;
+  --rdp-day_button-width: 38px;
+  --rdp-nav-height: 40px;
+  --rdp-disabled-opacity: 0.35;
+  font-family: var(--fuente);
+  color: var(--color-texto);
+}
+
+.ffc-calendario .rdp-caption_label {
+  font-size: var(--texto-base);
+  font-weight: 700;
+  text-transform: capitalize;
+}
+
+.ffc-calendario .rdp-weekday {
+  font-size: var(--texto-ayuda);
+  color: var(--color-texto-suave);
+  text-transform: capitalize;
+}
+
+.ffc-calendario .rdp-today:not(.rdp-selected) .rdp-day_button {
+  font-weight: 700;
+}
+
+.ffc-calendario .rdp-day_button:focus-visible {
+  outline: 3px solid var(--color-primario);
+  outline-offset: 1px;
+}
+
+.ffc-resumen {
+  min-height: 1.5em;
+  margin: 8px 0 0;
+  font-size: var(--texto-ayuda);
+  color: var(--color-texto-suave);
+}
+
+.ffc-acciones {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.ffc-boton {
+  min-height: 40px;
+  padding: 8px 16px;
+  font-size: var(--texto-ayuda);
+}
+
+/* Dos filtros por fila: "Creada" queda en la columna derecha, así que el
+   panel se abre hacia la izquierda para no salirse de la pantalla. */
+@media (max-width: 1060px) and (min-width: 721px) {
+  .ffc-panel {
+    left: auto;
+    right: 0;
+  }
+}
+
+/* Celular: el panel ocupa el ancho del filtro, con los accesos como botones
+   arriba del calendario. */
+@media (max-width: 720px) {
+  /* Un poco más ancho que el campo (hasta el borde de la caja de filtros),
+     para que entren las siete columnas del calendario. */
+  .ffc-panel {
+    left: -12px;
+    right: -12px;
+    flex-direction: column;
+    gap: 12px;
+    width: auto;
+    max-width: none;
+  }
+
+  .ffc-accesos {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 6px;
+    min-width: 0;
+    padding: 0 0 12px;
+    border-right: none;
+    border-bottom: 2px solid var(--color-borde-suave);
+  }
+
+  .ffc-calendario .rdp-root {
+    --rdp-day-height: 38px;
+    --rdp-day-width: 38px;
+    --rdp-day_button-height: 36px;
+    --rdp-day_button-width: 36px;
+  }
+
+  .ffc-acceso {
+    padding: 8px 4px;
+    border: 2px solid var(--color-borde-suave);
+    text-align: center;
+    font-size: var(--texto-ayuda);
+  }
+
+  .ffc-calendario {
+    align-items: center;
+    padding-left: 0;
+  }
+
+  .ffc-acciones {
+    align-self: stretch;
+  }
+
+  .ffc-boton {
+    flex: 1;
+  }
+}

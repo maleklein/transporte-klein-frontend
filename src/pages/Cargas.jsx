@@ -20,13 +20,13 @@ import {
 } from '../components/Iconos';
 import BarraSuperior from '../components/BarraSuperior';
 import EstadoCarga from '../components/EstadoCarga';
+import FiltroFechaCreada from '../components/FiltroFechaCreada';
 import {
   formatearFecha,
   formatearKm,
   formatearPeso,
   motivoSinCapacidad,
   retiroVencido,
-  textoPeriodoCreacion,
 } from '../utils/carga';
 import { ESTADOS, etiquetaEstado } from '../utils/estadosCarga';
 import { destinoVolver, volverA } from '../utils/volver';
@@ -67,10 +67,9 @@ export default function Cargas() {
   // estando en `?estado=pendiente` dejaría el filtro viejo puesto.
   const [filtrosLocales, setFiltros] = useState(FILTROS_VACIOS);
   const estadoUrl = parametrosUrl.get('estado') ?? '';
-  // Período de creación: sólo llega desde las casillas de "Cargas por estado"
-  // del panel del administrador, para que el listado muestre las mismas cargas
-  // que contó. No tiene campo propio en los filtros: se ve y se quita arriba
-  // de los resultados.
+  // Período de creación (filtro "Creada", sólo administrador). Va en la URL,
+  // como el estado: así las casillas de "Cargas por estado" del panel llevan
+  // al listado con el mismo período que contaron.
   const fechaUrl = (clave) => {
     const valor = parametrosUrl.get(clave) ?? '';
     return /^\d{4}-\d{2}-\d{2}$/.test(valor) ? valor : '';
@@ -81,7 +80,6 @@ export default function Cargas() {
     () => ({ ...filtrosLocales, estado: estadoUrl, creada_desde: creadaDesde, creada_hasta: creadaHasta }),
     [filtrosLocales, estadoUrl, creadaDesde, creadaHasta],
   );
-  const textoPeriodo = textoPeriodoCreacion(creadaDesde, creadaHasta);
 
   /**
    * Escribe en la URL el estado y el período. Con el `state`, cambiar un
@@ -111,12 +109,6 @@ export default function Cargas() {
     escribirUrl({ estado, creada_desde: creadaDesde, creada_hasta: creadaHasta });
   };
 
-  /**
-   * Quita el período de creación y deja el resto de los filtros.
-   *
-   * @returns {void}
-   */
-  const quitarPeriodo = () => escribirUrl({ estado: estadoUrl });
 
   // Si se llegó desde otra pantalla (Notificaciones, el inicio), el botón de
   // volver lleva ahí; desde la barra superior no hay botón.
@@ -397,9 +389,25 @@ export default function Cargas() {
             </div>
           )}
 
+          {/*
+            Por fecha de creación, sólo para el administrador: es el período
+            con el que cuentan el panel de inicio y Métricas. Las casillas de
+            "Cargas por estado" llegan con "Últimos 30 días" elegido.
+          */}
+          {!esCamionero && (
+            <FiltroFechaCreada
+              id="cg-creada"
+              desde={creadaDesde}
+              hasta={creadaHasta}
+              alCambiar={({ desde, hasta }) =>
+                escribirUrl({ estado: estadoUrl, creada_desde: desde, creada_hasta: hasta })
+              }
+            />
+          )}
+
           <div className="cg-filtro">
             <label className="ds-campo__label" htmlFor="cg-fecha">
-              Fecha
+              Fecha de retiro
             </label>
             <input
               id="cg-fecha"
@@ -452,21 +460,6 @@ export default function Cargas() {
             Limpiar filtros
           </button>
         </div>
-
-        {textoPeriodo && (
-          <p className="cg-periodo">
-            <span>{textoPeriodo}</span>
-            <button
-              type="button"
-              className="cg-periodo__quitar"
-              onClick={quitarPeriodo}
-              aria-label={`Quitar el filtro: ${textoPeriodo.toLowerCase()}`}
-            >
-              <IconoCerrar width={16} height={16} />
-              Quitar
-            </button>
-          </p>
-        )}
 
         {estadoPantalla === 'ok' && postulables.length > 0 && (
           <p className="cg-contador">
