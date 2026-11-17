@@ -132,15 +132,29 @@
 }
 
 /* El aviso entero se abre. Al pasar el mouse se marca como los
-   accesos del panel: borde azul, sombra y la manito. */
+   accesos del panel: borde azul, sombra y la manito. En el celular el hover
+   queda pegado después de tocar, así que ahí sólo se marca mientras se toca
+   (:active). El foco del teclado, con :focus-visible (no :focus-within, que
+   en Android también queda pegado al tocar). */
 .nt-item--clickeable {
   cursor: pointer;
 }
 
-.nt-item--clickeable:hover,
-.nt-item--clickeable:focus-within {
+.nt-item--clickeable:active,
+.nt-item--clickeable:has(:focus-visible) {
   border-color: var(--color-primario);
   box-shadow: 0 4px 14px rgba(31, 78, 121, 0.12);
+}
+
+@media (hover: hover) {
+  .nt-item--clickeable:hover {
+    border-color: var(--color-primario);
+    box-shadow: 0 4px 14px rgba(31, 78, 121, 0.12);
+  }
+
+  .nt-item--clickeable:hover .nt-item__abrir {
+    color: var(--color-primario);
+  }
 }
 
 /* Sin leer: fondo celeste y una franja a la izquierda. No depende sólo del
@@ -225,10 +239,6 @@
   background: transparent;
   color: var(--color-texto-suave);
   cursor: pointer;
-}
-
-.nt-item--clickeable:hover .nt-item__abrir {
-  color: var(--color-primario);
 }
 
 .nt-item__abrir:focus-visible {

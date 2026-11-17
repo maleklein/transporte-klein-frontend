@@ -67,6 +67,13 @@
   font-family: Arial, sans-serif; /* Puedes cambiarlo si usan otra fuente */
 }
 
+/* Sin el recuadro gris que el navegador del celular pinta sobre lo que se
+   toca: en las tarjetas que se abren enteras quedaba un cuadrado gris sobre
+   la flechita. Cada tarjeta da su propia respuesta al tocarla (:active). */
+html {
+  -webkit-tap-highlight-color: transparent;
+}
+
 body {
   margin: 0;
   font-family: var(--fuente);
