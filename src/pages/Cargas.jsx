@@ -254,7 +254,7 @@ export default function Cargas() {
       */}
       <button
         type="button"
-        className="ds-boton ds-boton--primario cg-card__vermas"
+        className="ds-boton ds-boton--secundario cg-card__vermas"
         onClick={() => irAlDetalle(carga)}
         aria-label={`Ver detalle de la carga de ${carga.origen} a ${carga.destino}`}
       >

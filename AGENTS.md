@@ -116,6 +116,12 @@ docs/             notas y capturas de verificación por HU
 
 - Las llamadas al backend van solo en `src/api/`; las páginas no usan `fetch`
   directo.
+- Botones: azul lleno (`ds-boton--primario`) solo para la acción principal de
+  la pantalla, uno a la vista; verde (`--confirmar`) para guardar un
+  formulario; blanco (`--secundario`) para todo lo demás, siempre para las
+  acciones que se repiten en cada fila o tarjeta; borde rojo (`--cancelar`)
+  para salir sin guardar; rojo lleno para lo destructivo. El detalle está en
+  el comentario de botones de `src/index.css`.
 - Colores y espaciados con las variables de `src/index.css`, no con valores
   sueltos. Las pantallas tienen que verse consistentes entre sí (mismo estilo
   de título con ícono, mismo ancho).

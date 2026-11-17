@@ -100,6 +100,23 @@ body {
   margin: 0 0 24px;
 }
 
+/* --------------------------------------------------------------------------
+   Botones: qué estilo lleva cada uno.
+
+   - Primario (azul lleno): la acción principal de la pantalla o del bloque,
+     para lo que existe esa pantalla (Nuevo Usuario, Nueva Carga, Aplicar,
+     Postularme, avanzar el estado). Como mucho uno a la vista.
+   - Confirmar (verde lleno): cerrar un formulario guardando datos (Guardar,
+     Registrar, Crear, Enviar calificación).
+   - Secundario (blanco): todo lo demás. Siempre las acciones que se repiten
+     en cada fila o tarjeta (Ver, Editar, Ver detalle): en azul lleno, una
+     lista de veinte tendría veinte "principales". También filtros,
+     Reintentar, paginación y volver.
+   - Cancelar (blanco con borde rojo): salir de un formulario sin guardar.
+   - Peligro (rojo lleno): una acción destructiva que no se deshace
+     (Cancelar carga).
+   -------------------------------------------------------------------------- */
+
 .ds-boton {
   display: inline-flex;
   align-items: center;
