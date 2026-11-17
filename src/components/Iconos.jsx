@@ -142,6 +142,14 @@ export function IconoBuscar(props) {
   );
 }
 
+export function IconoChevronIzquierda(props) {
+  return (
+    <svg {...base} {...props}>
+      <path d="m15 18-6-6 6-6" />
+    </svg>
+  );
+}
+
 export function IconoChevronDerecha(props) {
   return (
     <svg {...base} {...props}>

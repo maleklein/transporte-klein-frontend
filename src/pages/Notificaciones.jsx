@@ -252,7 +252,7 @@ export default function Notificaciones() {
 
   return (
     <>
-      <BarraSuperior />
+      <BarraSuperior volver={destino} />
 
       <main className="nt-contenido">
         {/*
@@ -260,7 +260,7 @@ export default function Notificaciones() {
           la barra superior o la campana no hay a dónde volver.
         */}
         {destino && (
-          <button type="button" className="nt-volver" onClick={volver}>
+          <button type="button" className="nt-volver bs-volver-pantalla" onClick={volver}>
             <IconoFlechaAtras width={20} height={20} />
             {destino.texto}
           </button>

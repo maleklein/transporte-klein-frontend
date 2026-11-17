@@ -8,6 +8,7 @@ import {
   IconoCamion,
   IconoCerrar,
   IconoCerrarSesion,
+  IconoChevronIzquierda,
   IconoGrafico,
   IconoInicio,
   IconoMenu,
@@ -102,13 +103,20 @@ const ACCESOS_CAMIONERO = [
  * Los estilos base de la barra (`.us-navbar`) siguen en `pages/Usuarios.css`,
  * donde nacieron.
  *
+ * En las pantallas que tienen "Volver a …" (el detalle de una carga, por
+ * ejemplo), en el celular el botón de menú pasa a ser una flecha ‹ que hace
+ * lo mismo, y el "Volver a …" de la pantalla se esconde: es lo que se espera
+ * de una pantalla de detalle en el celular, y ahorra un renglón.
+ *
  * También muestra, debajo de la barra, el aviso de "sin permiso" que deja
  * `RutaProtegida` cuando redirige a un usuario que abrió una pantalla de otro
  * rol (HU 15).
  *
+ * @param {object} [props]
+ * @param {{ ruta: string, texto: string, estado?: object|null } | null} [props.volver] - a dónde vuelve la pantalla, el mismo de su botón "Volver a …" (ver `utils/volver`). Si viene, en el celular reemplaza al menú.
  * @returns {JSX.Element}
  */
-export default function BarraSuperior() {
+export default function BarraSuperior({ volver = null } = {}) {
   const location = useLocation();
   const navigate = useNavigate();
   const usuario = usuarioActual();
@@ -187,8 +195,19 @@ export default function BarraSuperior() {
           </button>
         )}
 
-        {/* Sólo en el celular: el ícono de menú, a la izquierda (lo ubica el CSS). */}
-        {usuario && (
+        {/* Sólo en el celular, a la izquierda (lo ubica el CSS): la flecha para
+            volver, si la pantalla tiene a dónde volver; si no, el menú. */}
+        {usuario && volver && (
+          <button
+            type="button"
+            className="bs-enlace bs-solo-celular bs-menu-boton"
+            aria-label={volver.texto}
+            onClick={() => navigate(volver.ruta, { state: volver.estado ?? null })}
+          >
+            <IconoChevronIzquierda width={26} height={26} />
+          </button>
+        )}
+        {usuario && !volver && (
           <button
             type="button"
             className="bs-enlace bs-solo-celular bs-menu-boton"
@@ -203,7 +222,7 @@ export default function BarraSuperior() {
       </nav>
 
       {/* Celular: los accesos se despliegan debajo de la barra. */}
-      {usuario && (
+      {usuario && !volver && (
         <div className="bs-menu bs-solo-celular" id="bs-menu" hidden={!menuAbierto}>
           {enlaces()}
           <Link

@@ -44,10 +44,10 @@ export default function DetalleUsuario() {
 
   return (
     <>
-      <BarraSuperior />
+      <BarraSuperior volver={volver} />
 
       <main className="dc-contenido">
-        <button type="button" className="dc-volver" onClick={() => navigate(volver.ruta)}>
+        <button type="button" className="dc-volver bs-volver-pantalla" onClick={() => navigate(volver.ruta)}>
           <IconoFlechaAtras width={20} height={20} />
           {volver.texto}
         </button>
