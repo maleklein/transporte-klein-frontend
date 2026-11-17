@@ -86,7 +86,7 @@
 }
 
 .dc-boton-peligro:hover:not(:disabled) {
-  background: var(--color-peligro-oscuro);
+  background-image: linear-gradient(var(--aclarado-hover), var(--aclarado-hover));
 }
 
 /* Calle y número debajo de la localidad, en el dato de origen y destino. */
@@ -99,7 +99,7 @@
 
 .dc-titulo {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   gap: 12px;
   margin: 0;
   font-size: var(--texto-titulo);
@@ -161,7 +161,7 @@
 
 .dc-dato dt {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   gap: 6px;
   font-size: var(--texto-ayuda);
   font-weight: 700;
@@ -184,7 +184,7 @@
 
 .dc-descripcion__titulo {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   gap: 6px;
   margin: 0 0 6px;
   font-size: var(--texto-base);

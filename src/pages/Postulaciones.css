@@ -84,7 +84,7 @@
 
 .pos-card-tipo {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   gap: 8px;
   font-size: var(--texto-label);
   color: var(--color-texto);
@@ -120,7 +120,7 @@
 
 .pos-card-dato {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   flex-wrap: wrap;
   gap: 8px;
   margin: 0;

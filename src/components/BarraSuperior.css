@@ -28,7 +28,7 @@
 
 .bs-enlace:hover {
   border-color: #fff;
-  background: rgba(255, 255, 255, 0.14);
+  background: var(--aclarado-hover);
 }
 
 .bs-enlace:focus-visible {
@@ -54,7 +54,7 @@
    barra: por eso sólo lleva el borde de abajo. */
 .bs-aviso-acceso {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   gap: 10px;
   margin: 0;
   padding: 14px 28px;

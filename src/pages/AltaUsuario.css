@@ -6,7 +6,7 @@
 
 .au-titulo {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   gap: 12px;
   font-size: var(--texto-titulo);
   font-weight: 700;
@@ -35,7 +35,7 @@
 
 .au-bloque-camionero__titulo {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   gap: 10px;
   font-size: var(--texto-label);
   font-weight: 700;

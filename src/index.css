@@ -9,6 +9,12 @@
   /* Colores institucionales */
   --color-primario: #1F4E79;
   --color-primario-oscuro: #17395A;
+
+  /* Hover de lo que va sobre un color lleno: un blanco al 14% encima, el
+     mismo que usan los botones de la barra superior. El verde lleva menos
+     (6%): con 14% el texto blanco bajaría de 4,5:1. */
+  --aclarado-hover: rgba(255, 255, 255, 0.14);
+  --aclarado-hover-suave: rgba(255, 255, 255, 0.06);
   --color-primario-claro: #E8EFF6;
 
   --color-confirmar: #2E7D32;
@@ -83,7 +89,7 @@ body {
    No fija margen: lo pone cada pantalla, según lo que tenga alrededor. */
 .ds-titulo-pagina {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   gap: 12px;
   font-size: var(--texto-titulo);
   font-weight: 700;
@@ -93,6 +99,31 @@ body {
 /* El ícono no se achica si el título ocupa dos líneas en el celular. */
 .ds-titulo-pagina svg {
   flex-shrink: 0;
+}
+
+/* --------------------------------------------------------------------------
+   Ícono al lado de un texto que puede ocupar más de un renglón (títulos,
+   etiquetas, avisos, mensajes de error): el ícono queda a la altura del
+   primer renglón, arriba a la izquierda, y no en el medio del bloque.
+
+   Los contenedores alinean arriba (`align-items: flex-start`) y el ícono baja
+   medio renglón (`0.5lh`) y sube la mitad de su alto: así queda centrado con
+   el primer renglón sea del tamaño que sea. Para sumar una pieza nueva con
+   ícono y texto, agregá su clase a esta lista y alineala arriba.
+   -------------------------------------------------------------------------- */
+:is(
+  .ds-titulo-pagina, .ds-campo__error, .ds-aviso,
+  .ac-titulo, .au-titulo, .au-bloque-camionero__titulo,
+  .bs-aviso-acceso, .cg-card__ruta,
+  .dc-titulo, .dc-descripcion__titulo, .dc-dato dt,
+  .mc-caja__error, .mt-titulo, .mt-error-validacion, .nt-titulo,
+  .pc-estado, .pcm-tarjeta__titulo, .pcm-tarjeta__error, .pcm-viaje__fecha,
+  .pg-error, .pos-card-tipo, .pos-card-dato, .pp-error, .pp-item__dato
+) > svg {
+  flex-shrink: 0;
+  position: relative;
+  top: 0.5lh;
+  translate: 0 -50%;
 }
 
 /* Perfil: sin encabezado alrededor, el título lleva su propio espacio. */
@@ -115,6 +146,10 @@ body {
    - Cancelar (blanco con borde rojo): salir de un formulario sin guardar.
    - Peligro (rojo lleno): una acción destructiva que no se deshace
      (Cancelar carga).
+
+   Al pasar el mouse, los llenos se aclaran con el mismo blanco translúcido
+   que los botones de la barra superior (`--aclarado-hover`); los blancos
+   toman un fondo celeste.
    -------------------------------------------------------------------------- */
 
 .ds-boton {
@@ -143,7 +178,7 @@ body {
   color: #FFFFFF;
 }
 .ds-boton--primario:hover:not(:disabled) {
-  background: var(--color-primario-oscuro);
+  background-image: linear-gradient(var(--aclarado-hover), var(--aclarado-hover));
 }
 
 .ds-boton--confirmar {
@@ -151,7 +186,7 @@ body {
   color: #FFFFFF;
 }
 .ds-boton--confirmar:hover:not(:disabled) {
-  background: var(--color-confirmar-oscuro);
+  background-image: linear-gradient(var(--aclarado-hover-suave), var(--aclarado-hover-suave));
 }
 
 .ds-boton--cancelar {
@@ -202,10 +237,6 @@ body {
   font-weight: 600;
 }
 
-.ds-aviso > svg {
-  flex-shrink: 0;
-  margin-top: 1px;
-}
 
 .ds-aviso--exito {
   border-color: var(--color-confirmar);
@@ -312,7 +343,7 @@ select.ds-campo__input,
 
 .ds-campo__error {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   gap: 6px;
   color: var(--color-peligro);
   font-size: var(--texto-ayuda);

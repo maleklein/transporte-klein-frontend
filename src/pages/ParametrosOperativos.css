@@ -62,3 +62,9 @@
   color: var(--color-texto);
   line-height: 1.6;
 }
+
+/* Con el botón al lado, el aviso centra todo en la fila: el ícono también. */
+.pm-error-carga > svg {
+  top: 0;
+  translate: none;
+}
