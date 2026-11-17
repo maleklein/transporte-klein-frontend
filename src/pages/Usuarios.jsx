@@ -1,8 +1,9 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { useLocation, useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate, useSearchParams } from 'react-router-dom';
 import { listarUsuarios, ErrorDeApi } from '../api/usuarios';
 import {
   IconoAlerta,
+  IconoBuscar,
   IconoCheck,
   IconoCerrar,
   IconoEditar,
@@ -11,40 +12,50 @@ import {
   IconoUsuarioMas,
 } from '../components/Iconos';
 import BarraSuperior from '../components/BarraSuperior';
+import ComboBox from '../components/ComboBox';
+import TextoResaltado from '../components/TextoResaltado';
+import { avisoSinResultados, coincideBusqueda } from '../utils/buscarUsuarios';
+import { volverA } from '../utils/volver';
 import './Usuarios.css';
 
-/** Filtros en blanco. Sirve para inicializar el estado y el botón "Limpiar filtros". */
-const FILTROS_VACIOS = { nombre: '', dni: '', rol: '', estado: '' };
+const OPCIONES_ROL = [
+  { valor: 'administrador', etiqueta: 'Administrador' },
+  { valor: 'camionero', etiqueta: 'Camionero' },
+];
+const OPCIONES_ESTADO = [
+  { valor: 'activo', etiqueta: 'Activo' },
+  { valor: 'inactivo', etiqueta: 'Inactivo' },
+];
+const ROLES = OPCIONES_ROL.map((opcion) => opcion.valor);
+const ESTADOS = OPCIONES_ESTADO.map((opcion) => opcion.valor);
 
 /**
- * Texto en minúscula y sin acentos, para buscar sin importar cómo se escribió:
- * "jose" encuentra a "José".
+ * Lee la búsqueda y los filtros de la URL (`/usuarios?buscar=gauto&rol=camionero`).
+ * Un rol o estado que no existe se ignora, como si no hubiera filtro.
  *
- * @param {string} texto
- * @returns {string}
+ * @param {URLSearchParams} parametros
+ * @returns {{ buscar: string, rol: string, estado: string }}
  */
-const normalizarBusqueda = (texto) =>
-  String(texto ?? '')
-    .normalize('NFD')
-    .replace(/\p{Diacritic}/gu, '')
-    .toLowerCase()
-    .trim();
+const filtrosDeUrl = (parametros) => {
+  const rol = parametros.get('rol') ?? '';
+  const estado = parametros.get('estado') ?? '';
+  return {
+    buscar: parametros.get('buscar') ?? '',
+    rol: ROLES.includes(rol) ? rol : '',
+    estado: ESTADOS.includes(estado) ? estado : '',
+  };
+};
 
 /**
- * Si un usuario pasa los filtros. Nombre y DNI buscan en cualquier parte del
- * texto; el nombre, también en el apellido.
+ * Si un usuario pasa los filtros. La búsqueda mira nombre, apellido, DNI y email a
+ * la vez (ver `coincideBusqueda`); rol y estado tienen que ser iguales.
  *
  * @param {object} usuario
- * @param {typeof FILTROS_VACIOS} filtros
+ * @param {{ buscar: string, rol: string, estado: string }} filtros
  * @returns {boolean}
  */
 const cumpleFiltros = (usuario, filtros) => {
-  const nombre = normalizarBusqueda(filtros.nombre);
-  if (nombre && !normalizarBusqueda(`${usuario.nombre} ${usuario.apellido}`).includes(nombre)) {
-    return false;
-  }
-  const dni = filtros.dni.trim();
-  if (dni && !String(usuario.dni).includes(dni)) return false;
+  if (!coincideBusqueda(usuario, filtros.buscar)) return false;
   if (filtros.rol && usuario.rol !== filtros.rol) return false;
   if (filtros.estado && usuario.estado !== filtros.estado) return false;
   return true;
@@ -53,11 +64,15 @@ const cumpleFiltros = (usuario, filtros) => {
 /**
  * Pantalla de gestión de usuarios (HU 1.1, HU 1.2 y HU 1.3).
  *
- * Al entrar pide `GET /usuarios` una sola vez, y la búsqueda por nombre/DNI y
+ * Al entrar pide `GET /usuarios` una sola vez, y la búsqueda (nombre, apellido, DNI o email) y
  * los filtros de rol y estado se aplican sobre esa lista, sin volver a pedirla:
  * así filtrar es instantáneo y no aparece "Cargando usuarios..." a cada cambio.
  * Cada fila tiene una acción para ver la ficha de solo lectura y otra para
  * editar el usuario.
+ *
+ * La búsqueda y los filtros viven en la URL, que es su única fuente: así, al
+ * volver de la ficha o de la edición, el listado sigue como se lo dejó. Entrar
+ * desde "Usuarios" de la barra abre el listado sin filtros.
  *
  * @returns {JSX.Element}
  */
@@ -65,7 +80,9 @@ export default function Usuarios() {
   const navigate = useNavigate();
   const location = useLocation();
 
-  const [filtros, setFiltros] = useState(FILTROS_VACIOS);
+  const [parametrosUrl, setParametrosUrl] = useSearchParams();
+  const filtros = useMemo(() => filtrosDeUrl(parametrosUrl), [parametrosUrl]);
+  const busqueda = filtros.buscar.trim();
 
   const [usuarios, setUsuarios] = useState([]);
   const [idDestacado, setIdDestacado] = useState(null);
@@ -79,14 +96,25 @@ export default function Usuarios() {
   // ante el doble-invoke de <StrictMode> en desarrollo.
   const idProcesadoRef = useRef(null);
 
-  const hayAlgunFiltro = Boolean(
-    filtros.nombre.trim() || filtros.dni.trim() || filtros.rol || filtros.estado,
-  );
+  const hayAlgunFiltro = Boolean(busqueda || filtros.rol || filtros.estado);
 
   const usuariosVisibles = useMemo(
     () => usuarios.filter((usuario) => cumpleFiltros(usuario, filtros)),
     [usuarios, filtros],
   );
+
+  // Con el listado vacío por la búsqueda o los filtros: qué decir y qué salida
+  // ofrecer. Para eso cuenta cuántos coinciden con la búsqueda sin Rol ni Estado.
+  const aviso =
+    hayAlgunFiltro && usuarios.length > 0 && usuariosVisibles.length === 0
+      ? avisoSinResultados({
+          busqueda,
+          rol: filtros.rol,
+          estado: filtros.estado,
+          coincidenSinFiltros: usuarios.filter((usuario) => coincideBusqueda(usuario, filtros.buscar))
+            .length,
+        })
+      : null;
 
   // Pide los usuarios una sola vez, al entrar.
   useEffect(() => {
@@ -111,14 +139,24 @@ export default function Usuarios() {
   }, []);
 
   /**
-   * Cambia un filtro.
+   * Cambia un filtro escribiéndolo en la URL. `replace` para no llenar el
+   * historial con un paso por cada letra. El texto se guarda tal cual, sin
+   * recortar: si no, no se podría escribir el espacio entre dos palabras.
    *
-   * @param {string} campo - 'nombre', 'dni', 'rol' o 'estado'.
+   * @param {string} campo - 'buscar', 'rol' o 'estado'.
    * @returns {function(evento: Event): void}
    */
   const alCambiarFiltro = (campo) => (evento) => {
     const { value } = evento.target;
-    setFiltros((previos) => ({ ...previos, [campo]: value }));
+    setParametrosUrl(
+      (previos) => {
+        const siguientes = new URLSearchParams(previos);
+        if (value) siguientes.set(campo, value);
+        else siguientes.delete(campo);
+        return siguientes;
+      },
+      { replace: true },
+    );
   };
 
   // Las pantallas de alta y edición vuelven acá pasando el usuario creado o
@@ -136,16 +174,20 @@ export default function Usuarios() {
         : `Se guardaron los cambios de ${usuario.nombre} ${usuario.apellido}.`,
     );
 
-    // Limpia el state para no volver a destacarlo si el usuario navega con atrás/adelante.
-    navigate(location.pathname, { replace: true, state: null });
-  }, [location.state, location.pathname, navigate]);
+    // Limpia el state para no volver a destacarlo si el usuario navega con
+    // atrás/adelante. Con `search`, para no perder la búsqueda y los filtros.
+    navigate(`${location.pathname}${location.search}`, { replace: true, state: null });
+  }, [location.state, location.pathname, location.search, navigate]);
 
   /**
    * Deja los filtros en blanco: vuelve a verse el listado completo.
    *
    * @returns {void}
    */
-  const limpiarFiltros = () => setFiltros(FILTROS_VACIOS);
+  const limpiarFiltros = () => setParametrosUrl({}, { replace: true });
+
+  // Lo que se lleva la ficha y la edición para volver al listado tal como estaba.
+  const volverAlListado = volverA(`/usuarios${location.search}`, 'Volver a Usuarios');
 
   /**
    * Navega a la ficha de solo lectura de un usuario, llevando sus datos por
@@ -156,7 +198,7 @@ export default function Usuarios() {
    * @returns {void}
    */
   const irAlDetalle = (usuario) => {
-    navigate('/usuarios/detalle', { state: { usuario } });
+    navigate('/usuarios/detalle', { state: { usuario, ...volverAlListado } });
   };
 
   /**
@@ -167,7 +209,7 @@ export default function Usuarios() {
    * @returns {void}
    */
   const irAEditar = (usuario) => {
-    navigate('/usuarios/editar', { state: { usuario } });
+    navigate('/usuarios/editar', { state: { usuario, ...volverAlListado } });
   };
 
 
@@ -193,67 +235,52 @@ export default function Usuarios() {
 
         {/* Búsqueda y filtros (HU 1.3): combinables entre sí, sobre la lista ya cargada. */}
         <div className="us-filtros">
-          <div className="us-filtro">
-            <label className="ds-campo__label" htmlFor="us-nombre">
-              Nombre
+          <div className="us-filtro us-filtro--buscar">
+            <label className="ds-campo__label" htmlFor="us-buscar">
+              Buscar
             </label>
-            <input
-              id="us-nombre"
-              type="text"
-              className="ds-campo__input"
-              placeholder="Buscar por nombre..."
-              autoComplete="off"
-              value={filtros.nombre}
-              onChange={alCambiarFiltro('nombre')}
-            />
-          </div>
-
-          <div className="us-filtro">
-            <label className="ds-campo__label" htmlFor="us-dni">
-              DNI
-            </label>
-            <input
-              id="us-dni"
-              type="text"
-              className="ds-campo__input"
-              placeholder="Buscar por DNI..."
-              inputMode="numeric"
-              autoComplete="off"
-              value={filtros.dni}
-              onChange={alCambiarFiltro('dni')}
-            />
+            <div className="us-buscar">
+              <IconoBuscar className="us-buscar__icono" width={20} height={20} />
+              <input
+                id="us-buscar"
+                type="search"
+                className="ds-campo__input us-buscar__input"
+                placeholder="Nombre, apellido, DNI o email..."
+                autoComplete="off"
+                value={filtros.buscar}
+                onChange={alCambiarFiltro('buscar')}
+              />
+            </div>
           </div>
 
           <div className="us-filtro">
             <label className="ds-campo__label" htmlFor="us-rol">
               Rol
             </label>
-            <select
+            <ComboBox
               id="us-rol"
-              className="ds-campo__input"
-              value={filtros.rol}
-              onChange={alCambiarFiltro('rol')}
-            >
-              <option value="">Todos los roles</option>
-              <option value="administrador">Administrador</option>
-              <option value="camionero">Camionero</option>
-            </select>
+              buscable={false}
+              opciones={OPCIONES_ROL}
+              valor={filtros.rol}
+              alElegir={(valor) => alCambiarFiltro('rol')({ target: { value: valor } })}
+              marcador="Todos los roles"
+              textoOpcionVacia="Todos los roles"
+            />
           </div>
 
           <div className="us-filtro">
             <label className="ds-campo__label" htmlFor="us-estado">
               Estado
             </label>
-            <select
+            <ComboBox
               id="us-estado"
-              className="ds-campo__input"
-              value={filtros.estado}
-              onChange={alCambiarFiltro('estado')}
-            >
-              <option value="">Todos los estados</option>
-              <option value="activo">Activo</option>
-              <option value="inactivo">Inactivo</option>
-            </select>
+              buscable={false}
+              opciones={OPCIONES_ESTADO}
+              valor={filtros.estado}
+              alElegir={(valor) => alCambiarFiltro('estado')({ target: { value: valor } })}
+              marcador="Todos los estados"
+              textoOpcionVacia="Todos los estados"
+            />
           </div>
 
           <button
@@ -274,10 +301,22 @@ export default function Usuarios() {
           </div>
         )}
 
-        {estadoPantalla === 'ok' && usuariosVisibles.length > 0 && (
-          <p className="us-contador">
-            {usuariosVisibles.length}{' '}
-            {usuariosVisibles.length === 1 ? 'usuario encontrado' : 'usuarios encontrados'}
+        {/*
+          El contador es una región "status": el lector de pantalla anuncia
+          cuántos usuarios quedaron cada vez que cambia la búsqueda. Con cero
+          resultados se oculta a la vista (ya está el aviso de abajo), pero
+          sigue anunciándose.
+        */}
+        {estadoPantalla === 'ok' && (
+          <p
+            className={usuariosVisibles.length > 0 ? 'us-contador' : 'us-solo-lectores'}
+            role="status"
+          >
+            {aviso
+              ? `${aviso.titulo} ${aviso.ayuda}`
+              : `${usuariosVisibles.length} ${
+                  usuariosVisibles.length === 1 ? 'usuario encontrado' : 'usuarios encontrados'
+                }${busqueda ? ` para “${busqueda}”` : ''}`}
           </p>
         )}
 
@@ -292,16 +331,16 @@ export default function Usuarios() {
 
         {estadoPantalla === 'ok' && (
           <div className="us-tabla-caja">
-            {usuariosVisibles.length === 0 ? (
+            {aviso ? (
+              <div className="us-sin-resultados">
+                <IconoBuscar className="us-sin-resultados__icono" width={28} height={28} />
+                <p className="us-sin-resultados__titulo">{aviso.titulo}</p>
+                <p className="us-sin-resultados__ayuda">{aviso.ayuda}</p>
+              </div>
+            ) : usuariosVisibles.length === 0 ? (
               <p className="us-vacio">
-                {hayAlgunFiltro ? (
-                  'No hay usuarios que coincidan con los filtros aplicados. Probá con otros valores o limpiá los filtros.'
-                ) : (
-                  <>
-                    Todavía no hay usuarios cargados. Usá el botón <strong>Nuevo Usuario</strong> para
-                    dar de alta el primero.
-                  </>
-                )}
+                Todavía no hay usuarios cargados. Usá el botón <strong>Nuevo Usuario</strong> para
+                dar de alta el primero.
               </p>
             ) : (
               <table className="us-tabla">
@@ -325,10 +364,17 @@ export default function Usuarios() {
                       className={usuario.id_usuario === idDestacado ? 'us-fila--nueva' : undefined}
                     >
                       <td>
-                        {usuario.nombre} {usuario.apellido}
+                        <TextoResaltado
+                          texto={`${usuario.nombre} ${usuario.apellido}`}
+                          busqueda={filtros.buscar}
+                        />
                       </td>
-                      <td>{usuario.dni}</td>
-                      <td>{usuario.email}</td>
+                      <td>
+                        <TextoResaltado texto={String(usuario.dni)} busqueda={filtros.buscar} />
+                      </td>
+                      <td>
+                        <TextoResaltado texto={usuario.email} busqueda={filtros.buscar} />
+                      </td>
                       <td>
                         <span
                           className={`ds-etiqueta-rol${

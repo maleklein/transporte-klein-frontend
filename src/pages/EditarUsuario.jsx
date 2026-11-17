@@ -12,7 +12,9 @@ import {
 } from '../components/Iconos';
 import BarraSuperior from '../components/BarraSuperior';
 import Campo from '../components/Campo';
+import ComboBox from '../components/ComboBox';
 import { evitarFoco } from '../utils/formulario';
+import { destinoVolver } from '../utils/volver';
 import { aplicarMayusculaInicial, validarNombreApellido } from '../utils/validarNombreApellido';
 import {
   validarCapacidadKg,
@@ -145,6 +147,8 @@ export default function EditarUsuario() {
   // Los hooks de abajo se llaman igual, sin condicionarlos a esto, y recién
   // al final del componente se decide si hay que redirigir.
   const usuario = location.state?.usuario;
+  // Al cancelar o guardar, el listado vuelve con la búsqueda y los filtros que tenía.
+  const rutaListado = destinoVolver(location, { ruta: '/usuarios' }).ruta;
   const esCamionero = usuario?.rol === 'camionero';
   // Darse de baja a uno mismo deja la cuenta sin poder volver a activarse: el
   // backend lo rechaza (409) y acá directamente no se ofrece la opción.
@@ -190,7 +194,7 @@ export default function EditarUsuario() {
    *
    * @returns {void}
    */
-  const cancelar = () => navigate('/usuarios');
+  const cancelar = () => navigate(rutaListado);
 
   /**
    * Maneja el cambio en un campo del formulario y limpia errores previos.
@@ -255,7 +259,7 @@ export default function EditarUsuario() {
       );
 
       refTemporizador.current = setTimeout(() => {
-        navigate('/usuarios', { state: { usuarioActualizado } });
+        navigate(rutaListado, { state: { usuarioActualizado } });
       }, 1800);
     } catch (error) {
       const esDeApi = error instanceof ErrorDeApi;
@@ -356,19 +360,21 @@ export default function EditarUsuario() {
 
             <Campo id="eu-estado" etiqueta="Estado" error={errorDe('estado')}>
               {({ id, idError, tieneError }) => (
-                <select
+                <ComboBox
                   id={id}
-                  className={`ds-campo__input${tieneError ? ' ds-campo__input--error' : ''}`}
-                  aria-invalid={tieneError}
-                  aria-describedby={tieneError ? idError : undefined}
-                  value={valores.estado}
-                  onChange={alCambiar('estado')}
-                  onBlur={alSalirDelCampo('estado')}
-                  disabled={esMiCuenta}
-                >
-                  <option value="activo">Activo</option>
-                  <option value="inactivo">Inactivo</option>
-                </select>
+                  buscable={false}
+                  opciones={[
+                    { valor: 'activo', etiqueta: 'Activo' },
+                    { valor: 'inactivo', etiqueta: 'Inactivo' },
+                  ]}
+                  valor={valores.estado}
+                  alElegir={(valor) => alCambiar('estado')({ target: { value: valor } })}
+                  alSalir={alSalirDelCampo('estado')}
+                  marcador="Elegí el estado"
+                  tieneError={tieneError}
+                  idError={idError}
+                  deshabilitado={esMiCuenta}
+                />
               )}
             </Campo>
             {esMiCuenta && (
