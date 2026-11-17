@@ -28,9 +28,17 @@
   color: var(--color-texto-suave);
 }
 
-.pm-error-carga {
+.ds-aviso.pm-error-carga {
   align-items: center;
   flex-wrap: wrap;
+}
+
+/* Ícono y texto van juntos, como en los avisos con Reintentar de Métricas. */
+.pm-error-carga__texto {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  flex: 1 1 260px;
 }
 
 .pm-parametro {
@@ -63,8 +71,3 @@
   line-height: 1.6;
 }
 
-/* Con el botón al lado, el aviso centra todo en la fila: el ícono también. */
-.pm-error-carga > svg {
-  top: 0;
-  translate: none;
-}

@@ -73,13 +73,18 @@
 }
 
 /* El aviso de error (`.ds-aviso`) lleva el botón Reintentar al lado del texto. */
-.mt-aviso-error {
+.ds-aviso.mt-aviso-error {
   align-items: center;
   flex-wrap: wrap;
   gap: 12px;
 }
 
+/* Ícono y texto van juntos: el aviso centra el grupo con el botón, y dentro
+   del grupo el ícono queda en el primer renglón. */
 .mt-aviso-error__texto {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
   flex: 1;
   min-width: 200px;
 }
@@ -152,8 +157,3 @@
   color: var(--color-texto);
 }
 
-/* Con el botón al lado, el aviso centra todo en la fila: el ícono también. */
-.mt-aviso-error > svg {
-  top: 0;
-  translate: none;
-}

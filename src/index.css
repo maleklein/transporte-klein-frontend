@@ -118,7 +118,8 @@ body {
   .dc-titulo, .dc-descripcion__titulo, .dc-dato dt,
   .mc-caja__error, .mt-titulo, .mt-error-validacion, .nt-titulo,
   .pc-estado, .pcm-tarjeta__titulo, .pcm-tarjeta__error, .pcm-viaje__fecha,
-  .pg-error, .pos-card-tipo, .pos-card-dato, .pp-error, .pp-item__dato
+  .pg-error, .pos-card-tipo, .pos-card-dato, .pp-error, .pp-item__dato,
+  .mt-aviso-error__texto, .pcm-aviso-error__texto, .pm-error-carga__texto
 ) > svg {
   flex-shrink: 0;
   position: relative;

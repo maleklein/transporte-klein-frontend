@@ -13,13 +13,18 @@
 }
 
 /* El aviso de error (`.ds-aviso`) lleva el botón Reintentar al lado del texto. */
-.pcm-aviso-error {
+.ds-aviso.pcm-aviso-error {
   align-items: center;
   flex-wrap: wrap;
   gap: 10px 14px;
 }
 
+/* Ícono y texto van juntos: el aviso centra el grupo con el botón, y dentro
+   del grupo el ícono queda en el primer renglón. */
 .pcm-aviso-error__texto {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
   flex: 1 1 260px;
 }
 
@@ -226,8 +231,3 @@
   color: var(--color-primario);
 }
 
-/* Con el botón al lado, el aviso centra todo en la fila: el ícono también. */
-.pcm-aviso-error > svg {
-  top: 0;
-  translate: none;
-}
