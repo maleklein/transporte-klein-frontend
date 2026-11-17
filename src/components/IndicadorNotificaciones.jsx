@@ -67,7 +67,7 @@ export default function IndicadorNotificaciones() {
       className={({ isActive }) => `bs-enlace ni-enlace${isActive ? ' bs-enlace--activo' : ''}`}
     >
       <IconoCampana width={22} height={22} />
-      Notificaciones
+      <span className="ni-texto">Notificaciones</span>
       {noLeidas > 0 && (
         <>
           {/* El número a la vista no se lee solo ("Notificaciones 3" no dice

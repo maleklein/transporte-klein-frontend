@@ -14,7 +14,9 @@
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  margin-bottom: 14px;
+  /* 44 px de alto: se toca cómodo con el dedo (antes medía 28). */
+  min-height: 44px;
+  margin-bottom: 6px;
   padding: 4px 2px;
   background: none;
   border: none;
@@ -267,6 +269,13 @@
   font-size: var(--texto-ayuda);
   text-align: center;
   text-transform: none;
+}
+
+/* El número de pendientes y la flecha, juntos a la derecha. */
+.nt-item__fin {
+  display: flex;
+  align-items: center;
+  gap: 4px;
 }
 
 .nt-item__flecha {

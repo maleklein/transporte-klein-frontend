@@ -63,3 +63,111 @@
   color: var(--color-peligro-oscuro);
   font-weight: 600;
 }
+
+/* --------------------------------------------------------------------------
+   Celular (720 px o menos). Los accesos ocupaban seis renglones: la barra
+   queda en uno, como en las apps: el menú a la izquierda, "Transporte Klein"
+   en el centro y la campana a la derecha.
+   -------------------------------------------------------------------------- */
+.bs-solo-celular {
+  display: none;
+}
+
+/* `hidden` del menú cerrado le gana a cualquier display. */
+.bs-menu[hidden] {
+  display: none !important;
+}
+
+@media (max-width: 720px) {
+  .bs-solo-escritorio {
+    display: none;
+  }
+
+  .bs-solo-celular {
+    display: inline-flex;
+  }
+
+  /* Tres columnas iguales a los costados: así el nombre queda centrado de
+     verdad, aunque la campana y el menú no midan lo mismo. */
+  /* `.us-navbar.bs-barra`: le gana al `display: flex` de `.us-navbar`. */
+  .us-navbar.bs-barra {
+    display: grid;
+    grid-template-columns: 48px minmax(0, 1fr) 48px;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 12px;
+  }
+
+  /* El camión de la marca no entra: queda el nombre, que identifica al sistema. */
+  .bs-barra > svg {
+    display: none;
+  }
+
+  .bs-barra .us-navbar__marca {
+    grid-column: 2;
+    grid-row: 1;
+    min-width: 0;
+    overflow: hidden;
+    font-size: 22px;
+    text-align: center;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+  }
+
+  .bs-menu-boton {
+    grid-column: 1;
+    grid-row: 1;
+    justify-content: center;
+    width: 48px;
+    height: 48px;
+    padding: 0;
+  }
+
+  /* La campana: sólo el ícono, y un punto rojo arriba a la izquierda si hay
+     sin leer. El número no se lee a ese tamaño; el texto "Notificaciones" y
+     la cantidad siguen para el lector de pantalla (`.ni-oculto`). */
+  .bs-barra .ni-enlace {
+    grid-column: 3;
+    grid-row: 1;
+    position: relative;
+    justify-content: center;
+    width: 48px;
+    height: 48px;
+    margin: 0;
+    padding: 0;
+  }
+
+  .bs-barra .ni-texto {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    white-space: nowrap;
+  }
+
+  .bs-barra .ni-contador {
+    position: absolute;
+    top: 7px;
+    left: 9px;
+    min-width: 0;
+    width: 12px;
+    height: 12px;
+    padding: 0;
+    overflow: hidden;
+    font-size: 0;
+  }
+
+  /* Los accesos, uno debajo del otro, debajo de la barra. */
+  .bs-menu {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    padding: 4px 16px 16px;
+    background: var(--color-primario);
+  }
+
+  .bs-menu .bs-enlace {
+    width: 100%;
+  }
+}

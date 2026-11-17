@@ -1,3 +1,4 @@
+import { useEffect, useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import {
   IconoAjustes,
@@ -5,9 +6,11 @@ import {
   IconoCaja,
   IconoCajaMas,
   IconoCamion,
+  IconoCerrar,
   IconoCerrarSesion,
   IconoGrafico,
   IconoInicio,
+  IconoMenu,
   IconoUsuario,
 } from './Iconos';
 import IndicadorNotificaciones from './IndicadorNotificaciones';
@@ -87,17 +90,21 @@ const ACCESOS_CAMIONERO = [
  * principal por rol (HU 15) y, a la derecha, el acceso a las notificaciones
  * (HU 12).
  *
- * Antes cada pantalla copiaba su propia barra con la marca sola. Se junta acá
- * para que la navegación y las notificaciones aparezcan en todas, en el panel
- * del administrador y en el del camionero, sin repetir el acceso en cada una.
+ * En la computadora los accesos van todos a la vista. En el celular (720 px o
+ * menos) no entran: ocupaban seis renglones y casi media pantalla
+ * (corrección del profesor del 17/11, punto 9). Ahí la barra queda en un solo
+ * renglón, como en las apps: a la izquierda el botón de menú (sólo el ícono),
+ * que despliega los accesos debajo; en el centro "Transporte Klein"; a la
+ * derecha la campana, con un punto rojo si hay notificaciones sin leer. No se
+ * usa una barra fija abajo: en el navegador del celular ya hay una barra
+ * abajo y quitaría más lugar.
+ *
  * Los estilos base de la barra (`.us-navbar`) siguen en `pages/Usuarios.css`,
  * donde nacieron.
  *
  * También muestra, debajo de la barra, el aviso de "sin permiso" que deja
  * `RutaProtegida` cuando redirige a un usuario que abrió una pantalla de otro
- * rol (HU 15). El aviso vive acá y no en cada pantalla porque todas las
- * pantallas con sesión ya incluyen esta barra, así que alcanza para que se
- * vea sin importar qué pantalla sea el destino.
+ * rol (HU 15).
  *
  * @returns {JSX.Element}
  */
@@ -105,25 +112,54 @@ export default function BarraSuperior() {
   const location = useLocation();
   const navigate = useNavigate();
   const usuario = usuarioActual();
-  const accesos = !usuario ? [] : usuario.rol === 'administrador' ? ACCESOS_ADMINISTRADOR : ACCESOS_CAMIONERO;
+  const accesos = !usuario ? [] : usuario.rol === 'camionero' ? ACCESOS_CAMIONERO : ACCESOS_ADMINISTRADOR;
   const avisoAcceso = location.state?.avisoAcceso;
+  const rutaPerfil = usuario ? `/perfiles/${usuario.id}` : null;
+
+  const [menuAbierto, setMenuAbierto] = useState(false);
+
+  // Al cambiar de pantalla el menú se cierra solo.
+  useEffect(() => {
+    setMenuAbierto(false);
+  }, [location.pathname]);
+
+  // Escape cierra el menú.
+  useEffect(() => {
+    if (!menuAbierto) return undefined;
+    const alPresionar = (evento) => {
+      if (evento.key === 'Escape') setMenuAbierto(false);
+    };
+    document.addEventListener('keydown', alPresionar);
+    return () => document.removeEventListener('keydown', alPresionar);
+  }, [menuAbierto]);
 
   /**
-   * Cierra la sesión y manda al login.
-   *
-   * Sólo borra la sesión guardada: no hay estado de autenticación propio en
-   * React, cada pantalla lo lee de `usuarioActual()` al renderizar, así que
-   * una vez borrada la sesión no hay nada más que "resetear". El `replace`
-   * evita que "atrás" vuelva a una pantalla protegida; `RutaProtegida` de
-   * todas formas la volvería a mandar al login, pero así ni se ve el salto.
-   * El temporizador del contador de notificaciones (`IndicadorNotificaciones`)
-   * se detiene solo: al navegar, ese componente se desmonta y limpia su
-   * propio `setInterval`.
+   * Cierra la sesión y manda al login. El `replace` evita que "atrás" vuelva
+   * a una pantalla protegida.
    */
   const salir = () => {
     cerrarSesion();
     navigate('/', { replace: true });
   };
+
+  /** Los accesos como enlaces, con la sección actual resaltada. */
+  const enlaces = (claseExtra = '') =>
+    accesos.map(({ to, texto, Icono, activo }) => {
+      const esActivo = activo(location.pathname);
+      return (
+        <Link
+          key={to}
+          to={to}
+          className={`bs-enlace${claseExtra}${esActivo ? ' bs-enlace--activo' : ''}`}
+          aria-current={esActivo ? 'page' : undefined}
+        >
+          <Icono width={20} height={20} />
+          {texto}
+        </Link>
+      );
+    });
+
+  const enPerfil = location.pathname === rutaPerfil;
 
   return (
     <>
@@ -131,32 +167,60 @@ export default function BarraSuperior() {
         <IconoCamion width={28} height={28} />
         <span className="us-navbar__marca">Transporte Klein</span>
 
-        {accesos.map(({ to, texto, Icono, activo }) => {
-          const esActivo = activo(location.pathname);
-          return (
-            <Link
-              key={to}
-              to={to}
-              className={`bs-enlace${esActivo ? ' bs-enlace--activo' : ''}`}
-              aria-current={esActivo ? 'page' : undefined}
-            >
-              <Icono width={20} height={20} />
-              {texto}
-            </Link>
-          );
-        })}
-
-        {usuario && <Link to={`/perfiles/${usuario.id}`} className={`bs-enlace${location.pathname === `/perfiles/${usuario.id}` ? ' bs-enlace--activo' : ''}`} aria-current={location.pathname === `/perfiles/${usuario.id}` ? 'page' : undefined}>
-          <IconoUsuario width={20} height={20} />Mi perfil
-        </Link>}
+        {/* En la computadora, todos a la vista. En el celular, `bs-solo-escritorio` los esconde. */}
+        {enlaces(' bs-solo-escritorio')}
+        {usuario && (
+          <Link
+            to={rutaPerfil}
+            className={`bs-enlace bs-solo-escritorio${enPerfil ? ' bs-enlace--activo' : ''}`}
+            aria-current={enPerfil ? 'page' : undefined}
+          >
+            <IconoUsuario width={20} height={20} />
+            Mi perfil
+          </Link>
+        )}
         {usuario && <IndicadorNotificaciones />}
         {usuario && (
-          <button type="button" className="bs-enlace" onClick={salir}>
+          <button type="button" className="bs-enlace bs-solo-escritorio" onClick={salir}>
             <IconoCerrarSesion width={20} height={20} />
             Cerrar sesión
           </button>
         )}
+
+        {/* Sólo en el celular: el ícono de menú, a la izquierda (lo ubica el CSS). */}
+        {usuario && (
+          <button
+            type="button"
+            className="bs-enlace bs-solo-celular bs-menu-boton"
+            aria-label={menuAbierto ? 'Cerrar el menú' : 'Menú'}
+            aria-expanded={menuAbierto}
+            aria-controls="bs-menu"
+            onClick={() => setMenuAbierto((abierto) => !abierto)}
+          >
+            {menuAbierto ? <IconoCerrar width={24} height={24} /> : <IconoMenu width={24} height={24} />}
+          </button>
+        )}
       </nav>
+
+      {/* Celular: los accesos se despliegan debajo de la barra. */}
+      {usuario && (
+        <div className="bs-menu bs-solo-celular" id="bs-menu" hidden={!menuAbierto}>
+          {enlaces()}
+          <Link
+            to={rutaPerfil}
+            className={`bs-enlace${enPerfil ? ' bs-enlace--activo' : ''}`}
+            aria-current={enPerfil ? 'page' : undefined}
+          >
+            <IconoUsuario width={20} height={20} />
+            Mi perfil
+          </Link>
+          <button type="button" className="bs-enlace" onClick={salir}>
+            <IconoCerrarSesion width={20} height={20} />
+            Cerrar sesión
+          </button>
+        </div>
+      )}
+
 
       {avisoAcceso && (
         <p className="bs-aviso-acceso" role="alert">

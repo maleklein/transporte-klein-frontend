@@ -12,7 +12,9 @@
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  margin-bottom: 14px;
+  /* 44 px de alto: se toca cómodo con el dedo (antes medía 28). */
+  min-height: 44px;
+  margin-bottom: 6px;
   padding: 4px 2px;
   background: none;
   border: none;

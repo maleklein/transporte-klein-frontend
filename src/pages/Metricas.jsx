@@ -144,6 +144,15 @@ function formatearPorcentaje(tasa) {
  * @returns {JSX.Element}
  */
 export default function Metricas() {
+  // Pantalla angosta (celular): el gráfico de estados inclina los nombres.
+  const [angosto, setAngosto] = useState(() => window.matchMedia('(max-width: 600px)').matches);
+  useEffect(() => {
+    const consulta = window.matchMedia('(max-width: 600px)');
+    const alCambiar = (evento) => setAngosto(evento.matches);
+    consulta.addEventListener('change', alCambiar);
+    return () => consulta.removeEventListener('change', alCambiar);
+  }, []);
+
   const [periodoInicial] = useState(calcularPeriodoPorDefecto);
 
   // Lo que el usuario está escribiendo en los campos de fecha.
@@ -341,7 +350,14 @@ export default function Metricas() {
                 <ResponsiveContainer width="100%" height={280}>
                   <BarChart data={datosPorEstado} margin={{ top: 8, right: 8, left: 0, bottom: 8 }}>
                     <CartesianGrid strokeDasharray="3 3" stroke="#D5DBE3" zIndex={CAPA_CUADRICULA} />
-                    <XAxis dataKey="etiqueta" tick={{ fontSize: 13, fill: '#4A5568' }} />
+                    {/* En angosto, los nombres van inclinados: derechos no entraban
+                        y el gráfico escondía la mitad (Disponible, Aceptada...). */}
+                    <XAxis
+                      dataKey="etiqueta"
+                      interval={0}
+                      tick={{ fontSize: 13, fill: '#4A5568' }}
+                      {...(angosto ? { angle: -35, textAnchor: 'end', height: 70 } : {})}
+                    />
                     <YAxis allowDecimals={false} tick={{ fontSize: 13, fill: '#4A5568' }} />
                     <Tooltip cursor={CURSOR_GRAFICO} formatter={(valor) => [valor, 'Cargas']} />
                     <Bar dataKey="cantidad" radius={[6, 6, 0, 0]}>
