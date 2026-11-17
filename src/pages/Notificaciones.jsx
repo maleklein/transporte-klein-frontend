@@ -41,7 +41,7 @@ const TIPO_GENERICO = { Icono: IconoCampana, nombre: 'Aviso' };
 
 /**
  * Cuántas notificaciones se muestran de entrada y cuántas más trae cada
- * "Ver más notificaciones" (corrección del profesor del 17/11, punto 6).
+ * "Mostrar más" (corrección del profesor del 17/11, punto 6).
  */
 const POR_PAGINA = 20;
 
@@ -62,7 +62,7 @@ export default function Notificaciones() {
   const location = useLocation();
 
   const [notificaciones, setNotificaciones] = useState([]);
-  // Si quedan notificaciones más viejas para traer con "Ver más".
+  // Si quedan notificaciones más viejas para traer con "Mostrar más".
   const [hayMas, setHayMas] = useState(false);
   const [cargandoMas, setCargandoMas] = useState(false);
   const [errorMas, setErrorMas] = useState('');
@@ -83,7 +83,7 @@ export default function Notificaciones() {
   useEffect(() => {
     const controlador = new AbortController();
 
-    // Pide una más de las que muestra: si llega, es que quedan más para "Ver más".
+    // Pide una más de las que muestra: si llega, es que quedan más para "Mostrar más".
     listarNotificaciones({ limite: POR_PAGINA + 1 }, { signal: controlador.signal })
       .then((datos) => {
         setNotificaciones(datos.slice(0, POR_PAGINA));
@@ -387,7 +387,7 @@ export default function Notificaciones() {
               disabled={cargandoMas}
             >
               <IconoChevronAbajo width={18} height={18} />
-              {cargandoMas ? 'Cargando...' : 'Ver más notificaciones'}
+              {cargandoMas ? 'Cargando...' : 'Mostrar más'}
             </button>
           </div>
         )}
