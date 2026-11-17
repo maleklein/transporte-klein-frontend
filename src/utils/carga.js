@@ -214,3 +214,17 @@ export function capitalizarEstado(estado) {
  * admite edición).
  */
 export const ESTADOS_BLOQUEADOS_EDICION = ['en_viaje', 'entregada', 'cancelada'];
+
+/**
+ * A dónde llevan los accesos a "Pendientes de asignación" (panel del
+ * administrador y notificaciones): si hay una sola carga pendiente, directo a
+ * su detalle, donde se asigna; si hay varias, al listado filtrado.
+ *
+ * @param {object[]} cargasPendientes - las cargas en estado pendiente (con `id_carga`).
+ * @returns {string} la ruta.
+ */
+export function rutaPendientesAsignacion(cargasPendientes) {
+  return cargasPendientes.length === 1
+    ? `/cargas/${cargasPendientes[0].id_carga}`
+    : '/cargas?estado=pendiente';
+}

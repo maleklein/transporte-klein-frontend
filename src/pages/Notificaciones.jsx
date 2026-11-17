@@ -21,7 +21,7 @@ import {
 import { listarCargas } from '../api/cargas';
 import { ErrorDeApi } from '../api/usuarios';
 import { usuarioActual } from '../api/sesion';
-import { formatearFechaHora, formatearMarcaCorta } from '../utils/carga';
+import { formatearFechaHora, formatearMarcaCorta, rutaPendientesAsignacion } from '../utils/carga';
 import { agruparPorFecha } from '../utils/agruparPorFecha';
 import { destinoVolver, volverA } from '../utils/volver';
 import './Notificaciones.css';
@@ -128,13 +128,14 @@ export default function Notificaciones() {
   // administrador elija uno (null mientras no se sabe). Van arriba de todo,
   // en una tarjeta aparte, como las solicitudes de seguimiento de Instagram:
   // es lo único de la pantalla que espera una respuesta suya.
-  const [pendientesAsignacion, setPendientesAsignacion] = useState(null);
+  const [cargasPendientes, setCargasPendientes] = useState(null);
+  const pendientesAsignacion = cargasPendientes?.length ?? 0;
 
   useEffect(() => {
     if (!esAdministrador) return undefined;
     const controlador = new AbortController();
     listarCargas({ estado: 'pendiente' }, { signal: controlador.signal })
-      .then((cargas) => setPendientesAsignacion(cargas.length))
+      .then(setCargasPendientes)
       // Si no se pudo saber, la tarjeta no aparece: el resto de la pantalla sigue andando.
       .catch(() => {});
     return () => controlador.abort();
@@ -325,7 +326,7 @@ export default function Notificaciones() {
         {pendientesAsignacion > 0 && (
           <section className="nt-destacadas" aria-label="Requiere tu respuesta">
             <Link
-              to="/cargas?estado=pendiente"
+              to={rutaPendientesAsignacion(cargasPendientes)}
               state={volverA('/notificaciones', 'Volver a Notificaciones', location.state)}
               className="nt-item nt-item--clickeable nt-item--pendientes"
             >
