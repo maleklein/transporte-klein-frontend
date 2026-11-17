@@ -1,6 +1,6 @@
 /* ==========================================================================
-   Parámetros operativos (HU 10). El formulario reusa la tarjeta, los avisos
-   y el pie de `AltaUsuario.css`; acá va sólo lo propio de esta pantalla.
+   Parámetros operativos (HU 10). El formulario reusa la tarjeta y el pie de
+   `AltaUsuario.css`, y los avisos de `index.css` (`.ds-aviso`); acá va sólo lo propio de esta pantalla.
    ========================================================================== */
 
 .pm-intro {
@@ -48,13 +48,10 @@
   color: var(--color-texto-suave);
 }
 
+/* La nota es un aviso informativo (`.ds-aviso--info`); sólo se acerca al
+   último parámetro. */
 .pm-nota {
-  margin: 4px 0 20px;
-  padding: 12px 14px;
-  border-left: 4px solid var(--color-primario);
-  background: var(--color-primario-claro);
-  font-size: var(--texto-ayuda);
-  color: var(--color-texto);
+  margin-top: 4px;
 }
 
 /* Lista de cambios dentro del modal de confirmación. */

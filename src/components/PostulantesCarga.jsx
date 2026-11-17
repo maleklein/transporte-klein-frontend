@@ -166,7 +166,7 @@ export default function PostulantesCarga({ carga, version, modalAbierto, alCerra
       </h2>
 
       {mensajeExito && (
-        <div className="dc-aviso-exito pp-aviso" role="status" tabIndex={-1} ref={refAviso}>
+        <div className="ds-aviso ds-aviso--exito" role="status" tabIndex={-1} ref={refAviso}>
           <IconoCheck width={20} height={20} />
           {mensajeExito}
         </div>

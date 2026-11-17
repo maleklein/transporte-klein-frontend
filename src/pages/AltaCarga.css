@@ -24,50 +24,6 @@
   padding: 24px 26px 8px;
 }
 
-/* --- Mensajes de estado arriba del formulario --- */
-.ac-aviso {
-  display: flex;
-  align-items: flex-start;
-  gap: 10px;
-  padding: 14px 16px;
-  border-radius: var(--radio-chico);
-  font-size: var(--texto-base);
-  font-weight: 600;
-  margin-bottom: 20px;
-  border: 2px solid transparent;
-}
-
-.ac-aviso--exito {
-  background: var(--color-confirmar-claro);
-  color: var(--color-confirmar-oscuro);
-  border-color: var(--color-confirmar);
-}
-
-.ac-aviso--error {
-  background: var(--color-peligro-claro);
-  color: var(--color-peligro-oscuro);
-  border-color: var(--color-peligro);
-}
-
-/* Distancia sin calcular (HU 9): la carga se guardó, pero falta algo.
-   Mismo ámbar que el badge "en viaje" y el dato pendiente del detalle. */
-.ac-aviso--pendiente {
-  background: var(--color-advertencia-claro);
-  color: var(--color-advertencia);
-  border-color: var(--color-advertencia);
-}
-
-.ac-aviso__enlace {
-  padding: 0;
-  background: none;
-  border: none;
-  font: inherit;
-  font-weight: 700;
-  color: inherit;
-  text-decoration: underline;
-  cursor: pointer;
-}
-
 /* El textarea reusa .ds-campo__input, que fija min-height para inputs de una linea. */
 .ac-textarea {
   min-height: 110px;

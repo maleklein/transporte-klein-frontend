@@ -72,18 +72,11 @@
   font-size: var(--texto-base);
 }
 
+/* El aviso de error (`.ds-aviso`) lleva el botón Reintentar al lado del texto. */
 .mt-aviso-error {
-  display: flex;
   align-items: center;
   flex-wrap: wrap;
   gap: 12px;
-  padding: 14px 16px;
-  margin-bottom: 16px;
-  border: 2px solid var(--color-peligro);
-  border-radius: var(--radio-chico);
-  background: var(--color-peligro-claro);
-  color: var(--color-peligro-oscuro);
-  font-weight: 600;
 }
 
 .mt-aviso-error__texto {

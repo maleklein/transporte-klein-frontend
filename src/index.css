@@ -155,6 +155,64 @@ body {
 }
 
 /* --------------------------------------------------------------------------
+   Avisos: un recuadro con ícono para decir algo sobre lo que se está viendo.
+   Uno solo para todo el sistema; cada pantalla agrega, si hace falta, sólo
+   su acomodo (por ejemplo, un botón Reintentar al lado del texto).
+
+   - Éxito (verde): algo salió bien ("Se guardaron los cambios de...").
+   - Error (rojo): algo falló y hay que hacer algo ("No se pudo cargar...").
+   - Advertencia (amarillo): pide una acción, pero no es un error (retiro
+     vencido).
+   - Info (azul): explica algo, sin urgencia (por qué un botón está
+     deshabilitado, qué pasa al cambiar un parámetro). Texto en peso normal:
+     suele ser más largo que los otros.
+
+   No incluye la notificación flotante de "Deshacer" (`.pg-aviso`), que es
+   otra cosa: aparece sola y se va.
+   -------------------------------------------------------------------------- */
+.ds-aviso {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  margin: 0 0 20px;
+  padding: 14px 16px;
+  border: 2px solid transparent;
+  border-radius: var(--radio-chico);
+  font-size: var(--texto-base);
+  font-weight: 600;
+}
+
+.ds-aviso > svg {
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+
+.ds-aviso--exito {
+  border-color: var(--color-confirmar);
+  background: var(--color-confirmar-claro);
+  color: var(--color-confirmar-oscuro);
+}
+
+.ds-aviso--error {
+  border-color: var(--color-peligro);
+  background: var(--color-peligro-claro);
+  color: var(--color-peligro-oscuro);
+}
+
+.ds-aviso--advertencia {
+  border-color: var(--color-advertencia);
+  background: var(--color-advertencia-claro);
+  color: var(--color-advertencia);
+}
+
+.ds-aviso--info {
+  border-color: var(--color-primario);
+  background: var(--color-primario-claro);
+  color: var(--color-primario-oscuro);
+  font-weight: 400;
+}
+
+/* --------------------------------------------------------------------------
    Campos de formulario — el label SIEMPRE arriba del campo, nunca placeholder solo.
    -------------------------------------------------------------------------- */
 .ds-campo {

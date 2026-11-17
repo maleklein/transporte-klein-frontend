@@ -290,14 +290,14 @@ export default function EditarUsuario() {
         <form onSubmit={alEnviar} noValidate className="au-formulario">
           <div className="au-body">
             {mensajeExito && (
-              <div className="au-aviso au-aviso--exito" role="status">
+              <div className="ds-aviso ds-aviso--exito" role="status">
                 <IconoCheck />
                 {mensajeExito}
               </div>
             )}
 
             {errorGeneral && (
-              <div className="au-aviso au-aviso--error" role="alert">
+              <div className="ds-aviso ds-aviso--error" role="alert">
                 <IconoAlerta width={22} height={22} />
                 {errorGeneral}
               </div>

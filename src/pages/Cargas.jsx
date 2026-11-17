@@ -388,7 +388,7 @@ export default function Cargas() {
         )}
 
         {estadoPantalla === 'error' && (
-          <div className="cg-aviso-error" role="alert">
+          <div className="ds-aviso ds-aviso--error" role="alert">
             <IconoAlerta width={22} height={22} />
             {mensajeError}
           </div>

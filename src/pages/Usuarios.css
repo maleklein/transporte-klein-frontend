@@ -147,19 +147,6 @@
   }
 }
 
-.us-aviso-exito {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  margin-bottom: 20px;
-  padding: 14px 16px;
-  border: 2px solid var(--color-confirmar);
-  border-radius: var(--radio-chico);
-  background: var(--color-confirmar-claro);
-  color: var(--color-confirmar-oscuro);
-  font-weight: 600;
-}
-
 .us-boton-accion {
   padding: 8px 12px;
   min-height: 36px;
@@ -180,20 +167,6 @@
   overflow: hidden;
   clip: rect(0 0 0 0);
   white-space: nowrap;
-}
-
-.us-aviso-error {
-  display: flex;
-  align-items: flex-start;
-  gap: 10px;
-  padding: 14px 16px;
-  border-radius: var(--radio-chico);
-  font-size: var(--texto-base);
-  font-weight: 600;
-  margin-bottom: 20px;
-  border: 2px solid var(--color-peligro);
-  background: var(--color-peligro-claro);
-  color: var(--color-peligro-oscuro);
 }
 
 .us-vacio {

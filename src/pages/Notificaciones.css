@@ -91,19 +91,6 @@
   color: var(--color-texto-suave);
 }
 
-.nt-aviso-error {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  margin-bottom: 16px;
-  padding: 14px 16px;
-  border: 2px solid var(--color-peligro);
-  border-radius: var(--radio-chico);
-  background: var(--color-peligro-claro);
-  color: var(--color-peligro-oscuro);
-  font-weight: 600;
-}
-
 /* --------------------------------------------------------------------------
    Cada aviso.
    -------------------------------------------------------------------------- */

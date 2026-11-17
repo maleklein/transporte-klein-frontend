@@ -12,18 +12,11 @@
   color: var(--color-texto-suave);
 }
 
+/* El aviso de error (`.ds-aviso`) lleva el botón Reintentar al lado del texto. */
 .pcm-aviso-error {
-  display: flex;
   align-items: center;
   flex-wrap: wrap;
   gap: 10px 14px;
-  margin-bottom: 20px;
-  padding: 14px 16px;
-  border: 2px solid var(--color-peligro);
-  border-radius: var(--radio-chico);
-  background: var(--color-peligro-claro);
-  color: var(--color-peligro-oscuro);
-  font-weight: 600;
 }
 
 .pcm-aviso-error__texto {

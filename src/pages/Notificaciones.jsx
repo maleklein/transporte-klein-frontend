@@ -223,7 +223,7 @@ export default function Notificaciones() {
         {estadoPantalla === 'cargando' && <p className="nt-mensaje">Cargando notificaciones...</p>}
 
         {estadoPantalla === 'error' && (
-          <div className="nt-aviso-error" role="alert">
+          <div className="ds-aviso ds-aviso--error" role="alert">
             <IconoAlerta width={22} height={22} />
             {mensajeError}
           </div>
@@ -246,7 +246,7 @@ export default function Notificaciones() {
         )}
 
         {errorAlAbrir && (
-          <div className="nt-aviso-error" role="alert">
+          <div className="ds-aviso ds-aviso--error" role="alert">
             <IconoAlerta width={22} height={22} />
             {errorAlAbrir}
           </div>

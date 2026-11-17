@@ -2,7 +2,7 @@ import { useCallback, useEffect, useState } from 'react';
 import BarraSuperior from '../components/BarraSuperior';
 import Campo from '../components/Campo';
 import ModalConfirmacion from '../components/ModalConfirmacion';
-import { IconoAjustes, IconoAlerta, IconoCheck, IconoGuardar, IconoReintentar } from '../components/Iconos';
+import { IconoAjustes, IconoAlerta, IconoCheck, IconoGuardar, IconoInfo, IconoReintentar } from '../components/Iconos';
 import { actualizarParametros, obtenerParametros } from '../api/parametros';
 import { ErrorDeValidacion } from '../api/cargas';
 import { ErrorDeApi } from '../api/usuarios';
@@ -188,7 +188,7 @@ export default function ParametrosOperativos() {
         {estadoPantalla === 'cargando' && <p className="pm-mensaje">Cargando parámetros...</p>}
 
         {estadoPantalla === 'error' && (
-          <div className="au-aviso au-aviso--error pm-error-carga" role="alert">
+          <div className="ds-aviso ds-aviso--error pm-error-carga" role="alert">
             <IconoAlerta width={22} height={22} />
             <span>{mensajeError}</span>
             <button
@@ -207,7 +207,7 @@ export default function ParametrosOperativos() {
           <form onSubmit={alEnviar} noValidate className="au-formulario">
             <div className="au-body">
               {mensajeExito && (
-                <div className="au-aviso au-aviso--exito" role="status">
+                <div className="ds-aviso ds-aviso--exito" role="status">
                   <IconoCheck />
                   {mensajeExito}
                 </div>
@@ -240,9 +240,12 @@ export default function ParametrosOperativos() {
                 );
               })}
 
-              <p className="pm-nota">
-                Cambiar un valor no recalcula las cargas que ya tienen su estimación: cada una conserva la
-                cuenta del momento en que se hizo.
+              <p className="ds-aviso ds-aviso--info pm-nota">
+                <IconoInfo width={20} height={20} />
+                <span>
+                  Cambiar un valor no recalcula las cargas que ya tienen su estimación: cada una conserva la
+                  cuenta del momento en que se hizo.
+                </span>
               </p>
             </div>
 
