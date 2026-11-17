@@ -235,6 +235,47 @@
 }
 
 
+/* "Pendientes de asignación": arriba de todo, sólo para el administrador.
+   Es una tarjeta como los avisos, pero destacada: lo único que espera una
+   respuesta suya. */
+.nt-destacadas {
+  margin-bottom: 28px;
+}
+
+.nt-item--pendientes {
+  border-color: var(--color-primario);
+  background: var(--color-primario-claro);
+  color: inherit;
+  text-decoration: none;
+}
+
+.nt-item--pendientes .nt-item__icono {
+  background: var(--color-fondo);
+  color: var(--color-primario);
+}
+
+.nt-item--pendientes .nt-item__texto {
+  display: block;
+}
+
+.nt-contador {
+  min-width: 24px;
+  padding: 1px 8px;
+  border-radius: 999px;
+  background: var(--color-primario);
+  color: #fff;
+  font-size: var(--texto-ayuda);
+  text-align: center;
+  text-transform: none;
+}
+
+.nt-item__flecha {
+  display: grid;
+  place-items: center;
+  width: 44px;
+  color: var(--color-primario);
+}
+
 /* "Mostrar más", al final de la lista. */
 .nt-mas {
   display: flex;
@@ -271,7 +312,8 @@
     padding: 14px;
   }
 
-  .nt-item__abrir {
+  .nt-item__abrir,
+  .nt-item__flecha {
     width: 28px;
   }
 }

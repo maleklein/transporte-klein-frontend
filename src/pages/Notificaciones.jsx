@@ -1,10 +1,11 @@
 import { useEffect, useRef, useState } from 'react';
-import { useLocation, useNavigate } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import BarraSuperior from '../components/BarraSuperior';
 import {
   IconoAlerta,
   IconoCajaMas,
   IconoCampana,
+  IconoEtiqueta,
   IconoCamion,
   IconoCerrar,
   IconoCheck,
@@ -17,6 +18,7 @@ import {
   marcarNotificacionLeida,
   marcarTodasLeidas,
 } from '../api/notificaciones';
+import { listarCargas } from '../api/cargas';
 import { ErrorDeApi } from '../api/usuarios';
 import { usuarioActual } from '../api/sesion';
 import { formatearFechaHora, formatearMarcaCorta } from '../utils/carga';
@@ -121,6 +123,22 @@ export default function Notificaciones() {
   // Al administrador no le llegan avisos de cargas nuevas (las crea él): el
   // mensaje de lista vacía no se los promete.
   const esAdministrador = usuarioActual()?.rol === 'administrador';
+
+  // Cuántas cargas tienen camioneros postulados esperando que el
+  // administrador elija uno (null mientras no se sabe). Van arriba de todo,
+  // en una tarjeta aparte, como las solicitudes de seguimiento de Instagram:
+  // es lo único de la pantalla que espera una respuesta suya.
+  const [pendientesAsignacion, setPendientesAsignacion] = useState(null);
+
+  useEffect(() => {
+    if (!esAdministrador) return undefined;
+    const controlador = new AbortController();
+    listarCargas({ estado: 'pendiente' }, { signal: controlador.signal })
+      .then((cargas) => setPendientesAsignacion(cargas.length))
+      // Si no se pudo saber, la tarjeta no aparece: el resto de la pantalla sigue andando.
+      .catch(() => {});
+    return () => controlador.abort();
+  }, [esAdministrador]);
 
   // Llegando desde el inicio, el botón lo dice ("Volver al inicio").
   const destino = destinoVolver(location, null);
@@ -301,6 +319,35 @@ export default function Notificaciones() {
               </>
             )}
           </p>
+        )}
+
+        {/* Lo que espera una respuesta del administrador, arriba de todo. */}
+        {pendientesAsignacion > 0 && (
+          <section className="nt-destacadas" aria-label="Requiere tu respuesta">
+            <Link
+              to="/cargas?estado=pendiente"
+              state={volverA('/notificaciones', 'Volver a Notificaciones', location.state)}
+              className="nt-item nt-item--clickeable nt-item--pendientes"
+            >
+              <span className="nt-item__icono" aria-hidden="true">
+                <IconoEtiqueta width={22} height={22} />
+              </span>
+              <span className="nt-item__cuerpo">
+                <span className="nt-item__tipo">
+                  Pendientes de asignación
+                  <span className="nt-contador">{pendientesAsignacion}</span>
+                </span>
+                <span className="nt-item__texto">
+                  {pendientesAsignacion === 1
+                    ? '1 carga tiene camioneros postulados esperando que elijas uno.'
+                    : `${pendientesAsignacion} cargas tienen camioneros postulados esperando que elijas uno.`}
+                </span>
+              </span>
+              <span className="nt-item__flecha" aria-hidden="true">
+                <IconoChevronDerecha width={22} height={22} />
+              </span>
+            </Link>
+          </section>
         )}
 
         {errorAlAbrir && (
