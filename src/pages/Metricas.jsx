@@ -40,11 +40,18 @@ const COLOR_POR_SUFIJO = {
 
 /**
  * Franja que marca la barra bajo el mouse. Sin esto, Recharts usa un gris
- * (#ccc) muy fuerte: va el celeste del sistema (--color-primario-claro), que
- * acompaña sin tapar. Es un color fijo porque Recharts lo pone como atributo
- * del SVG, que no lee variables de CSS.
+ * (#ccc) muy fuerte: va el celeste del sistema (--color-primario-claro). Es un
+ * color fijo porque Recharts lo pone como atributo del SVG, que no lee
+ * variables de CSS.
  */
 const CURSOR_GRAFICO = { fill: '#E8EFF6' };
+
+/**
+ * Capa de la cuadrícula: entre la franja del mouse (200) y las barras (300).
+ * Por defecto va debajo de todo (-100) y la franja la tapaba; así las líneas
+ * punteadas se siguen viendo sobre el celeste.
+ */
+const CAPA_CUADRICULA = 250;
 
 /**
  * Arma una fecha AAAA-MM-DD a partir de los getters locales de `Date` (no de
@@ -333,7 +340,7 @@ export default function Metricas() {
                 <h2 className="mt-grafico-card__titulo">Cargas por estado</h2>
                 <ResponsiveContainer width="100%" height={280}>
                   <BarChart data={datosPorEstado} margin={{ top: 8, right: 8, left: 0, bottom: 8 }}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="#D5DBE3" />
+                    <CartesianGrid strokeDasharray="3 3" stroke="#D5DBE3" zIndex={CAPA_CUADRICULA} />
                     <XAxis dataKey="etiqueta" tick={{ fontSize: 13, fill: '#4A5568' }} />
                     <YAxis allowDecimals={false} tick={{ fontSize: 13, fill: '#4A5568' }} />
                     <Tooltip cursor={CURSOR_GRAFICO} formatter={(valor) => [valor, 'Cargas']} />
@@ -354,7 +361,7 @@ export default function Metricas() {
                 {datosPorSemana.some((fila) => fila.cantidad > 0) ? (
                   <ResponsiveContainer width="100%" height={280}>
                     <BarChart data={datosPorSemana} margin={{ top: 8, right: 8, left: 0, bottom: 8 }}>
-                      <CartesianGrid strokeDasharray="3 3" stroke="#D5DBE3" />
+                      <CartesianGrid strokeDasharray="3 3" stroke="#D5DBE3" zIndex={CAPA_CUADRICULA} />
                       <XAxis dataKey="etiquetaCorta" tick={{ fontSize: 13, fill: '#4A5568' }} />
                       <YAxis allowDecimals={false} tick={{ fontSize: 13, fill: '#4A5568' }} />
                       <Tooltip
