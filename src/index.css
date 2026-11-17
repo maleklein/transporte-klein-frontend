@@ -23,6 +23,9 @@
   --color-advertencia: #8A5300;
   --color-advertencia-claro: #FFF4E5;
 
+  /* Resaltado: la parte de un texto que coincide con una búsqueda. */
+  --color-resaltado: #FFE58F;
+
   /* Neutros — contraste alto sobre blanco */
   --color-fondo: #FFFFFF;
   --color-fondo-alt: #F1F4F7;
@@ -96,6 +99,23 @@ body {
 .pr-titulo {
   margin: 0 0 24px;
 }
+
+/* --------------------------------------------------------------------------
+   Botones: qué estilo lleva cada uno.
+
+   - Primario (azul lleno): la acción principal de la pantalla o del bloque,
+     para lo que existe esa pantalla (Nuevo Usuario, Nueva Carga, Aplicar,
+     Postularme, avanzar el estado). Como mucho uno a la vista.
+   - Confirmar (verde lleno): cerrar un formulario guardando datos (Guardar,
+     Registrar, Crear, Enviar calificación).
+   - Secundario (blanco): todo lo demás. Siempre las acciones que se repiten
+     en cada fila o tarjeta (Ver, Editar, Ver detalle): en azul lleno, una
+     lista de veinte tendría veinte "principales". También filtros,
+     Reintentar, paginación y volver.
+   - Cancelar (blanco con borde rojo): salir de un formulario sin guardar.
+   - Peligro (rojo lleno): una acción destructiva que no se deshace
+     (Cancelar carga).
+   -------------------------------------------------------------------------- */
 
 .ds-boton {
   display: inline-flex;
@@ -245,6 +265,22 @@ body {
   background: #FFFFFF;
 }
 
+/* Flecha de los campos desplegables: los <select> y el ComboBox (que la pide
+   con `ds-campo__input--desplegable`). Una sola, para que en todos quede del
+   mismo tamaño y a la misma distancia del borde; la del navegador se ve
+   chiquita y pegada al borde. Va como fondo porque un <select> no admite
+   elementos adentro; el color es el de --color-texto-suave (un fondo SVG no
+   puede leer variables). */
+select.ds-campo__input,
+.ds-campo__input--desplegable {
+  appearance: none;
+  padding-right: 44px;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='9' viewBox='0 0 14 9'%3E%3Cpath d='M1 1.5l6 6 6-6' fill='none' stroke='%234A5568' stroke-width='2'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 16px center;
+  background-size: 14px 9px;
+}
+
 .ds-campo__input::placeholder {
   color: #6B7280;
 }
@@ -256,8 +292,9 @@ body {
 }
 
 /* Campo bloqueado (ej: DNI en la edición de usuarios) */
+/* `background-color` y no `background`: el atajo borraría la flecha de los desplegables. */
 .ds-campo__input:disabled {
-  background: var(--color-fondo-alt);
+  background-color: var(--color-fondo-alt);
   color: var(--color-texto-suave);
   cursor: not-allowed;
 }
@@ -265,7 +302,7 @@ body {
 /* Estado de error: borde rojo + mensaje rojo debajo del campo */
 .ds-campo__input--error {
   border-color: var(--color-peligro);
-  background: var(--color-peligro-claro);
+  background-color: var(--color-peligro-claro);
 }
 
 .ds-campo__input--error:focus {

@@ -80,12 +80,15 @@ PR que cambia el código.
 npm install
 npm run dev      # http://localhost:5173, contra la API de VITE_API_URL
 npm run build    # lo que corre el Dockerfile; tiene que pasar antes del PR
+npm test         # tests de las funciones puras (Vitest), en tests/
 ```
 
 Sin `VITE_API_URL`, en desarrollo se usa `http://localhost:3000` (el backend
 local). En el build de producción la variable es obligatoria (ver el README).
-El repo no tiene tests: probá el cambio en el navegador, con un usuario de cada
-rol que corresponda (administrador y camionero).
+Los tests (`tests/`, con Vitest) cubren las funciones puras de `src/utils/`; si
+tocás una, sumá o ajustá su test. Las pantallas no tienen tests: probá el cambio
+en el navegador, con un usuario de cada rol que corresponda (administrador y
+camionero).
 
 ## Cómo subir cambios
 
@@ -113,6 +116,12 @@ docs/             notas y capturas de verificación por HU
 
 - Las llamadas al backend van solo en `src/api/`; las páginas no usan `fetch`
   directo.
+- Botones: azul lleno (`ds-boton--primario`) solo para la acción principal de
+  la pantalla, uno a la vista; verde (`--confirmar`) para guardar un
+  formulario; blanco (`--secundario`) para todo lo demás, siempre para las
+  acciones que se repiten en cada fila o tarjeta; borde rojo (`--cancelar`)
+  para salir sin guardar; rojo lleno para lo destructivo. El detalle está en
+  el comentario de botones de `src/index.css`.
 - Colores y espaciados con las variables de `src/index.css`, no con valores
   sueltos. Las pantallas tienen que verse consistentes entre sí (mismo estilo
   de título con ícono, mismo ancho).

@@ -92,7 +92,7 @@ export default function CalificacionCarga({ idCarga }) {
               <label htmlFor="cal-comentario">Comentario (opcional)</label>
               <textarea id="cal-comentario" rows={4} maxLength={1000} value={comentario} onChange={(e) => setComentario(e.target.value)} aria-describedby="cal-limite" />
               <small id="cal-limite">Hasta 1000 caracteres. Describí tu experiencia con el viaje.</small>
-              <button className="ds-boton ds-boton--primario" type="submit" disabled={!puntaje || guardando}><IconoGuardar />{guardando ? 'Guardando...' : 'Enviar calificación'}</button>
+              <button className="ds-boton ds-boton--confirmar" type="submit" disabled={!puntaje || guardando}><IconoGuardar />{guardando ? 'Guardando...' : 'Enviar calificación'}</button>
             </fieldset>
           </form> : <p>{datos.motivo}</p>}
         </>}

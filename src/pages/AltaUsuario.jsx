@@ -11,6 +11,7 @@ import {
 } from '../components/Iconos';
 import BarraSuperior from '../components/BarraSuperior';
 import Campo from '../components/Campo';
+import ComboBox from '../components/ComboBox';
 import { evitarFoco } from '../utils/formulario';
 import { aplicarMayusculaInicial, validarNombreApellido } from '../utils/validarNombreApellido';
 import {
@@ -383,23 +384,24 @@ export default function AltaUsuario() {
               autoComplete="new-password"
             />
 
-            {/* El select de rol usa el render-prop de Campo (children) en vez de
-              un <input> normal, para reutilizar el mismo label + manejo de error. */}
+            {/* El desplegable de rol usa el render-prop de Campo (children) en vez
+              de un <input> normal, para reutilizar el mismo label + manejo de error. */}
             <Campo id="nu-rol" etiqueta="Rol" error={errorDe('rol')}>
               {({ id, idError, tieneError }) => (
-                <select
+                <ComboBox
                   id={id}
-                  className={`ds-campo__input${tieneError ? ' ds-campo__input--error' : ''}`}
-                  aria-invalid={tieneError}
-                  aria-describedby={tieneError ? idError : undefined}
-                  value={valores.rol}
-                  onChange={alCambiar('rol')}
-                  onBlur={alSalirDelCampo('rol')}
-                >
-                  <option value="">Seleccionar rol...</option>
-                  <option value="administrador">Administrador</option>
-                  <option value="camionero">Camionero</option>
-                </select>
+                  buscable={false}
+                  opciones={[
+                    { valor: 'administrador', etiqueta: 'Administrador' },
+                    { valor: 'camionero', etiqueta: 'Camionero' },
+                  ]}
+                  valor={valores.rol}
+                  alElegir={(valor) => alCambiar('rol')({ target: { value: valor } })}
+                  alSalir={alSalirDelCampo('rol')}
+                  marcador="Seleccionar rol..."
+                  tieneError={tieneError}
+                  idError={idError}
+                />
               )}
             </Campo>
 

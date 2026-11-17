@@ -49,6 +49,11 @@ function paraComparar(texto) {
  * @param {string} [props.idError] - id del mensaje de error, para `aria-describedby`.
  * @param {function} [props.alSalir] - se llama al salir del campo, para marcarlo como tocado.
  * @param {import('react').Ref} [props.refInput] - ref al input, para poder enfocarlo desde afuera.
+ * @param {boolean} [props.buscable=true] - si es false, no se escribe: solo se
+ *   despliega y se elige, como un `<select>`. Lo usan los desplegables de pocas
+ *   opciones (rol, estado) para que todos se vean y se abran igual. Una letra
+ *   salta a la primera opción que empieza con ella.
+ * @param {boolean} [props.deshabilitado=false] - no se puede abrir ni cambiar.
  * @returns {JSX.Element}
  */
 export default function ComboBox({
@@ -62,6 +67,8 @@ export default function ComboBox({
   idError,
   alSalir,
   refInput,
+  buscable = true,
+  deshabilitado = false,
 }) {
   const idInterno = useId();
   const idLista = `${id ?? idInterno}-lista`;
@@ -88,7 +95,8 @@ export default function ComboBox({
 
   // Mientras está abierto se muestra lo que se escribe; cerrado, la etiqueta
   // de lo elegido. Si no, al abrir habría que borrar a mano lo que hay.
-  const textoInput = abierto ? busqueda : (elegida?.etiqueta ?? '');
+  // Sin búsqueda, siempre se ve lo elegido.
+  const textoInput = abierto && buscable ? busqueda : (elegida?.etiqueta ?? '');
 
   const visibles = useMemo(() => {
     const termino = paraComparar(busqueda.trim());
@@ -195,6 +203,7 @@ export default function ComboBox({
    * @returns {void}
    */
   const alPresionarTecla = (evento) => {
+    if (!buscable && alPresionarTeclaSinBusqueda(evento)) return;
     switch (evento.key) {
       case 'ArrowDown':
         evento.preventDefault();
@@ -271,6 +280,40 @@ export default function ComboBox({
     }
   };
 
+  /**
+   * Las teclas que cambian cuando no se puede escribir: Espacio y Enter abren
+   * (como en un `<select>`), y una letra resalta la primera opción que empieza
+   * con ella, sin filtrar. Borrar no hace nada.
+   *
+   * @param {import('react').KeyboardEvent} evento
+   * @returns {boolean} true si la tecla ya quedó atendida.
+   */
+  const alPresionarTeclaSinBusqueda = (evento) => {
+    if ((evento.key === ' ' || evento.key === 'Enter') && !abierto) {
+      evento.preventDefault();
+      abrir();
+      return true;
+    }
+    if (evento.key === 'Backspace' || evento.key === 'Delete') {
+      evento.preventDefault();
+      return true;
+    }
+    if (evento.key.length === 1 && !evento.ctrlKey && !evento.metaKey && !evento.altKey) {
+      evento.preventDefault();
+      const letra = paraComparar(evento.key);
+      const indice = todas.findIndex((opcion) => paraComparar(opcion.etiqueta).startsWith(letra));
+      if (indice >= 0) {
+        if (!abierto) {
+          setBusqueda('');
+          setAbierto(true);
+        }
+        setResaltado(indice);
+      }
+      return true;
+    }
+    return false;
+  };
+
   // Un clic afuera cierra la lista. Va en `mousedown` y no en `click` para que
   // se cierre apenas se aprieta, sin esperar a que se suelte el botón.
   useEffect(() => {
@@ -298,11 +341,13 @@ export default function ComboBox({
         id={id}
         ref={refInput}
         type="text"
-        className={`ds-campo__input cb-input${tieneError ? ' ds-campo__input--error' : ''}`}
+        className={`ds-campo__input ds-campo__input--desplegable${buscable ? '' : ' cb-input--sin-busqueda'}${
+          tieneError ? ' ds-campo__input--error' : ''
+        }`}
         role="combobox"
         aria-expanded={abierto}
         aria-controls={idLista}
-        aria-autocomplete="list"
+        aria-autocomplete={buscable ? 'list' : 'none'}
         aria-activedescendant={
           abierto && resaltadoVisible >= 0 ? `${idLista}-opcion-${resaltadoVisible}` : undefined
         }
@@ -312,6 +357,8 @@ export default function ComboBox({
         autoComplete="off"
         placeholder={marcador}
         value={textoInput}
+        readOnly={!buscable}
+        disabled={deshabilitado}
         onChange={(evento) => {
           if (!abierto) setAbierto(true);
           setBusqueda(evento.target.value);
@@ -325,8 +372,6 @@ export default function ComboBox({
           alSalir?.();
         }}
       />
-
-      <span className="cb-flecha" aria-hidden="true" />
 
       <ul className="cb-lista" id={idLista} role="listbox" ref={refLista} hidden={!abierto}>
         {visibles.map((opcion, indice) => (

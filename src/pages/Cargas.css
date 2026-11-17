@@ -24,13 +24,29 @@
   margin-bottom: 8px;
 }
 
+/* El camionero no tiene el filtro por estado: una columna menos, para que
+   "Limpiar filtros" no quede estirado en una columna de filtro. */
+.cg-filtros--camionero {
+  grid-template-columns: 1fr 1fr auto;
+}
+
 /* El botón alinea su base con la de los inputs de al lado. */
 .cg-limpiar {
   white-space: nowrap;
 }
 
+/* En anchos medios, de a dos por fila: con los tres filtros y el botón en
+   una sola fila, los selectores cortaban su texto ("Todos lo..."). */
+@media (max-width: 1060px) {
+  .cg-filtros,
+  .cg-filtros--camionero {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
 @media (max-width: 720px) {
-  .cg-filtros {
+  .cg-filtros,
+  .cg-filtros--camionero {
     grid-template-columns: 1fr;
   }
 
