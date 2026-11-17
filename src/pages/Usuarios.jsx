@@ -295,7 +295,7 @@ export default function Usuarios() {
         </div>
 
         {avisoExito && (
-          <div className="us-aviso-exito" role="status">
+          <div className="ds-aviso ds-aviso--exito" role="status">
             <IconoCheck width={20} height={20} />
             {avisoExito}
           </div>
@@ -321,7 +321,7 @@ export default function Usuarios() {
         )}
 
         {estadoPantalla === 'error' && (
-          <div className="us-aviso-error" role="alert">
+          <div className="ds-aviso ds-aviso--error" role="alert">
             <IconoAlerta width={22} height={22} />
             {mensajeError}
           </div>

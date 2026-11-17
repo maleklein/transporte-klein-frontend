@@ -260,7 +260,7 @@
 
 .pg-error {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   gap: 8px;
   margin: 22px 0 0;
   padding: 10px 14px;

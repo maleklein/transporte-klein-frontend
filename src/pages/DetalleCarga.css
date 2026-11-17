@@ -39,32 +39,29 @@
   font-size: var(--texto-base);
 }
 
-.dc-aviso-error {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 14px 16px;
-  border: 2px solid var(--color-peligro);
-  border-radius: var(--radio-chico);
-  background: var(--color-peligro-claro);
-  color: var(--color-peligro-oscuro);
-  font-weight: 600;
-}
-
+/* Los botones van siempre a la derecha del título, en todos los estados:
+   si la ruta es larga, se parte en renglones ella, no baja a los botones.
+   Recién en el celular los botones pasan debajo. */
 .dc-encabezado {
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
-  flex-wrap: wrap;
   gap: 16px;
   margin-bottom: 24px;
 }
 
 .dc-encabezado__identidad {
   display: flex;
+  flex: 1 1 auto;
   flex-direction: column;
   gap: 6px;
   min-width: 0;
+}
+
+@media (max-width: 640px) {
+  .dc-encabezado {
+    flex-wrap: wrap;
+  }
 }
 
 /* La ruta sube al encabezado: junto al tipo de carga es lo que identifica
@@ -82,80 +79,14 @@
   flex-shrink: 0;
 }
 
-/* Botón "Editar" (HU 2.2) y, cuando está deshabilitado (en_viaje, entregada o
-   cancelada), el motivo a la vista debajo. Misma estructura que
-   `.dc-accion-cancelar`, en su propia celda de la fila para no empujar al
-   botón vecino. */
-.dc-accion-editar {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: 6px;
-  max-width: 260px;
-}
-
-.dc-accion-editar__motivo {
-  margin: 0;
-  font-size: var(--texto-ayuda);
-  color: var(--color-texto-suave);
-}
-
-/* Botón "Cancelar carga" (HU 2.4) y, cuando está deshabilitado, el motivo a
-   la vista debajo. La columna evita que ese texto empuje al botón "Editar"
-   vecino, que queda en su propia celda de la fila. */
-.dc-accion-cancelar {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: 6px;
-  max-width: 260px;
-}
-
+/* Botón "Cancelar carga" (HU 2.4): rojo lleno, es destructivo. */
 .dc-boton-peligro {
   background: var(--color-peligro);
   color: #fff;
 }
 
 .dc-boton-peligro:hover:not(:disabled) {
-  background: var(--color-peligro-oscuro);
-}
-
-.dc-accion-cancelar__motivo {
-  margin: 0;
-  font-size: var(--texto-ayuda);
-  color: var(--color-texto-suave);
-}
-
-.dc-aviso-exito {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  margin-bottom: 20px;
-  padding: 14px 16px;
-  border: 2px solid var(--color-confirmar);
-  border-radius: var(--radio-chico);
-  background: var(--color-confirmar-claro);
-  color: var(--color-confirmar-oscuro);
-  font-weight: 600;
-}
-
-.dc-aviso-exito svg,
-.dc-aviso-advertencia svg {
-  flex-shrink: 0;
-}
-
-/* Retiro vencido: pide una acción al administrador, pero no es un error. */
-.dc-aviso-advertencia {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  margin-bottom: 20px;
-  padding: 14px 16px;
-  border: 2px solid var(--color-advertencia);
-  border-radius: var(--radio-chico);
-  background: var(--color-advertencia-claro);
-  color: var(--color-advertencia);
-  font-weight: 600;
+  background-image: linear-gradient(var(--aclarado-hover), var(--aclarado-hover));
 }
 
 /* Calle y número debajo de la localidad, en el dato de origen y destino. */
@@ -168,7 +99,7 @@
 
 .dc-titulo {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   gap: 12px;
   margin: 0;
   font-size: var(--texto-titulo);
@@ -230,7 +161,7 @@
 
 .dc-dato dt {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   gap: 6px;
   font-size: var(--texto-ayuda);
   font-weight: 700;
@@ -253,7 +184,7 @@
 
 .dc-descripcion__titulo {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   gap: 6px;
   margin: 0 0 6px;
   font-size: var(--texto-base);

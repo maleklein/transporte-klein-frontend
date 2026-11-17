@@ -279,7 +279,7 @@ export default function EditarCarga() {
         {estadoPantalla === 'cargando' && <p className="ec-mensaje">Cargando carga...</p>}
 
         {estadoPantalla === 'no-encontrada' && (
-          <div className="ac-aviso ac-aviso--error" role="alert">
+          <div className="ds-aviso ds-aviso--error" role="alert">
             <IconoAlerta width={22} height={22} />
             No encontramos la carga #{id}. Puede que se haya eliminado o que la dirección sea
             incorrecta.
@@ -287,7 +287,7 @@ export default function EditarCarga() {
         )}
 
         {estadoPantalla === 'error' && (
-          <div className="ac-aviso ac-aviso--error" role="alert">
+          <div className="ds-aviso ds-aviso--error" role="alert">
             <IconoAlerta width={22} height={22} />
             {mensajeError}
           </div>
@@ -295,7 +295,7 @@ export default function EditarCarga() {
 
         {estadoPantalla === 'ok' && mensajeBloqueo && (
           <div className="ec-bloqueo">
-            <div className="ac-aviso ac-aviso--error" role="alert">
+            <div className="ds-aviso ds-aviso--error" role="alert">
               <IconoAlerta width={22} height={22} />
               {mensajeBloqueo}
             </div>
@@ -315,14 +315,14 @@ export default function EditarCarga() {
           <form onSubmit={alEnviar} noValidate className="ac-formulario">
             <div className="ac-body">
               {mensajeExito && (
-                <div className="ac-aviso ac-aviso--exito" role="status">
+                <div className="ds-aviso ds-aviso--exito" role="status">
                   <IconoCheck />
                   {mensajeExito}
                 </div>
               )}
 
               {errorGeneral && (
-                <div className="ac-aviso ac-aviso--error" role="alert">
+                <div className="ds-aviso ds-aviso--error" role="alert">
                   <IconoAlerta width={22} height={22} />
                   {errorGeneral}
                 </div>
