@@ -1,11 +1,12 @@
 import { useEffect, useRef, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { crearUsuario, ErrorDeApi } from '../api/usuarios';
 import {
   IconoAlerta,
   IconoCamion,
   IconoCerrar,
   IconoCheck,
+  IconoFlechaAtras,
   IconoGuardar,
   IconoUsuarioMas,
 } from '../components/Iconos';
@@ -13,6 +14,7 @@ import BarraSuperior from '../components/BarraSuperior';
 import Campo from '../components/Campo';
 import ComboBox from '../components/ComboBox';
 import { evitarFoco } from '../utils/formulario';
+import { destinoVolver } from '../utils/volver';
 import { aplicarMayusculaInicial, validarNombreApellido } from '../utils/validarNombreApellido';
 import {
   validarCapacidadKg,
@@ -22,6 +24,7 @@ import {
   validarTipoVehiculo,
   validarUbicacion,
 } from '../utils/validarUsuario';
+import './DetalleCarga.css';
 import './AltaUsuario.css';
 
 /**
@@ -138,6 +141,10 @@ const CAMPOS_CON_MAYUSCULA = ['nombre', 'apellido'];
  */
 export default function AltaUsuario() {
   const navigate = useNavigate();
+  const location = useLocation();
+  // A dónde vuelve: a Gestión de Usuarios con la búsqueda y los filtros que
+  // tenía. Con la URL directa, al listado sin filtros.
+  const volver = destinoVolver(location, { ruta: '/usuarios', texto: 'Volver a Usuarios' });
 
   // Estado del formulario: valores cargados, campos ya tocados por el usuario,
   // errores devueltos por el backend, mensajes generales y de éxito, y si ya
@@ -190,7 +197,7 @@ export default function AltaUsuario() {
    *
    * @returns {void}
    */
-  const cancelar = () => navigate('/usuarios');
+  const cancelar = () => navigate(volver.ruta, { state: volver.estado ?? null });
 
   /**
    * Maneja el cambio en un campo del formulario: actualiza su valor y,
@@ -296,9 +303,14 @@ export default function AltaUsuario() {
 
   return (
     <>
-      <BarraSuperior />
+      <BarraSuperior volver={volver} />
 
       <main className="au-contenido">
+        <button type="button" className="dc-volver bs-volver-pantalla" onClick={cancelar}>
+          <IconoFlechaAtras width={20} height={20} />
+          {volver.texto}
+        </button>
+
         <h1 className="au-titulo">
           <IconoUsuarioMas width={26} height={26} />
           Nuevo Usuario

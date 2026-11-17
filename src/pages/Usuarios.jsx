@@ -226,7 +226,7 @@ export default function Usuarios() {
           <button
             type="button"
             className="ds-boton ds-boton--primario"
-            onClick={() => navigate('/usuarios/nuevo')}
+            onClick={() => navigate('/usuarios/nuevo', { state: volverAlListado })}
           >
             <IconoUsuarioMas />
             Nuevo Usuario
