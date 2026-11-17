@@ -5,7 +5,6 @@ import { ErrorDeApi } from '../api/usuarios';
 import {
   IconoAlerta,
   IconoCerrar,
-  IconoCheck,
   IconoEditar,
   IconoFlechaAtras,
   IconoGuardar,
@@ -79,7 +78,6 @@ export default function EditarCarga() {
   const [tocados, setTocados] = useState({});
   const [erroresBackend, setErroresBackend] = useState({});
   const [errorGeneral, setErrorGeneral] = useState('');
-  const [mensajeExito, setMensajeExito] = useState('');
   const [intentoEnviar, setIntentoEnviar] = useState(false);
   const [enviando, setEnviando] = useState(false);
 
@@ -168,8 +166,6 @@ export default function EditarCarga() {
    */
   const alCambiarCampos = (cambios) => {
     setValores((previos) => ({ ...previos, ...cambios }));
-    // Con un cambio nuevo, el "se actualizó" ya no describe lo que hay en pantalla.
-    setMensajeExito('');
 
     // Al corregir un campo, el error del backend deja de aplicar.
     setErroresBackend((previos) => {
@@ -206,7 +202,10 @@ export default function EditarCarga() {
 
   /**
    * Maneja el submit: valida, guarda los cambios con `PUT /cargas/:id` y, si
-   * sale bien, muestra el mensaje de éxito sin salir de la pantalla.
+   * sale bien, vuelve al detalle de la carga con el aviso de éxito arriba.
+   * Antes se quedaba en el formulario con el aviso, y parecía que no había
+   * pasado nada (corrección del profesor del 17/11, punto 7). Igual que el
+   * alta, que lleva al detalle de la carga nueva.
    * Un 409 (la carga pasó a un estado que ya no admite edición mientras se
    * completaba el formulario) bloquea el formulario en vez de dejar reintentar.
    *
@@ -229,21 +228,23 @@ export default function EditarCarga() {
     try {
       const cargaActualizada = await editarCarga(id, armarPayload(valores));
 
-      // El formulario pasa a mostrar lo que quedó guardado (el backend limpia
-      // espacios y pone en mayúscula el tipo de carga).
-      setValores(valoresDesdeCarga(cargaActualizada));
-      setFechaOriginal(cargaActualizada.fecha ?? '');
-      setTocados({});
-      setIntentoEnviar(false);
-      // Si cambió la ruta y el servicio de mapas no respondió (HU 9), se avisa
-      // acá: el detalle tiene el botón Reintentar.
-      setMensajeExito(
-        `La carga ${cargaActualizada.origen} → ${cargaActualizada.destino} se actualizó correctamente.` +
-          (cargaActualizada.estado_calculo_km === 'pendiente'
-            ? ' La distancia quedó pendiente: podés reintentar el cálculo desde el detalle.'
-            : ''),
-      );
-      setEnviando(false);
+      // `replace`: el formulario sale del historial, así "atrás" desde el
+      // detalle no vuelve a un formulario ya guardado. El state con el que se
+      // abrió la edición se le devuelve al detalle, para que su botón de volver
+      // siga llevando al mismo lugar.
+      navigate(`/cargas/${id}`, {
+        replace: true,
+        state: {
+          ...location.state,
+          // Si cambió la ruta y el servicio de mapas no respondió (HU 9), se
+          // avisa: el detalle tiene el botón Reintentar.
+          avisoExito:
+            `La carga ${cargaActualizada.origen} → ${cargaActualizada.destino} se actualizó correctamente.` +
+            (cargaActualizada.estado_calculo_km === 'pendiente'
+              ? ' La distancia quedó pendiente: podés reintentar el cálculo desde acá.'
+              : ''),
+        },
+      });
     } catch (error) {
       if (error instanceof ErrorDeValidacion) {
         // El backend devuelve los errores ya agrupados por campo.
@@ -314,13 +315,6 @@ export default function EditarCarga() {
         {estadoPantalla === 'ok' && valores && !mensajeBloqueo && (
           <form onSubmit={alEnviar} noValidate className="ac-formulario">
             <div className="ac-body">
-              {mensajeExito && (
-                <div className="ds-aviso ds-aviso--exito" role="status">
-                  <IconoCheck />
-                  {mensajeExito}
-                </div>
-              )}
-
               {errorGeneral && (
                 <div className="ds-aviso ds-aviso--error" role="alert">
                   <IconoAlerta width={22} height={22} />
@@ -411,20 +405,19 @@ export default function EditarCarga() {
             <div className="ac-footer">
               <button
                 type="button"
-                className={`ds-boton ${mensajeExito ? 'ds-boton--secundario' : 'ds-boton--cancelar'}`}
+                className="ds-boton ds-boton--cancelar"
                 onClick={cancelar}
                 onMouseDown={evitarFoco}
                 disabled={enviando}
               >
-                {/* Recién guardado no hay nada que cancelar: el botón lleva a la carga. */}
-                {mensajeExito ? <IconoFlechaAtras /> : <IconoCerrar />}
-                {mensajeExito ? 'Volver al detalle' : 'Cancelar'}
+                <IconoCerrar />
+                Cancelar
               </button>
               <button
                 type="submit"
                 className="ds-boton ds-boton--confirmar"
                 onMouseDown={evitarFoco}
-                disabled={enviando || Boolean(mensajeExito)}
+                disabled={enviando}
               >
                 <IconoGuardar />
                 {enviando ? 'Guardando...' : 'Guardar Cambios'}

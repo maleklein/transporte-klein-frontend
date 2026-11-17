@@ -98,7 +98,7 @@ export default function DetalleCarga() {
 
   const [carga, setCarga] = useState(null);
 
-  // Mensaje que deja el alta al traer acá la carga recién creada. Se guarda
+  // Mensaje que deja el alta (o la edición) al traer acá la carga. Se guarda
   // al entrar y se saca del historial: si no, volvería a aparecer con F5.
   const [avisoExito] = useState(location.state?.avisoExito ?? '');
   useEffect(() => {
