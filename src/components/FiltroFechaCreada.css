@@ -107,6 +107,26 @@
   color: var(--color-texto);
 }
 
+/* El calendario ocupa todo el ancho de su columna, con los días repartidos:
+   sin esto quedaba con su ancho fijo y el panel mostraba espacio vacío a los
+   costados (sobre todo en el celular). */
+.ffc-calendario .rdp-root,
+.ffc-calendario .rdp-months,
+.ffc-calendario .rdp-month,
+.ffc-calendario .rdp-month_grid {
+  width: 100%;
+  max-width: none;
+}
+
+.ffc-calendario .rdp-day,
+.ffc-calendario .rdp-weekday {
+  width: auto;
+}
+
+.ffc-calendario .rdp-day_button {
+  margin: 0 auto;
+}
+
 .ffc-calendario .rdp-caption_label {
   font-size: var(--texto-base);
   font-weight: 700;
@@ -160,11 +180,11 @@
 /* Celular: el panel ocupa el ancho del filtro, con los accesos como botones
    arriba del calendario. */
 @media (max-width: 720px) {
-  /* Un poco más ancho que el campo (hasta el borde de la caja de filtros),
-     para que entren las siete columnas del calendario. */
+  /* Del ancho del campo; el calendario se estira hasta los bordes. */
   .ffc-panel {
-    left: -12px;
-    right: -12px;
+    left: 0;
+    right: 0;
+    padding: 10px;
     flex-direction: column;
     gap: 12px;
     width: auto;
@@ -183,20 +203,20 @@
 
   .ffc-calendario .rdp-root {
     --rdp-day-height: 38px;
-    --rdp-day-width: 38px;
     --rdp-day_button-height: 36px;
-    --rdp-day_button-width: 36px;
+    --rdp-day_button-width: 34px;
   }
 
   .ffc-acceso {
-    padding: 8px 4px;
+    padding: 8px 2px;
+    white-space: nowrap;
+    letter-spacing: -0.01em;
     border: 2px solid var(--color-borde-suave);
     text-align: center;
     font-size: var(--texto-ayuda);
   }
 
   .ffc-calendario {
-    align-items: center;
     padding-left: 0;
   }
 
