@@ -1,13 +1,14 @@
 import { useEffect, useRef, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { crearCarga, ErrorDeValidacion } from '../api/cargas';
 import { ErrorDeApi } from '../api/usuarios';
-import { IconoAlerta, IconoCajaMas, IconoCerrar, IconoGuardar } from '../components/Iconos';
+import { IconoAlerta, IconoCajaMas, IconoCerrar, IconoFlechaAtras, IconoGuardar } from '../components/Iconos';
 import BarraSuperior from '../components/BarraSuperior';
 import Campo from '../components/Campo';
 import SelectorUbicacion from '../components/SelectorUbicacion';
 import { evitarFoco } from '../utils/formulario';
 import { formatearKm } from '../utils/carga';
+import { destinoVolver, volverA } from '../utils/volver';
 import {
   VALORES_INICIALES,
   LARGOS_MAXIMOS,
@@ -15,6 +16,7 @@ import {
   armarPayload,
   hoyEnArgentina,
 } from '../utils/validarCarga';
+import './DetalleCarga.css';
 import './AltaCarga.css';
 
 /**
@@ -29,6 +31,10 @@ import './AltaCarga.css';
  */
 export default function AltaCarga() {
   const navigate = useNavigate();
+  const location = useLocation();
+  // A dónde vuelve: a Gestión de Cargas (con los filtros que tenía) o al
+  // inicio, según desde dónde se entró. Con la URL directa, a Cargas.
+  const volver = destinoVolver(location, { ruta: '/cargas', texto: 'Volver a Cargas' });
 
   // Estado del formulario: valores cargados, campos ya tocados por el usuario,
   // errores devueltos por el backend, el mensaje general, y si ya se intentó
@@ -67,11 +73,13 @@ export default function AltaCarga() {
   }, []);
 
   /**
-   * Cancela el alta y vuelve a la pantalla anterior, sin registrar nada.
+   * Cancela el alta y vuelve a la pantalla desde la que se entró (Gestión de
+   * Cargas con sus filtros, o el inicio), sin registrar nada. Es el mismo
+   * destino que el botón "Volver a …" de arriba.
    *
    * @returns {void}
    */
-  const cancelar = () => navigate(-1);
+  const cancelar = () => navigate(volver.ruta, { state: volver.estado ?? null });
 
   /**
    * Crea el manejador `onChange` de un campo del formulario.
@@ -155,6 +163,8 @@ export default function AltaCarga() {
       navigate(`/cargas/${cargaCreada.id_carga}`, {
         replace: true,
         state: {
+          // El "Volver" del detalle lleva a donde se había entrado al alta.
+          ...volverA(volver.ruta, volver.texto, volver.estado ?? null),
           avisoExito: `La carga ${cargaCreada.origen} → ${cargaCreada.destino} se registró correctamente y quedó disponible.${distancia}`,
         },
       });
@@ -179,9 +189,14 @@ export default function AltaCarga() {
 
   return (
     <>
-      <BarraSuperior />
+      <BarraSuperior volver={volver} />
 
       <main className="ac-contenido">
+        <button type="button" className="dc-volver bs-volver-pantalla" onClick={cancelar}>
+          <IconoFlechaAtras width={20} height={20} />
+          {volver.texto}
+        </button>
+
         <h1 className="ac-titulo">
           <IconoCajaMas width={26} height={26} />
           Nueva Carga

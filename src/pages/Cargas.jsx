@@ -11,6 +11,7 @@ import {
   IconoCajaMas,
   IconoCalendario,
   IconoCerrar,
+  IconoFlechaAtras,
   IconoOjo,
   IconoPeso,
   IconoRuta,
@@ -27,7 +28,8 @@ import {
   retiroVencido,
 } from '../utils/carga';
 import { ESTADOS, etiquetaEstado } from '../utils/estadosCarga';
-import { volverA } from '../utils/volver';
+import { destinoVolver, volverA } from '../utils/volver';
+import './DetalleCarga.css';
 import './Cargas.css';
 
 /**
@@ -74,8 +76,13 @@ export default function Cargas() {
    * @returns {void}
    */
   const cambiarEstadoFiltro = (estado) => {
-    setParametrosUrl(estado ? { estado } : {}, { replace: true });
+    // Con el `state`, cambiar el filtro no borra a dónde vuelve la pantalla.
+    setParametrosUrl(estado ? { estado } : {}, { replace: true, state: location.state });
   };
+
+  // Si se llegó desde otra pantalla (Notificaciones, el inicio), el botón de
+  // volver lleva ahí; desde la barra superior no hay botón.
+  const destino = destinoVolver(location, null);
 
   const [cargas, setCargas] = useState([]);
   // 'cargando' | 'ok' | 'error'
@@ -280,9 +287,20 @@ export default function Cargas() {
 
   return (
     <>
-      <BarraSuperior />
+      <BarraSuperior volver={destino} />
 
       <main className="us-contenido">
+        {destino && (
+          <button
+            type="button"
+            className="dc-volver bs-volver-pantalla"
+            onClick={() => navigate(destino.ruta, { state: destino.estado ?? null })}
+          >
+            <IconoFlechaAtras width={20} height={20} />
+            {destino.texto}
+          </button>
+        )}
+
         <div className="us-encabezado">
           <h1 className="ds-titulo-pagina">
             <IconoCaja width={26} height={26} />
@@ -297,7 +315,11 @@ export default function Cargas() {
             <button
               type="button"
               className="ds-boton ds-boton--primario"
-              onClick={() => navigate('/cargas/nueva')}
+              onClick={() =>
+                navigate('/cargas/nueva', {
+                  state: volverA(location.pathname + location.search, 'Volver a Cargas', location.state),
+                })
+              }
             >
               <IconoCajaMas />
               Nueva Carga

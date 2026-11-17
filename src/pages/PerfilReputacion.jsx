@@ -23,10 +23,10 @@ export default function PerfilReputacion() {
   // (un administrador mirando a un camionero) sigue siendo "Perfil del usuario".
   const esPropio = String(usuarioActual()?.id) === String(id);
   return <>
-    <BarraSuperior />
+    <BarraSuperior volver={volver} />
     <main className="dc-contenido">
       {volver && (
-        <Link className="dc-volver" to={volver.ruta} state={volver.estado}>
+        <Link className="dc-volver bs-volver-pantalla" to={volver.ruta} state={volver.estado}>
           <IconoFlechaAtras />
           {volver.texto}
         </Link>

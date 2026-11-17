@@ -64,9 +64,17 @@
   transition: border-color 0.12s ease, box-shadow 0.12s ease;
 }
 
-.pcm-tarjeta:hover {
+.pcm-tarjeta:active {
   border-color: var(--color-primario);
   box-shadow: 0 4px 14px rgba(31, 78, 121, 0.12);
+}
+
+/* Sólo con mouse: en el celular el hover queda pegado después de tocar. */
+@media (hover: hover) {
+  .pcm-tarjeta:hover {
+    border-color: var(--color-primario);
+    box-shadow: 0 4px 14px rgba(31, 78, 121, 0.12);
+  }
 }
 
 .pcm-tarjeta:focus-visible {
@@ -190,8 +198,14 @@
   text-decoration: none;
 }
 
-.pcm-viaje:hover {
+.pcm-viaje:active {
   border-color: var(--color-primario);
+}
+
+@media (hover: hover) {
+  .pcm-viaje:hover {
+    border-color: var(--color-primario);
+  }
 }
 
 .pcm-viaje:focus-visible {

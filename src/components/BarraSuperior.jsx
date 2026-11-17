@@ -4,10 +4,10 @@ import {
   IconoAjustes,
   IconoAlerta,
   IconoCaja,
-  IconoCajaMas,
   IconoCamion,
   IconoCerrar,
   IconoCerrarSesion,
+  IconoChevronIzquierda,
   IconoGrafico,
   IconoInicio,
   IconoMenu,
@@ -21,9 +21,11 @@ import './BarraSuperior.css';
  * Accesos de la navegación por rol (HU 15). `activo` decide cuándo ese acceso
  * es la sección actual, para resaltarlo.
  *
- * El de Cargas cubre el listado y el detalle (`/cargas`, `/cargas/:id`,
- * `/cargas/:id/editar`), pero no `/cargas/nueva`: esa tiene su propio acceso
- * ("Nueva carga") y no tendría sentido resaltar los dos a la vez.
+ * El de Cargas cubre todo lo que está debajo de `/cargas`: el listado, el
+ * detalle, la edición y el alta. "Nueva carga" no va en la barra: es una
+ * acción de Gestión de Cargas (su botón) y del panel de inicio, igual que
+ * "Nuevo Usuario" está sólo en Gestión de Usuarios. Así la barra tiene sólo
+ * secciones, y en el celular el menú es más corto.
  */
 const ACCESOS_ADMINISTRADOR = [
   {
@@ -42,13 +44,7 @@ const ACCESOS_ADMINISTRADOR = [
     to: '/cargas',
     texto: 'Cargas',
     Icono: IconoCaja,
-    activo: (ruta) => ruta === '/cargas' || (ruta.startsWith('/cargas/') && ruta !== '/cargas/nueva'),
-  },
-  {
-    to: '/cargas/nueva',
-    texto: 'Nueva carga',
-    Icono: IconoCajaMas,
-    activo: (ruta) => ruta === '/cargas/nueva',
+    activo: (ruta) => ruta === '/cargas' || ruta.startsWith('/cargas/'),
   },
   {
     to: '/metricas',
@@ -102,13 +98,20 @@ const ACCESOS_CAMIONERO = [
  * Los estilos base de la barra (`.us-navbar`) siguen en `pages/Usuarios.css`,
  * donde nacieron.
  *
+ * En las pantallas que tienen "Volver a …" (el detalle de una carga, por
+ * ejemplo), en el celular el botón de menú pasa a ser una flecha ‹ que hace
+ * lo mismo, y el "Volver a …" de la pantalla se esconde: es lo que se espera
+ * de una pantalla de detalle en el celular, y ahorra un renglón.
+ *
  * También muestra, debajo de la barra, el aviso de "sin permiso" que deja
  * `RutaProtegida` cuando redirige a un usuario que abrió una pantalla de otro
  * rol (HU 15).
  *
+ * @param {object} [props]
+ * @param {{ ruta: string, texto: string, estado?: object|null } | null} [props.volver] - a dónde vuelve la pantalla, el mismo de su botón "Volver a …" (ver `utils/volver`). Si viene, en el celular reemplaza al menú.
  * @returns {JSX.Element}
  */
-export default function BarraSuperior() {
+export default function BarraSuperior({ volver = null } = {}) {
   const location = useLocation();
   const navigate = useNavigate();
   const usuario = usuarioActual();
@@ -187,8 +190,19 @@ export default function BarraSuperior() {
           </button>
         )}
 
-        {/* Sólo en el celular: el ícono de menú, a la izquierda (lo ubica el CSS). */}
-        {usuario && (
+        {/* Sólo en el celular, a la izquierda (lo ubica el CSS): la flecha para
+            volver, si la pantalla tiene a dónde volver; si no, el menú. */}
+        {usuario && volver && (
+          <button
+            type="button"
+            className="bs-enlace bs-solo-celular bs-menu-boton"
+            aria-label={volver.texto}
+            onClick={() => navigate(volver.ruta, { state: volver.estado ?? null })}
+          >
+            <IconoChevronIzquierda width={26} height={26} />
+          </button>
+        )}
+        {usuario && !volver && (
           <button
             type="button"
             className="bs-enlace bs-solo-celular bs-menu-boton"
@@ -203,7 +217,7 @@ export default function BarraSuperior() {
       </nav>
 
       {/* Celular: los accesos se despliegan debajo de la barra. */}
-      {usuario && (
+      {usuario && !volver && (
         <div className="bs-menu bs-solo-celular" id="bs-menu" hidden={!menuAbierto}>
           {enlaces()}
           <Link

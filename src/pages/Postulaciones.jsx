@@ -88,13 +88,13 @@ export default function Postulaciones() {
 
   return (
     <>
-      <BarraSuperior />
+      <BarraSuperior volver={volver} />
 
       <main className="pos-contenido">
         {volver && (
           <button
             type="button"
-            className="dc-volver"
+            className="dc-volver bs-volver-pantalla"
             onClick={() => navigate(volver.ruta, { state: volver.estado })}
           >
             <IconoFlechaAtras width={20} height={20} />

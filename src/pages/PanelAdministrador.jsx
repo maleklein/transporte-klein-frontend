@@ -18,7 +18,7 @@ import { listarCargas } from '../api/cargas';
 import { obtenerMetricas } from '../api/metricas';
 import { listarNotificaciones } from '../api/notificaciones';
 import { ErrorDeApi } from '../api/usuarios';
-import { formatearFecha } from '../utils/carga';
+import { formatearFecha, rutaPendientesAsignacion } from '../utils/carga';
 import { ESTADOS } from '../utils/estadosCarga';
 import { desdeInicio } from '../utils/volver';
 // Las tarjetas de resumen (`pcm-tarjeta`) son las del panel del camionero
@@ -219,13 +219,13 @@ export default function PanelAdministrador() {
 
         <section className="pcm-tarjetas pa-tarjetas" aria-label="Requiere tu atención">
           <TarjetaResumen
-            to={`/cargas?estado=${ESTADOS.PENDIENTE}`}
+            to={rutaPendientesAsignacion(pendientes.valor ?? [])}
             Icono={IconoEtiqueta}
             titulo="Pendientes de asignación"
             dato={pendientes}
             cantidad={cantidadPendientes}
             detalle="Cargas con camioneros postulados, esperando que elijas a uno."
-            accion="Ver pendientes"
+            accion={cantidadPendientes === 1 ? 'Ver la carga' : 'Ver pendientes'}
             destacada={cantidadPendientes > 0}
           />
           <TarjetaResumen

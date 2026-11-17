@@ -119,9 +119,17 @@
   transition: border-color 0.12s ease, box-shadow 0.12s ease;
 }
 
-.pa-acceso:hover {
+.pa-acceso:active {
   border-color: var(--color-primario);
   box-shadow: 0 4px 14px rgba(31, 78, 121, 0.12);
+}
+
+/* Sólo con mouse: en el celular el hover queda pegado después de tocar. */
+@media (hover: hover) {
+  .pa-acceso:hover {
+    border-color: var(--color-primario);
+    box-shadow: 0 4px 14px rgba(31, 78, 121, 0.12);
+  }
 }
 
 .pa-acceso:focus-visible {

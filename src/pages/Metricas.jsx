@@ -47,6 +47,16 @@ const COLOR_POR_SUFIJO = {
 const CURSOR_GRAFICO = { fill: '#E8EFF6' };
 
 /**
+ * Margen de los dos gráficos: el mismo en los dos, para que sus ejes Y queden
+ * alineados uno debajo del otro. En angosto deja lugar a la izquierda para el
+ * primer nombre inclinado de "Cargas por estado" ("Disponible").
+ *
+ * @param {boolean} angosto
+ * @returns {{ top: number, right: number, left: number, bottom: number }}
+ */
+const MARGEN_GRAFICO = (angosto) => ({ top: 8, right: 8, left: angosto ? 28 : 0, bottom: 8 });
+
+/**
  * Capa de la cuadrícula: entre la franja del mouse (200) y las barras (300).
  * Por defecto va debajo de todo (-100) y la franja la tapaba; así las líneas
  * punteadas se siguen viendo sobre el celeste.
@@ -348,8 +358,11 @@ export default function Metricas() {
               <section className="mt-grafico-card">
                 <h2 className="mt-grafico-card__titulo">Cargas por estado</h2>
                 <ResponsiveContainer width="100%" height={280}>
-                  <BarChart data={datosPorEstado} margin={{ top: 8, right: 8, left: 0, bottom: 8 }}>
+                  <BarChart data={datosPorEstado} margin={MARGEN_GRAFICO(angosto)}>
                     <CartesianGrid strokeDasharray="3 3" stroke="#D5DBE3" zIndex={CAPA_CUADRICULA} />
+                    {/* El eje Y ocupa sólo lo que necesitan sus números (`width="auto"`):
+                        con el ancho fijo de Recharts (60 px) quedaba un espacio en
+                        blanco a la izquierda que en el celular achicaba el gráfico. */}
                     {/* En angosto, los nombres van inclinados: derechos no entraban
                         y el gráfico escondía la mitad (Disponible, Aceptada...). */}
                     <XAxis
@@ -358,7 +371,7 @@ export default function Metricas() {
                       tick={{ fontSize: 13, fill: '#4A5568' }}
                       {...(angosto ? { angle: -35, textAnchor: 'end', height: 70 } : {})}
                     />
-                    <YAxis allowDecimals={false} tick={{ fontSize: 13, fill: '#4A5568' }} />
+                    <YAxis width="auto" allowDecimals={false} tick={{ fontSize: 13, fill: '#4A5568' }} />
                     <Tooltip cursor={CURSOR_GRAFICO} formatter={(valor) => [valor, 'Cargas']} />
                     <Bar dataKey="cantidad" radius={[6, 6, 0, 0]}>
                       {datosPorEstado.map((fila) => (
@@ -376,10 +389,10 @@ export default function Metricas() {
                     de un gráfico con todas las barras en cero. */}
                 {datosPorSemana.some((fila) => fila.cantidad > 0) ? (
                   <ResponsiveContainer width="100%" height={280}>
-                    <BarChart data={datosPorSemana} margin={{ top: 8, right: 8, left: 0, bottom: 8 }}>
+                    <BarChart data={datosPorSemana} margin={MARGEN_GRAFICO(angosto)}>
                       <CartesianGrid strokeDasharray="3 3" stroke="#D5DBE3" zIndex={CAPA_CUADRICULA} />
                       <XAxis dataKey="etiquetaCorta" tick={{ fontSize: 13, fill: '#4A5568' }} />
-                      <YAxis allowDecimals={false} tick={{ fontSize: 13, fill: '#4A5568' }} />
+                      <YAxis width="auto" allowDecimals={false} tick={{ fontSize: 13, fill: '#4A5568' }} />
                       <Tooltip
                         cursor={CURSOR_GRAFICO}
                         labelFormatter={(_, payload) =>

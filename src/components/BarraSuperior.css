@@ -158,6 +158,11 @@
     font-size: 0;
   }
 
+  /* El "Volver a …" de la pantalla: en el celular lo hace la flecha ‹ de la barra. */
+  .bs-volver-pantalla {
+    display: none !important;
+  }
+
   /* Los accesos, uno debajo del otro, debajo de la barra. */
   .bs-menu {
     display: flex;
