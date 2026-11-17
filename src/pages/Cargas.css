@@ -119,9 +119,11 @@
   color: var(--color-texto);
 }
 
+/* Excepción a "ícono en el primer renglón": en la ruta, el ícono y la flecha
+   quedan centrados con el texto aunque ocupe varios renglones. */
 .cg-card__ruta {
   display: flex;
-  align-items: flex-start;
+  align-items: center;
   gap: 8px;
   margin: 0;
   padding: 8px 10px;

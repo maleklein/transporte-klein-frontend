@@ -114,7 +114,7 @@ body {
 :is(
   .ds-titulo-pagina, .ds-campo__error, .ds-aviso,
   .ac-titulo, .au-titulo, .au-bloque-camionero__titulo,
-  .bs-aviso-acceso, .cg-card__ruta,
+  .bs-aviso-acceso,
   .dc-titulo, .dc-descripcion__titulo, .dc-dato dt,
   .mc-caja__error, .mt-titulo, .mt-error-validacion, .nt-titulo,
   .pc-estado, .pcm-tarjeta__titulo, .pcm-tarjeta__error, .pcm-viaje__fecha,
