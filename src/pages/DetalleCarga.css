@@ -51,20 +51,29 @@
   font-weight: 600;
 }
 
+/* Los botones van siempre a la derecha del título, en todos los estados:
+   si la ruta es larga, se parte en renglones ella, no baja a los botones.
+   Recién en el celular los botones pasan debajo. */
 .dc-encabezado {
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
-  flex-wrap: wrap;
   gap: 16px;
   margin-bottom: 24px;
 }
 
 .dc-encabezado__identidad {
   display: flex;
+  flex: 1 1 auto;
   flex-direction: column;
   gap: 6px;
   min-width: 0;
+}
+
+@media (max-width: 640px) {
+  .dc-encabezado {
+    flex-wrap: wrap;
+  }
 }
 
 /* La ruta sube al encabezado: junto al tipo de carga es lo que identifica
@@ -82,35 +91,7 @@
   flex-shrink: 0;
 }
 
-/* Botón "Editar" (HU 2.2) y, cuando está deshabilitado (en_viaje, entregada o
-   cancelada), el motivo a la vista debajo. Misma estructura que
-   `.dc-accion-cancelar`, en su propia celda de la fila para no empujar al
-   botón vecino. */
-.dc-accion-editar {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: 6px;
-  max-width: 260px;
-}
-
-.dc-accion-editar__motivo {
-  margin: 0;
-  font-size: var(--texto-ayuda);
-  color: var(--color-texto-suave);
-}
-
-/* Botón "Cancelar carga" (HU 2.4) y, cuando está deshabilitado, el motivo a
-   la vista debajo. La columna evita que ese texto empuje al botón "Editar"
-   vecino, que queda en su propia celda de la fila. */
-.dc-accion-cancelar {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: 6px;
-  max-width: 260px;
-}
-
+/* Botón "Cancelar carga" (HU 2.4): rojo lleno, es destructivo. */
 .dc-boton-peligro {
   background: var(--color-peligro);
   color: #fff;
@@ -120,10 +101,25 @@
   background: var(--color-peligro-oscuro);
 }
 
-.dc-accion-cancelar__motivo {
-  margin: 0;
-  font-size: var(--texto-ayuda);
-  color: var(--color-texto-suave);
+/* Por qué "Editar" o "Cancelar carga" están deshabilitados y cómo
+   destrabarlos. Va debajo del encabezado, con todo el ancho, en vez de un
+   texto angosto debajo de cada botón: así los botones quedan siempre en el
+   mismo lugar. Azul porque informa; no pide nada urgente como el amarillo. */
+.dc-aviso-info {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  margin: 0 0 20px;
+  padding: 14px 16px;
+  border: 2px solid var(--color-primario);
+  border-radius: var(--radio-chico);
+  background: var(--color-primario-claro);
+  color: var(--color-primario-oscuro);
+}
+
+.dc-aviso-info svg {
+  flex-shrink: 0;
+  margin-top: 2px;
 }
 
 .dc-aviso-exito {

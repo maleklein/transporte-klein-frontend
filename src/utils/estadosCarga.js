@@ -213,27 +213,30 @@ export const ESTADOS_BLOQUEADOS_CANCELACION = Object.freeze([
 ]);
 
 /**
- * Explica por qué una carga no se puede cancelar en su estado actual. Mismo
- * texto que devuelve el backend en el 409 de `PATCH /cargas/:id/cancelar`,
- * para que el motivo sea igual tanto si se ve de entrada (botón
- * deshabilitado) como si el estado cambió mientras la pantalla estaba abierta
- * (409 reactivo).
+ * Explica, en un solo texto, por qué los botones "Editar" y "Cancelar carga"
+ * del detalle están deshabilitados en el estado actual, y cómo destrabarlos.
+ *
+ * Antes cada botón tenía su motivo debajo, en una columna angosta: dos textos
+ * de cuatro renglones que decían casi lo mismo y empujaban los botones debajo
+ * del título (corrección del profesor del 17/11, punto 2). Ahora los botones
+ * quedan siempre en el mismo lugar y el motivo va en un recuadro con todo el
+ * ancho. La salida nombra el botón que la hace en "Progreso de la carga".
  *
  * @param {string} estadoActual - estado en el que está la carga.
- * @returns {string} el motivo, o cadena vacía si en ese estado sí se puede cancelar.
+ * @returns {string} el motivo, o cadena vacía si los dos botones se pueden usar.
  */
-export function motivoCancelacionBloqueada(estadoActual) {
+export function motivoAccionesBloqueadas(estadoActual) {
   if (estadoActual === ESTADOS.ACEPTADA) {
-    return 'La carga ya tiene un camionero asignado: para cancelarla, primero volvela a pendiente.';
+    return 'La carga ya tiene un camionero asignado, así que no se puede cancelar. Para cancelarla, primero tocá "Volver a pendiente" en "Progreso de la carga".';
   }
   if (estadoActual === ESTADOS.EN_VIAJE) {
-    return 'La carga ya está en viaje: no se puede cancelar, sólo registrar su entrega.';
+    return 'La carga está en viaje, así que no se puede editar ni cancelar. Si necesitás corregir sus datos, tocá "Volver a aceptada" en "Progreso de la carga".';
   }
   if (estadoActual === ESTADOS.ENTREGADA) {
-    return 'La carga ya fue entregada: no se puede cancelar un hecho que ya ocurrió.';
+    return 'La carga ya fue entregada, así que no se puede editar ni cancelar: sus datos quedan como registro de lo que pasó. Si necesitás corregir algo, tocá "Volver a en viaje" en "Progreso de la carga".';
   }
   if (estadoActual === ESTADOS.CANCELADA) {
-    return 'La carga ya está cancelada.';
+    return 'La carga está cancelada: no se puede editar ni volver a activar.';
   }
   return '';
 }
