@@ -173,7 +173,7 @@
 
 .us-aviso-exito {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   gap: 10px;
   margin-bottom: 20px;
   padding: 14px 16px;

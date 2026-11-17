@@ -84,7 +84,7 @@
 
 .pcm-tarjeta__titulo {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   gap: 8px;
   font-size: var(--texto-ayuda);
   font-weight: 700;
@@ -112,7 +112,7 @@
 
 .pcm-tarjeta__error {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   gap: 6px;
   margin: 8px 0;
   color: var(--color-peligro-oscuro);
@@ -220,7 +220,7 @@
 
 .pcm-viaje__fecha {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   gap: 6px;
   font-size: var(--texto-ayuda);
   color: var(--color-texto-suave);

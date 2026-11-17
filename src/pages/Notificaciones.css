@@ -42,7 +42,7 @@
 
 .nt-titulo {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   gap: 12px;
   margin: 0;
   font-size: var(--texto-titulo);
@@ -93,7 +93,7 @@
 
 .nt-aviso-error {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   gap: 10px;
   margin-bottom: 16px;
   padding: 14px 16px;
