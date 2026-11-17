@@ -174,7 +174,7 @@ function marcasPorEstado(eventos) {
  * @param {object} props
  * @param {string} props.estado - `estado_actual` de la carga.
  * @param {object[]} [props.eventos] - historial de cambios, más viejos primero, para las marcas de tiempo.
- * @param {function} [props.alCambiarEstado] - aplica la transición contra el backend; recibe el estado destino y puede lanzar `ErrorDeApi`. Sin esta prop el recorrido se muestra en modo lectura.
+ * @param {function} [props.alCambiarEstado] - aplica la transición contra el backend; recibe el estado destino y devuelve la carga como quedó (con eso se arma el aviso); puede lanzar `ErrorDeApi`. Sin esta prop el recorrido se muestra en modo lectura.
  * @param {function} [props.alAsignar] - abre la asignación de un camionero (HU 6). Es lo que hace el botón de avanzar desde "pendiente"; sin esta prop, ese botón no aparece.
  * @returns {JSX.Element}
  */
@@ -278,12 +278,19 @@ export default function ProgresoCarga({ estado, eventos = [], alCambiarEstado, a
     setConfirmando(null);
 
     try {
-      await alCambiarEstado(estadoNuevo);
+      const actualizada = await alCambiarEstado(estadoNuevo);
+      // El backend puede dejarla en otro estado: una carga aceptada sin
+      // ninguna postulación (de antes de la asignación) no vuelve a
+      // pendiente sino a disponible. El aviso dice dónde quedó de verdad.
+      const estadoFinal = actualizada?.estado_actual ?? estadoNuevo;
+      const texto = estadoFinal === estadoNuevo
+        ? textoAviso
+        : `La carga volvió a ${etiquetaEstado(estadoFinal).toLowerCase()}: no tenía camioneros postulados`;
       // Sólo se ofrece "Deshacer" cuando la transición inversa existe de
       // verdad. Si no, el botón prometería algo que el backend iba a rechazar.
       const volverA =
-        permitirDeshacer && puedeTransicionar(estadoNuevo, estadoPrevio) ? estadoPrevio : null;
-      setAviso({ texto: textoAviso, volverA });
+        permitirDeshacer && puedeTransicionar(estadoFinal, estadoPrevio) ? estadoPrevio : null;
+      setAviso({ texto, volverA });
       programarCierre(volverA ? DURACION_CON_DESHACER : DURACION_SIMPLE);
       refFoco.current = foco;
     } catch (fallo) {
