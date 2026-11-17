@@ -4,7 +4,6 @@ import {
   IconoAjustes,
   IconoAlerta,
   IconoCaja,
-  IconoCajaMas,
   IconoCamion,
   IconoCerrar,
   IconoCerrarSesion,
@@ -22,9 +21,11 @@ import './BarraSuperior.css';
  * Accesos de la navegación por rol (HU 15). `activo` decide cuándo ese acceso
  * es la sección actual, para resaltarlo.
  *
- * El de Cargas cubre el listado y el detalle (`/cargas`, `/cargas/:id`,
- * `/cargas/:id/editar`), pero no `/cargas/nueva`: esa tiene su propio acceso
- * ("Nueva carga") y no tendría sentido resaltar los dos a la vez.
+ * El de Cargas cubre todo lo que está debajo de `/cargas`: el listado, el
+ * detalle, la edición y el alta. "Nueva carga" no va en la barra: es una
+ * acción de Gestión de Cargas (su botón) y del panel de inicio, igual que
+ * "Nuevo Usuario" está sólo en Gestión de Usuarios. Así la barra tiene sólo
+ * secciones, y en el celular el menú es más corto.
  */
 const ACCESOS_ADMINISTRADOR = [
   {
@@ -43,13 +44,7 @@ const ACCESOS_ADMINISTRADOR = [
     to: '/cargas',
     texto: 'Cargas',
     Icono: IconoCaja,
-    activo: (ruta) => ruta === '/cargas' || (ruta.startsWith('/cargas/') && ruta !== '/cargas/nueva'),
-  },
-  {
-    to: '/cargas/nueva',
-    texto: 'Nueva carga',
-    Icono: IconoCajaMas,
-    activo: (ruta) => ruta === '/cargas/nueva',
+    activo: (ruta) => ruta === '/cargas' || ruta.startsWith('/cargas/'),
   },
   {
     to: '/metricas',
