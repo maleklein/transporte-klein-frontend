@@ -47,6 +47,16 @@ const COLOR_POR_SUFIJO = {
 const CURSOR_GRAFICO = { fill: '#E8EFF6' };
 
 /**
+ * Margen de los dos gráficos: el mismo en los dos, para que sus ejes Y queden
+ * alineados uno debajo del otro. En angosto deja lugar a la izquierda para el
+ * primer nombre inclinado de "Cargas por estado" ("Disponible").
+ *
+ * @param {boolean} angosto
+ * @returns {{ top: number, right: number, left: number, bottom: number }}
+ */
+const MARGEN_GRAFICO = (angosto) => ({ top: 8, right: 8, left: angosto ? 28 : 0, bottom: 8 });
+
+/**
  * Capa de la cuadrícula: entre la franja del mouse (200) y las barras (300).
  * Por defecto va debajo de todo (-100) y la franja la tapaba; así las líneas
  * punteadas se siguen viendo sobre el celeste.
@@ -348,11 +358,7 @@ export default function Metricas() {
               <section className="mt-grafico-card">
                 <h2 className="mt-grafico-card__titulo">Cargas por estado</h2>
                 <ResponsiveContainer width="100%" height={280}>
-                  {/* En angosto, margen a la izquierda para el primer nombre inclinado ("Disponible"). */}
-                  <BarChart
-                    data={datosPorEstado}
-                    margin={{ top: 8, right: 8, left: angosto ? 28 : 0, bottom: 8 }}
-                  >
+                  <BarChart data={datosPorEstado} margin={MARGEN_GRAFICO(angosto)}>
                     <CartesianGrid strokeDasharray="3 3" stroke="#D5DBE3" zIndex={CAPA_CUADRICULA} />
                     {/* El eje Y ocupa sólo lo que necesitan sus números (`width="auto"`):
                         con el ancho fijo de Recharts (60 px) quedaba un espacio en
@@ -383,7 +389,7 @@ export default function Metricas() {
                     de un gráfico con todas las barras en cero. */}
                 {datosPorSemana.some((fila) => fila.cantidad > 0) ? (
                   <ResponsiveContainer width="100%" height={280}>
-                    <BarChart data={datosPorSemana} margin={{ top: 8, right: 8, left: 0, bottom: 8 }}>
+                    <BarChart data={datosPorSemana} margin={MARGEN_GRAFICO(angosto)}>
                       <CartesianGrid strokeDasharray="3 3" stroke="#D5DBE3" zIndex={CAPA_CUADRICULA} />
                       <XAxis dataKey="etiquetaCorta" tick={{ fontSize: 13, fill: '#4A5568' }} />
                       <YAxis width="auto" allowDecimals={false} tick={{ fontSize: 13, fill: '#4A5568' }} />
