@@ -39,6 +39,14 @@ const COLOR_POR_SUFIJO = {
 };
 
 /**
+ * Franja que marca la barra bajo el mouse. Sin esto, Recharts usa un gris
+ * (#ccc) muy fuerte: va el celeste del sistema (--color-primario-claro), que
+ * acompaña sin tapar. Es un color fijo porque Recharts lo pone como atributo
+ * del SVG, que no lee variables de CSS.
+ */
+const CURSOR_GRAFICO = { fill: '#E8EFF6' };
+
+/**
  * Arma una fecha AAAA-MM-DD a partir de los getters locales de `Date` (no de
  * `toISOString`, que convierte a UTC y podría correr el día según la zona
  * horaria del navegador).
@@ -328,7 +336,7 @@ export default function Metricas() {
                     <CartesianGrid strokeDasharray="3 3" stroke="#D5DBE3" />
                     <XAxis dataKey="etiqueta" tick={{ fontSize: 13, fill: '#4A5568' }} />
                     <YAxis allowDecimals={false} tick={{ fontSize: 13, fill: '#4A5568' }} />
-                    <Tooltip formatter={(valor) => [valor, 'Cargas']} />
+                    <Tooltip cursor={CURSOR_GRAFICO} formatter={(valor) => [valor, 'Cargas']} />
                     <Bar dataKey="cantidad" radius={[6, 6, 0, 0]}>
                       {datosPorEstado.map((fila) => (
                         <Cell key={fila.estado} fill={fila.color} />
@@ -350,6 +358,7 @@ export default function Metricas() {
                       <XAxis dataKey="etiquetaCorta" tick={{ fontSize: 13, fill: '#4A5568' }} />
                       <YAxis allowDecimals={false} tick={{ fontSize: 13, fill: '#4A5568' }} />
                       <Tooltip
+                        cursor={CURSOR_GRAFICO}
                         labelFormatter={(_, payload) =>
                           payload?.[0]
                             ? `Semana del ${formatearFecha(payload[0].payload.semana_inicio)}`
