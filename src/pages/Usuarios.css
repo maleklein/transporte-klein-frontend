@@ -116,6 +116,11 @@
 }
 
 .us-tabla-caja {
+  /* relative: el texto oculto de la columna "Acciones" es absolute y, sin
+     esto, se ubicaba respecto de la página y no de la caja. Quedaba fuera
+     del desplazamiento de la tabla, ensanchaba la página a ~900 px y el
+     celular la achicaba entera para que entrara. */
+  position: relative;
   border: 2px solid var(--color-borde-suave);
   border-radius: var(--radio);
   overflow-x: auto;
