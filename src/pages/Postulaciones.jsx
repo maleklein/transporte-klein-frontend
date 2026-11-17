@@ -21,16 +21,19 @@ import './Postulaciones.css';
 
 /** Títulos y textos de cada grupo, en el orden en que se muestran. */
 const GRUPOS = [
-  { clave: 'asignado', titulo: 'Viajes asignados', vacio: 'Todavía no te asignaron ninguna carga.' },
+  { clave: 'asignado', titulo: 'Viajes asignados', vacio: 'No tenés viajes por hacer.' },
   { clave: 'espera', titulo: 'Postulaciones en espera', vacio: 'No tenés postulaciones esperando respuesta.' },
+  // Los entregados van aparte: "Viajes asignados" es sólo lo que falta hacer.
+  { clave: 'entregado', titulo: 'Viajes entregados', vacio: null },
   { clave: 'cerrada', titulo: 'No salieron', vacio: null },
 ];
 
 /**
  * Mis viajes del camionero (HU 4 y HU 6), en la ruta /mis-viajes.
  *
- * Separa los viajes que le asignaron de las postulaciones que siguen
- * esperando, y abajo deja las que no salieron. Los viajes y las postulaciones
+ * Separa los viajes que le asignaron y todavía tiene que hacer de las
+ * postulaciones que siguen esperando; abajo, los viajes que ya entregó y las
+ * postulaciones que no salieron. Los viajes y las postulaciones
  * en espera llevan al detalle de la carga; las demás no, porque esa carga ya
  * no es suya ni está abierta.
  *
@@ -147,7 +150,9 @@ export default function Postulaciones() {
                           <strong className="pos-card-tipo">
                             <IconoEtiqueta width={20} height={20} /> {p.tipo_carga}
                           </strong>
-                          {clave === 'asignado' && <EstadoCarga estado={p.estado_actual} />}
+                          {(clave === 'asignado' || clave === 'entregado') && (
+                            <EstadoCarga estado={p.estado_actual} />
+                          )}
                           {clave === 'espera' && (
                             <span className="pos-badge pos-badge--pendiente">En espera</span>
                           )}
@@ -160,7 +165,7 @@ export default function Postulaciones() {
                           )}
                         </div>
                         <div className="pos-card-body">
-                          <p className="pos-card-dato">
+                          <p className="pos-card-dato pos-card-dato--ruta">
                             <IconoUbicacion width={18} height={18} />
                             <strong>{p.origen}</strong> <span aria-hidden="true">→</span>{' '}
                             <strong>{p.destino}</strong>
