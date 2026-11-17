@@ -9,13 +9,16 @@ import {
   XAxis,
   YAxis,
 } from 'recharts';
+import { useLocation, useNavigate } from 'react-router-dom';
 import BarraSuperior from '../components/BarraSuperior';
-import { IconoAlerta, IconoGrafico } from '../components/Iconos';
+import { IconoAlerta, IconoFlechaAtras, IconoGrafico } from '../components/Iconos';
 import { obtenerMetricas } from '../api/metricas';
 import { ErrorDeApi } from '../api/usuarios';
 import { evitarFoco } from '../utils/formulario';
 import { formatearFecha } from '../utils/carga';
 import { etiquetaEstado, sufijoEstado } from '../utils/estadosCarga';
+import { destinoVolver } from '../utils/volver';
+import './DetalleCarga.css';
 import './Metricas.css';
 
 /** Cuántos días para atrás, contando hoy, arma el rango por defecto. */
@@ -154,6 +157,10 @@ function formatearPorcentaje(tasa) {
  * @returns {JSX.Element}
  */
 export default function Metricas() {
+  const navigate = useNavigate();
+  // Si se entró desde el panel de inicio, el botón de volver lleva ahí; desde
+  // la barra superior no hay botón.
+  const destino = destinoVolver(useLocation(), null);
   // Pantalla angosta (celular): el gráfico de estados inclina los nombres.
   const [angosto, setAngosto] = useState(() => window.matchMedia('(max-width: 600px)').matches);
   useEffect(() => {
@@ -237,9 +244,20 @@ export default function Metricas() {
 
   return (
     <>
-      <BarraSuperior />
+      <BarraSuperior volver={destino} />
 
       <main className="us-contenido">
+        {destino && (
+          <button
+            type="button"
+            className="dc-volver bs-volver-pantalla"
+            onClick={() => navigate(destino.ruta, { state: destino.estado ?? null })}
+          >
+            <IconoFlechaAtras width={20} height={20} />
+            {destino.texto}
+          </button>
+        )}
+
         <div className="us-encabezado">
           <h1 className="mt-titulo">
             <IconoGrafico width={26} height={26} />

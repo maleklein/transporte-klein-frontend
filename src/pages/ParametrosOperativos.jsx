@@ -1,13 +1,24 @@
 import { useCallback, useEffect, useState } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
 import BarraSuperior from '../components/BarraSuperior';
 import Campo from '../components/Campo';
 import ModalConfirmacion from '../components/ModalConfirmacion';
-import { IconoAjustes, IconoAlerta, IconoCheck, IconoGuardar, IconoInfo, IconoReintentar } from '../components/Iconos';
+import {
+  IconoAjustes,
+  IconoAlerta,
+  IconoCheck,
+  IconoFlechaAtras,
+  IconoGuardar,
+  IconoInfo,
+  IconoReintentar,
+} from '../components/Iconos';
 import { actualizarParametros, obtenerParametros } from '../api/parametros';
 import { ErrorDeValidacion } from '../api/cargas';
 import { ErrorDeApi } from '../api/usuarios';
 import { evitarFoco } from '../utils/formulario';
 import { PARAMETROS_COSTO, formatearFechaHora, formatearPesos } from '../utils/carga';
+import { destinoVolver } from '../utils/volver';
+import './DetalleCarga.css';
 import './AltaUsuario.css';
 import './ParametrosOperativos.css';
 
@@ -58,6 +69,10 @@ function aValoresDeFormulario(parametros) {
  * @returns {JSX.Element}
  */
 export default function ParametrosOperativos() {
+  const navigate = useNavigate();
+  // Si se entró desde el panel de inicio, el botón de volver lleva ahí; desde
+  // la barra superior no hay botón.
+  const destino = destinoVolver(useLocation(), null);
   // Los vigentes, tal cual los devolvió el backend.
   const [parametros, setParametros] = useState([]);
   // Lo que está escrito en los inputs.
@@ -168,9 +183,20 @@ export default function ParametrosOperativos() {
 
   return (
     <>
-      <BarraSuperior />
+      <BarraSuperior volver={destino} />
 
       <main className="au-contenido">
+        {destino && (
+          <button
+            type="button"
+            className="dc-volver bs-volver-pantalla"
+            onClick={() => navigate(destino.ruta, { state: destino.estado ?? null })}
+          >
+            <IconoFlechaAtras width={20} height={20} />
+            {destino.texto}
+          </button>
+        )}
+
         <h1 className="au-titulo">
           <IconoAjustes width={26} height={26} />
           Parámetros operativos

@@ -228,3 +228,35 @@ export function rutaPendientesAsignacion(cargasPendientes) {
     ? `/cargas/${cargasPendientes[0].id_carga}`
     : '/cargas?estado=pendiente';
 }
+
+/**
+ * A dónde lleva cada casilla de "Cargas por estado" del panel del
+ * administrador: a Gestión de Cargas filtrada por ese estado y por el mismo
+ * período de creación con el que se contó, así el listado muestra exactamente
+ * esas cargas.
+ *
+ * @param {string} estado - el estado de la casilla ("disponible", ...).
+ * @param {{fecha_desde?: string, fecha_hasta?: string}} [periodo] - el período del conteo (AAAA-MM-DD).
+ * @returns {string} la ruta, con la búsqueda.
+ */
+export function rutaCargasPorEstado(estado, periodo = {}) {
+  const params = new URLSearchParams({ estado });
+  if (periodo.fecha_desde) params.set('creada_desde', periodo.fecha_desde);
+  if (periodo.fecha_hasta) params.set('creada_hasta', periodo.fecha_hasta);
+  return `/cargas?${params}`;
+}
+
+/**
+ * Texto del filtro por fecha de creación de Gestión de Cargas: "Creadas del
+ * 19/10/2026 al 17/11/2026", "Creadas desde el …" o "Creadas hasta el …".
+ *
+ * @param {string} desde - AAAA-MM-DD, o '' si no hay límite inferior.
+ * @param {string} hasta - AAAA-MM-DD, o '' si no hay límite superior.
+ * @returns {string} el texto, o '' si no hay período.
+ */
+export function textoPeriodoCreacion(desde, hasta) {
+  if (desde && hasta) return `Creadas del ${formatearFecha(desde)} al ${formatearFecha(hasta)}`;
+  if (desde) return `Creadas desde el ${formatearFecha(desde)}`;
+  if (hasta) return `Creadas hasta el ${formatearFecha(hasta)}`;
+  return '';
+}

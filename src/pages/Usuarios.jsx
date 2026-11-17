@@ -7,6 +7,7 @@ import {
   IconoCheck,
   IconoCerrar,
   IconoEditar,
+  IconoFlechaAtras,
   IconoOjo,
   IconoUsuario,
   IconoUsuarioMas,
@@ -15,7 +16,8 @@ import BarraSuperior from '../components/BarraSuperior';
 import ComboBox from '../components/ComboBox';
 import TextoResaltado from '../components/TextoResaltado';
 import { avisoSinResultados, coincideBusqueda } from '../utils/buscarUsuarios';
-import { volverA } from '../utils/volver';
+import { destinoVolver, volverA } from '../utils/volver';
+import './DetalleCarga.css';
 import './Usuarios.css';
 
 const OPCIONES_ROL = [
@@ -146,6 +148,12 @@ export default function Usuarios() {
    * @param {string} campo - 'buscar', 'rol' o 'estado'.
    * @returns {function(evento: Event): void}
    */
+  // A dónde vuelve esta pantalla (el inicio, si se entró desde el panel). Se
+  // separa del resto del `state` (el usuario recién creado o editado) para
+  // conservarlo al filtrar, al limpiar el aviso y al ir y volver de la ficha.
+  const destino = destinoVolver(location, null);
+  const estadoPropio = destino ? { volverA: destino } : null;
+
   const alCambiarFiltro = (campo) => (evento) => {
     const { value } = evento.target;
     setParametrosUrl(
@@ -155,7 +163,7 @@ export default function Usuarios() {
         else siguientes.delete(campo);
         return siguientes;
       },
-      { replace: true },
+      { replace: true, state: estadoPropio },
     );
   };
 
@@ -176,7 +184,10 @@ export default function Usuarios() {
 
     // Limpia el state para no volver a destacarlo si el usuario navega con
     // atrás/adelante. Con `search`, para no perder la búsqueda y los filtros.
-    navigate(`${location.pathname}${location.search}`, { replace: true, state: null });
+    navigate(`${location.pathname}${location.search}`, {
+      replace: true,
+      state: location.state?.volverA ? { volverA: location.state.volverA } : null,
+    });
   }, [location.state, location.pathname, location.search, navigate]);
 
   /**
@@ -184,10 +195,10 @@ export default function Usuarios() {
    *
    * @returns {void}
    */
-  const limpiarFiltros = () => setParametrosUrl({}, { replace: true });
+  const limpiarFiltros = () => setParametrosUrl({}, { replace: true, state: estadoPropio });
 
   // Lo que se lleva la ficha y la edición para volver al listado tal como estaba.
-  const volverAlListado = volverA(`/usuarios${location.search}`, 'Volver a Usuarios');
+  const volverAlListado = volverA(`/usuarios${location.search}`, 'Volver a Usuarios', estadoPropio);
 
   /**
    * Navega a la ficha de solo lectura de un usuario, llevando sus datos por
@@ -215,9 +226,20 @@ export default function Usuarios() {
 
   return (
     <>
-      <BarraSuperior />
+      <BarraSuperior volver={destino} />
 
       <main className="us-contenido">
+        {destino && (
+          <button
+            type="button"
+            className="dc-volver bs-volver-pantalla"
+            onClick={() => navigate(destino.ruta, { state: destino.estado ?? null })}
+          >
+            <IconoFlechaAtras width={20} height={20} />
+            {destino.texto}
+          </button>
+        )}
+
         <div className="us-encabezado">
           <h1 className="ds-titulo-pagina">
             <IconoUsuario width={26} height={26} />

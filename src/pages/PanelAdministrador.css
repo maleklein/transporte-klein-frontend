@@ -75,14 +75,39 @@
   list-style: none;
 }
 
+/* Cada casilla es un acceso: lleva a Gestión de Cargas filtrada por ese
+   estado. Se marca como los accesos directos: borde azul y sombra (al pasar
+   el mouse, o mientras se toca en el celular) y la manito. */
 .pa-estado {
   display: flex;
   flex-direction: column;
   align-items: flex-start;
   gap: 6px;
+  height: 100%;
+  box-sizing: border-box;
   padding: 14px;
   border: 2px solid var(--color-borde-suave);
   border-radius: var(--radio);
+  color: var(--color-texto);
+  text-decoration: none;
+  transition: border-color 0.12s ease, box-shadow 0.12s ease;
+}
+
+.pa-estado:active {
+  border-color: var(--color-primario);
+  box-shadow: 0 4px 14px rgba(31, 78, 121, 0.12);
+}
+
+@media (hover: hover) {
+  .pa-estado:hover {
+    border-color: var(--color-primario);
+    box-shadow: 0 4px 14px rgba(31, 78, 121, 0.12);
+  }
+}
+
+.pa-estado:focus-visible {
+  outline: 3px solid var(--color-primario);
+  outline-offset: 2px;
 }
 
 .pa-estado__valor {

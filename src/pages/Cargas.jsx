@@ -26,6 +26,7 @@ import {
   formatearPeso,
   motivoSinCapacidad,
   retiroVencido,
+  textoPeriodoCreacion,
 } from '../utils/carga';
 import { ESTADOS, etiquetaEstado } from '../utils/estadosCarga';
 import { destinoVolver, volverA } from '../utils/volver';
@@ -66,7 +67,37 @@ export default function Cargas() {
   // estando en `?estado=pendiente` dejaría el filtro viejo puesto.
   const [filtrosLocales, setFiltros] = useState(FILTROS_VACIOS);
   const estadoUrl = parametrosUrl.get('estado') ?? '';
-  const filtros = useMemo(() => ({ ...filtrosLocales, estado: estadoUrl }), [filtrosLocales, estadoUrl]);
+  // Período de creación: sólo llega desde las casillas de "Cargas por estado"
+  // del panel del administrador, para que el listado muestre las mismas cargas
+  // que contó. No tiene campo propio en los filtros: se ve y se quita arriba
+  // de los resultados.
+  const fechaUrl = (clave) => {
+    const valor = parametrosUrl.get(clave) ?? '';
+    return /^\d{4}-\d{2}-\d{2}$/.test(valor) ? valor : '';
+  };
+  const creadaDesde = fechaUrl('creada_desde');
+  const creadaHasta = fechaUrl('creada_hasta');
+  const filtros = useMemo(
+    () => ({ ...filtrosLocales, estado: estadoUrl, creada_desde: creadaDesde, creada_hasta: creadaHasta }),
+    [filtrosLocales, estadoUrl, creadaDesde, creadaHasta],
+  );
+  const textoPeriodo = textoPeriodoCreacion(creadaDesde, creadaHasta);
+
+  /**
+   * Escribe en la URL el estado y el período. Con el `state`, cambiar un
+   * filtro no borra a dónde vuelve la pantalla; `replace` para no llenar el
+   * historial con un paso por cada cambio.
+   *
+   * @param {{estado?: string, creada_desde?: string, creada_hasta?: string}} valores
+   * @returns {void}
+   */
+  const escribirUrl = (valores) => {
+    const params = {};
+    for (const [clave, valor] of Object.entries(valores)) {
+      if (valor) params[clave] = valor;
+    }
+    setParametrosUrl(params, { replace: true, state: location.state });
+  };
 
   /**
    * Cambia el filtro de estado escribiéndolo en la URL. `replace` para no
@@ -76,9 +107,16 @@ export default function Cargas() {
    * @returns {void}
    */
   const cambiarEstadoFiltro = (estado) => {
-    // Con el `state`, cambiar el filtro no borra a dónde vuelve la pantalla.
-    setParametrosUrl(estado ? { estado } : {}, { replace: true, state: location.state });
+    // El período se conserva: se cambia sólo el estado.
+    escribirUrl({ estado, creada_desde: creadaDesde, creada_hasta: creadaHasta });
   };
+
+  /**
+   * Quita el período de creación y deja el resto de los filtros.
+   *
+   * @returns {void}
+   */
+  const quitarPeriodo = () => escribirUrl({ estado: estadoUrl });
 
   // Si se llegó desde otra pantalla (Notificaciones, el inicio), el botón de
   // volver lleva ahí; desde la barra superior no hay botón.
@@ -105,7 +143,9 @@ export default function Cargas() {
   // de fecha y destino, que son los que sí le sirven para elegir un viaje.
   const esCamionero = usuarioActual()?.rol === 'camionero';
 
-  const hayAlgunFiltro = Boolean(filtros.estado || filtros.fecha || filtros.destino_provincia);
+  const hayAlgunFiltro = Boolean(
+    filtros.estado || filtros.fecha || filtros.destino_provincia || creadaDesde || creadaHasta,
+  );
 
   useEffect(() => {
     let vigente = true;
@@ -161,7 +201,7 @@ export default function Cargas() {
    */
   const limpiarFiltros = () => {
     setFiltros(FILTROS_VACIOS);
-    cambiarEstadoFiltro('');
+    escribirUrl({});
   };
 
   /**
@@ -412,6 +452,21 @@ export default function Cargas() {
             Limpiar filtros
           </button>
         </div>
+
+        {textoPeriodo && (
+          <p className="cg-periodo">
+            <span>{textoPeriodo}</span>
+            <button
+              type="button"
+              className="cg-periodo__quitar"
+              onClick={quitarPeriodo}
+              aria-label={`Quitar el filtro: ${textoPeriodo.toLowerCase()}`}
+            >
+              <IconoCerrar width={16} height={16} />
+              Quitar
+            </button>
+          </p>
+        )}
 
         {estadoPantalla === 'ok' && postulables.length > 0 && (
           <p className="cg-contador">

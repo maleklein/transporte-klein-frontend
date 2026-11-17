@@ -55,6 +55,49 @@
   }
 }
 
+/* Período de creación, cuando se llega desde "Cargas por estado" del panel. */
+.cg-periodo {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 12px;
+  margin: 0 0 12px;
+  padding: 6px 6px 6px 14px;
+  border: 2px solid var(--color-primario-claro);
+  border-radius: var(--radio-chico);
+  background: var(--color-primario-claro);
+  color: var(--color-primario);
+  font-weight: 700;
+}
+
+.cg-periodo__quitar {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  min-height: 36px;
+  margin-left: auto;
+  padding: 4px 10px;
+  border: none;
+  border-radius: var(--radio-chico);
+  background: transparent;
+  color: var(--color-primario);
+  font-family: var(--fuente);
+  font-size: var(--texto-ayuda);
+  font-weight: 700;
+  cursor: pointer;
+}
+
+@media (hover: hover) {
+  .cg-periodo__quitar:hover {
+    text-decoration: underline;
+  }
+}
+
+.cg-periodo__quitar:focus-visible {
+  outline: 3px solid var(--color-primario);
+  outline-offset: 2px;
+}
+
 .cg-contador {
   margin: 0 0 12px;
   font-size: var(--texto-base);

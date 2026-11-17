@@ -18,8 +18,8 @@ import { listarCargas } from '../api/cargas';
 import { obtenerMetricas } from '../api/metricas';
 import { listarNotificaciones } from '../api/notificaciones';
 import { ErrorDeApi } from '../api/usuarios';
-import { formatearFecha, rutaPendientesAsignacion } from '../utils/carga';
-import { ESTADOS } from '../utils/estadosCarga';
+import { formatearFecha, rutaCargasPorEstado, rutaPendientesAsignacion } from '../utils/carga';
+import { ESTADOS, etiquetaEstado } from '../utils/estadosCarga';
 import { desdeInicio } from '../utils/volver';
 // Las tarjetas de resumen (`pcm-tarjeta`) son las del panel del camionero
 // (HU 17): se reusan sus estilos para que los dos paneles se vean igual.
@@ -272,12 +272,27 @@ export default function PanelAdministrador() {
                 </p>
               ) : (
                 <ul className="pa-estados">
-                  {ORDEN_ESTADOS.map((estado) => (
-                    <li key={estado} className="pa-estado">
-                      <span className="pa-estado__valor">{metricas.valor.cargas_por_estado?.[estado] ?? 0}</span>
-                      <EstadoCarga estado={estado} />
-                    </li>
-                  ))}
+                  {/*
+                    Cada casilla lleva a Gestión de Cargas filtrada por ese
+                    estado y por el mismo período de creación con el que se
+                    contó: el listado muestra exactamente esas cargas.
+                  */}
+                  {ORDEN_ESTADOS.map((estado) => {
+                    const cantidad = metricas.valor.cargas_por_estado?.[estado] ?? 0;
+                    return (
+                      <li key={estado}>
+                        <Link
+                          to={rutaCargasPorEstado(estado, periodo)}
+                          state={desdeInicio('administrador')}
+                          className="pa-estado"
+                          aria-label={`${cantidad} ${cantidad === 1 ? 'carga' : 'cargas'} en estado ${etiquetaEstado(estado)}: ver en Gestión de Cargas`}
+                        >
+                          <span className="pa-estado__valor">{cantidad}</span>
+                          <EstadoCarga estado={estado} />
+                        </Link>
+                      </li>
+                    );
+                  })}
                 </ul>
               )}
             </>
