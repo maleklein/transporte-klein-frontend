@@ -27,6 +27,8 @@ export const EVENTO_NOTIFICACIONES_CAMBIARON = 'notificaciones-cambiaron';
  *
  * @param {object} [filtros]
  * @param {boolean} [filtros.soloNoLeidas] - true para traer sólo las que faltan leer.
+ * @param {number} [filtros.limite] - cuántas traer (de 1 a 100).
+ * @param {number} [filtros.antesDe] - id de la última que ya se tiene: trae las siguientes, más viejas.
  * @param {object} [opciones]
  * @param {AbortSignal} [opciones.signal] - para cancelar el pedido.
  * @returns {Promise<object[]>} las notificaciones; `[]` si no tiene ninguna.
@@ -34,7 +36,11 @@ export const EVENTO_NOTIFICACIONES_CAMBIARON = 'notificaciones-cambiaron';
  * @throws {ErrorDeApi} si el backend falla (400, 500, sin conexión).
  */
 export async function listarNotificaciones(filtros = {}, opciones = {}) {
-  const consulta = filtros.soloNoLeidas ? '?solo_no_leidas=true' : '';
+  const params = new URLSearchParams();
+  if (filtros.soloNoLeidas) params.set('solo_no_leidas', 'true');
+  if (filtros.limite) params.set('limite', String(filtros.limite));
+  if (filtros.antesDe) params.set('antes_de', String(filtros.antesDe));
+  const consulta = params.toString() ? `?${params}` : '';
 
   let respuesta;
   try {

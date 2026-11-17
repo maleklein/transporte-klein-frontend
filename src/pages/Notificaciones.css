@@ -129,8 +129,14 @@
   transition: border-color 0.12s ease, box-shadow 0.12s ease;
 }
 
-.nt-item:hover,
-.nt-item:focus-within {
+/* El aviso entero se abre. Al pasar el mouse se marca como los
+   accesos del panel: borde azul, sombra y la manito. */
+.nt-item--clickeable {
+  cursor: pointer;
+}
+
+.nt-item--clickeable:hover,
+.nt-item--clickeable:focus-within {
   border-color: var(--color-primario);
   box-shadow: 0 4px 14px rgba(31, 78, 121, 0.12);
 }
@@ -203,13 +209,48 @@
   font-variant-numeric: tabular-nums;
 }
 
-/* El ::after estira el botón sobre todo el aviso: el click funciona en
-   cualquier parte sin duplicar controles (igual que las tarjetas de cargas). */
+/* La flechita es el control. El ::after la estira sobre todo el
+   aviso: el click funciona en cualquier parte sin duplicar controles (igual
+   que las tarjetas de cargas). */
 .nt-item__abrir {
-  min-height: 44px;
-  padding: 9px 16px;
-  font-size: var(--texto-ayuda);
-  white-space: nowrap;
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  padding: 0;
+  border: none;
+  border-radius: var(--radio-chico);
+  background: transparent;
+  color: var(--color-texto-suave);
+  cursor: pointer;
+}
+
+.nt-item--clickeable:hover .nt-item__abrir {
+  color: var(--color-primario);
+}
+
+.nt-item__abrir:focus-visible {
+  outline: 3px solid var(--color-primario);
+  outline-offset: 2px;
+}
+
+
+/* "Ver más notificaciones", al final de la lista. */
+.nt-mas {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  margin-top: 24px;
+}
+
+.nt-mas__error {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+  color: var(--color-peligro-oscuro);
+  font-weight: 600;
 }
 
 .nt-item__abrir::after {
@@ -224,13 +265,13 @@
     padding: 20px 16px;
   }
 
-  /* En angosto el botón baja debajo del texto y ocupa el ancho. */
+  /* En angosto, la flechita sigue a la derecha, más angosta. */
   .nt-item {
-    grid-template-columns: auto minmax(0, 1fr);
+    gap: 12px;
+    padding: 14px;
   }
 
   .nt-item__abrir {
-    grid-column: 1 / -1;
-    width: 100%;
+    width: 28px;
   }
 }

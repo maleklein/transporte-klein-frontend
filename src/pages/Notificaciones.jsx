@@ -8,8 +8,9 @@ import {
   IconoCamion,
   IconoCerrar,
   IconoCheck,
+  IconoChevronAbajo,
+  IconoChevronDerecha,
   IconoFlechaAtras,
-  IconoOjo,
 } from '../components/Iconos';
 import {
   listarNotificaciones,
@@ -39,6 +40,12 @@ const TIPOS = {
 const TIPO_GENERICO = { Icono: IconoCampana, nombre: 'Aviso' };
 
 /**
+ * Cuántas notificaciones se muestran de entrada y cuántas más trae cada
+ * "Ver más notificaciones" (corrección del profesor del 17/11, punto 6).
+ */
+const POR_PAGINA = 20;
+
+/**
  * Centro de notificaciones (HU 12), en la ruta /notificaciones.
  *
  * Lista los avisos del usuario logueado, el más nuevo primero, y distingue
@@ -55,6 +62,10 @@ export default function Notificaciones() {
   const location = useLocation();
 
   const [notificaciones, setNotificaciones] = useState([]);
+  // Si quedan notificaciones más viejas para traer con "Ver más".
+  const [hayMas, setHayMas] = useState(false);
+  const [cargandoMas, setCargandoMas] = useState(false);
+  const [errorMas, setErrorMas] = useState('');
   // 'cargando' | 'ok' | 'error'
   const [estadoPantalla, setEstadoPantalla] = useState('cargando');
   const [mensajeError, setMensajeError] = useState('');
@@ -72,9 +83,11 @@ export default function Notificaciones() {
   useEffect(() => {
     const controlador = new AbortController();
 
-    listarNotificaciones({}, { signal: controlador.signal })
+    // Pide una más de las que muestra: si llega, es que quedan más para "Ver más".
+    listarNotificaciones({ limite: POR_PAGINA + 1 }, { signal: controlador.signal })
       .then((datos) => {
-        setNotificaciones(datos);
+        setNotificaciones(datos.slice(0, POR_PAGINA));
+        setHayMas(datos.length > POR_PAGINA);
         setEstadoPantalla('ok');
       })
       .catch((error) => {
@@ -130,6 +143,35 @@ export default function Notificaciones() {
       );
     } finally {
       setMarcandoTodas(false);
+    }
+  };
+
+  /**
+   * Trae las siguientes notificaciones, más viejas que la última que se ve, y
+   * las suma al final. Se agrupan junto con las que ya estaban (Hoy, Ayer...).
+   *
+   * @returns {Promise<void>}
+   */
+  const verMas = async () => {
+    const ultima = notificaciones.at(-1);
+    if (!ultima) return;
+    setErrorMas('');
+    setCargandoMas(true);
+    try {
+      const datos = await listarNotificaciones({
+        limite: POR_PAGINA + 1,
+        antesDe: ultima.id_notificacion,
+      });
+      setNotificaciones((previas) => [...previas, ...datos.slice(0, POR_PAGINA)]);
+      setHayMas(datos.length > POR_PAGINA);
+    } catch (error) {
+      setErrorMas(
+        error instanceof ErrorDeApi
+          ? error.message
+          : 'No se pudieron cargar más notificaciones. Intentá de nuevo.',
+      );
+    } finally {
+      setCargandoMas(false);
     }
   };
 
@@ -272,7 +314,9 @@ export default function Notificaciones() {
                   return (
                     <li
                       key={notificacion.id_notificacion}
-                      className={`nt-item${notificacion.leida ? '' : ' nt-item--no-leida'}`}
+                      className={`nt-item${notificacion.leida ? '' : ' nt-item--no-leida'}${
+                        tieneAccion ? ' nt-item--clickeable' : ''
+                      }`}
                     >
                       <span className="nt-item__icono" aria-hidden="true">
                         <Icono width={22} height={22} />
@@ -297,28 +341,27 @@ export default function Notificaciones() {
                       </div>
 
                       {/*
-                        Mismo botón "estirado" que las tarjetas del listado de
-                        cargas: el click en cualquier parte del aviso lo abre, y
-                        sigue siendo un único control enfocable.
+                        Todo el aviso es clickeable, sin un botón "Ver carga"
+                        repetido en cada uno. El control es la flechita,
+                        "estirada" con ::after sobre todo el aviso: el click
+                        funciona en cualquier parte y sigue siendo un único
+                        control enfocable, con su nombre para el lector de
+                        pantalla. La flechita además avisa, sin hover (en el
+                        celular), cuáles avisos abren algo.
                       */}
                       {tieneAccion && (
                         <button
                           type="button"
-                          className="ds-boton ds-boton--secundario nt-item__abrir"
+                          className="nt-item__abrir"
                           onClick={() => abrir(notificacion)}
                           disabled={abriendo === notificacion.id_notificacion}
+                          aria-label={notificacion.id_carga ? 'Ver carga' : 'Marcar como leída'}
                           aria-describedby={idTexto}
                         >
                           {notificacion.id_carga ? (
-                            <>
-                              <IconoOjo width={18} height={18} />
-                              Ver carga
-                            </>
+                            <IconoChevronDerecha width={22} height={22} />
                           ) : (
-                            <>
-                              <IconoCheck width={18} height={18} />
-                              Marcar como leída
-                            </>
+                            <IconoCheck width={20} height={20} />
                           )}
                         </button>
                       )}
@@ -328,6 +371,26 @@ export default function Notificaciones() {
               </ul>
             </section>
           ))}
+
+        {estadoPantalla === 'ok' && hayMas && (
+          <div className="nt-mas">
+            {errorMas && (
+              <p className="nt-mas__error" role="alert">
+                <IconoAlerta width={18} height={18} />
+                {errorMas}
+              </p>
+            )}
+            <button
+              type="button"
+              className="ds-boton ds-boton--secundario"
+              onClick={verMas}
+              disabled={cargandoMas}
+            >
+              <IconoChevronAbajo width={18} height={18} />
+              {cargandoMas ? 'Cargando...' : 'Ver más notificaciones'}
+            </button>
+          </div>
+        )}
       </main>
     </>
   );
