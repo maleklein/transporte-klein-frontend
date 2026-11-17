@@ -120,6 +120,7 @@ body {
   .mc-caja__error, .mt-titulo, .mt-error-validacion, .nt-titulo, .nt-aviso-error,
   .pc-estado, .pcm-tarjeta__titulo, .pcm-tarjeta__error, .pcm-viaje__fecha,
   .pg-error, .pos-aviso-error, .pos-card-tipo, .pos-card-dato,
+  .mt-aviso-error__texto, .pcm-aviso-error__texto, .pm-error-carga__texto,
   .pp-error, .pp-item__dato, .us-aviso-exito, .us-aviso-error
 ) > svg {
   flex-shrink: 0;

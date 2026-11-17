@@ -189,8 +189,10 @@ export default function ParametrosOperativos() {
 
         {estadoPantalla === 'error' && (
           <div className="au-aviso au-aviso--error pm-error-carga" role="alert">
-            <IconoAlerta width={22} height={22} />
-            <span>{mensajeError}</span>
+            <span className="pm-error-carga__texto">
+              <IconoAlerta width={22} height={22} />
+              <span>{mensajeError}</span>
+            </span>
             <button
               type="button"
               className="ds-boton ds-boton--secundario"

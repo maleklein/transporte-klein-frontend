@@ -198,11 +198,13 @@ export default function PanelAdministrador() {
 
         {errores.length > 0 && (
           <div className="pcm-aviso-error" role="alert">
-            <IconoAlerta width={22} height={22} />
             <span className="pcm-aviso-error__texto">
-              {/* Los mensajes del backend no siempre terminan en punto. */}
-              {errores.map((dato) => dato.error.replace(/([^.!?])$/, '$1.')).join(' ')} Los accesos siguen
-              funcionando.
+              <IconoAlerta width={22} height={22} />
+              <span>
+                {/* Los mensajes del backend no siempre terminan en punto. */}
+                {errores.map((dato) => dato.error.replace(/([^.!?])$/, '$1.')).join(' ')} Los accesos siguen
+                funcionando.
+              </span>
             </span>
             <button
               type="button"

@@ -86,7 +86,12 @@
   font-weight: 600;
 }
 
+/* Ícono y texto van juntos: el aviso centra el grupo con el botón, y dentro
+   del grupo el ícono queda en el primer renglón. */
 .mt-aviso-error__texto {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
   flex: 1;
   min-width: 200px;
 }
