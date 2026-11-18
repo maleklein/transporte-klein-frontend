@@ -4,6 +4,7 @@ import ComboBox from './ComboBox';
 import CampoDireccion from './CampoDireccion';
 import { listarLocalidades, listarProvincias } from '../api/geografia';
 import { LARGOS_MAXIMOS } from '../utils/validarCarga';
+import { useAvisoSinConexion } from './contextoConexion';
 import './SelectorUbicacion.css';
 
 /**
@@ -62,6 +63,8 @@ export default function SelectorUbicacion({
   const [estadoProvincias, setEstadoProvincias] = useState('cargando');
   const [estadoLocalidades, setEstadoLocalidades] = useState('ok');
 
+  const avisarSiFaltaConexion = useAvisoSinConexion();
+
   // Las provincias no cambian nunca: se piden una sola vez y el módulo de API
   // las cachea, así que montar origen y destino juntos dispara un solo pedido.
   useEffect(() => {
@@ -75,14 +78,18 @@ export default function SelectorUbicacion({
         setProvincias(datos);
         setEstadoProvincias('ok');
       })
-      .catch(() => {
-        if (vigente) setEstadoProvincias('error');
+      .catch((error) => {
+        if (!vigente) return;
+        // Se piden al abrir el formulario, antes de que se escriba nada: sin
+        // conexión, la pantalla entera pasa a la de "Sin conexión".
+        if (avisarSiFaltaConexion(error)) return;
+        setEstadoProvincias('error');
       });
 
     return () => {
       vigente = false;
     };
-  }, []);
+  }, [avisarSiFaltaConexion]);
 
   // Localidades de la provincia elegida. Se vuelve a pedir en cada cambio, pero
   // la capa de API cachea por provincia: ir y volver entre dos no pega de nuevo.

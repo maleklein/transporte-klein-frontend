@@ -6,6 +6,7 @@
 import { ErrorDeApi } from './usuarios';
 import { ErrorDeValidacion } from './cargas';
 import { headersDeAuth, manejarNoAutorizado } from './sesion';
+import { errorSinConexion, leerConReintentos } from './conexion';
 
 /** URL base del backend. Se puede pisar con la variable de entorno VITE_API_URL. */
 const URL_API = import.meta.env.VITE_API_URL ?? 'http://localhost:3000';
@@ -24,17 +25,15 @@ async function pedirParametros(opciones = {}) {
   let respuesta;
 
   try {
-    respuesta = await fetch(`${URL_API}/parametros-operativos`, {
+    // La lectura se reintenta sola; guardar (PUT) no.
+    const pedir = opciones.method ? fetch : leerConReintentos;
+    respuesta = await pedir(`${URL_API}/parametros-operativos`, {
       ...opciones,
       headers: { 'Content-Type': 'application/json', ...headersDeAuth() },
     });
   } catch {
     // El servidor no respondió (apagado, sin red, CORS bloqueado).
-    throw new ErrorDeApi(
-      'No se pudo conectar con el servidor. Verificá que el sistema esté encendido e intentá de nuevo.',
-      null,
-      0,
-    );
+    throw errorSinConexion();
   }
 
   let cuerpo = null;

@@ -23,6 +23,7 @@ import { ESTADOS, etiquetaEstado } from '../utils/estadosCarga';
 import { desdeInicio } from '../utils/volver';
 // Las tarjetas de resumen (`pcm-tarjeta`) son las del panel del camionero
 // (HU 17): se reusan sus estilos para que los dos paneles se vean igual.
+import { useAvisoSinConexion } from '../components/contextoConexion';
 import './PanelCamionero.css';
 import './PanelAdministrador.css';
 
@@ -84,6 +85,7 @@ const pedirNoLeidas = ({ signal }) => listarNotificaciones({ soloNoLeidas: true 
  */
 function useDato(pedir, version, queFallo) {
   const [dato, setDato] = useState({ estado: 'cargando', valor: null, error: '' });
+  const avisarSiFaltaConexion = useAvisoSinConexion();
 
   useEffect(() => {
     const controlador = new AbortController();
@@ -93,6 +95,8 @@ function useDato(pedir, version, queFallo) {
       .then((valor) => setDato({ estado: 'ok', valor, error: '' }))
       .catch((fallo) => {
         if (fallo?.name === 'AbortError') return;
+        // Sin conexión, el panel entero pasa a la pantalla de "Sin conexión".
+        if (avisarSiFaltaConexion(fallo)) return;
         setDato({ estado: 'error', valor: null, error: fallo instanceof ErrorDeApi ? fallo.message : queFallo });
       });
 

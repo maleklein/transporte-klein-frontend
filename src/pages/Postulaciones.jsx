@@ -17,6 +17,7 @@ import { formatearFecha } from '../utils/carga';
 import { ESTADOS } from '../utils/estadosCarga';
 import { grupoDePostulacion } from '../utils/postulaciones';
 import { destinoVolver, volverA } from '../utils/volver';
+import { useAvisoSinConexion } from '../components/contextoConexion';
 import './Postulaciones.css';
 
 /** Títulos y textos de cada grupo, en el orden en que se muestran. */
@@ -50,6 +51,7 @@ export default function Postulaciones() {
   // 'cargando' | 'ok' | 'error'
   const [estadoPantalla, setEstadoPantalla] = useState('cargando');
   const [mensajeError, setMensajeError] = useState('');
+  const avisarSiFaltaConexion = useAvisoSinConexion();
 
   useEffect(() => {
     const controlador = new AbortController();
@@ -61,6 +63,7 @@ export default function Postulaciones() {
       })
       .catch((error) => {
         if (error.name === 'AbortError') return;
+        if (avisarSiFaltaConexion(error)) return;
         setMensajeError(
           error instanceof ErrorDeApi ? error.message : 'Hubo un error al cargar tus viajes.',
         );
@@ -68,7 +71,7 @@ export default function Postulaciones() {
       });
 
     return () => controlador.abort();
-  }, []);
+  }, [avisarSiFaltaConexion]);
 
   // El panel del camionero (HU 17) enlaza a un grupo puntual, por ejemplo
   // /mis-viajes#pos-espera. Los grupos recién existen cuando llegan los datos,

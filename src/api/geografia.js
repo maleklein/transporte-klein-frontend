@@ -10,6 +10,7 @@
 
 import { ErrorDeApi } from './usuarios';
 import { headersDeAuth, manejarNoAutorizado } from './sesion';
+import { errorSinConexion, leerConReintentos } from './conexion';
 
 /** URL base del backend. Se puede pisar con la variable de entorno VITE_API_URL. */
 const URL_API = import.meta.env.VITE_API_URL ?? 'http://localhost:3000';
@@ -40,13 +41,9 @@ async function pedirCatalogo(ruta, queFalló) {
     let respuesta;
 
     try {
-        respuesta = await fetch(`${URL_API}${ruta}`, { headers: { ...headersDeAuth() } });
+        respuesta = await leerConReintentos(`${URL_API}${ruta}`, { headers: { ...headersDeAuth() } });
     } catch {
-        throw new ErrorDeApi(
-            'No se pudo conectar con el servidor. Verificá que el sistema esté encendido e intentá de nuevo.',
-            null,
-            0,
-        );
+        throw errorSinConexion();
     }
 
     let cuerpo = null;

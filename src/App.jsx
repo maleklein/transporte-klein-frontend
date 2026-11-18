@@ -1,6 +1,7 @@
 import IniciarSesion from './login'; // Importamos el archivo login.jsx
 import { Routes, Route } from 'react-router-dom';
 import RutaProtegida from './components/RutaProtegida';
+import ControlConexion from './components/ControlConexion';
 import Usuarios from './pages/Usuarios';
 import AltaUsuario from './pages/AltaUsuario';
 import EditarUsuario from './pages/EditarUsuario';
@@ -25,6 +26,12 @@ import PerfilReputacion from './pages/PerfilReputacion';
  * al login si no hay sesión y al panel de inicio del usuario si su rol no es
  * el que corresponde a esa pantalla.
  *
+ * Todas las pantallas con sesión pasan además por `ControlConexion`, que
+ * muestra la pantalla de "Sin conexión" o la franja de la barra superior
+ * cuando no hay conexión con el sistema. El login queda afuera: ahí la
+ * conexión se prueba al tocar "Ingresar", y el error se muestra en el
+ * formulario.
+ *
  * @returns {JSX.Element}
  */
 function App() {
@@ -32,43 +39,45 @@ function App() {
     <Routes>
       <Route path="/" element={<IniciarSesion />} />
 
-      {/* Sólo administrador */}
-      <Route element={<RutaProtegida roles={['administrador']} />}>
-        {/* HU 15/16 — Panel de inicio del administrador */}
-        <Route path="/panel-administrador" element={<PanelAdministrador />} />
-        {/* HU 1.1 — Alta de usuarios */}
-        <Route path="/usuarios" element={<Usuarios />} />
-        <Route path="/usuarios/nuevo" element={<AltaUsuario />} />
-        {/* HU 1.2 — Modificación de usuario */}
-        <Route path="/usuarios/editar" element={<EditarUsuario />} />
-        {/* HU 1.3 — Consulta de usuarios */}
-        <Route path="/usuarios/detalle" element={<DetalleUsuario />} />
-        {/* HU 2.1 + 2.1.1 — Alta de cargas */}
-        <Route path="/cargas/nueva" element={<AltaCarga />} />
-        {/* HU 2.2 — Modificación de carga */}
-        <Route path="/cargas/:id/editar" element={<EditarCarga />} />
-        {/* HU 13 — Panel de métricas */}
-        <Route path="/metricas" element={<Metricas />} />
-        {/* HU 10 — Parámetros de la estimación de costos */}
-        <Route path="/parametros" element={<ParametrosOperativos />} />
-      </Route>
+      <Route element={<ControlConexion />}>
+        {/* Sólo administrador */}
+        <Route element={<RutaProtegida roles={['administrador']} />}>
+          {/* HU 15/16 — Panel de inicio del administrador */}
+          <Route path="/panel-administrador" element={<PanelAdministrador />} />
+          {/* HU 1.1 — Alta de usuarios */}
+          <Route path="/usuarios" element={<Usuarios />} />
+          <Route path="/usuarios/nuevo" element={<AltaUsuario />} />
+          {/* HU 1.2 — Modificación de usuario */}
+          <Route path="/usuarios/editar" element={<EditarUsuario />} />
+          {/* HU 1.3 — Consulta de usuarios */}
+          <Route path="/usuarios/detalle" element={<DetalleUsuario />} />
+          {/* HU 2.1 + 2.1.1 — Alta de cargas */}
+          <Route path="/cargas/nueva" element={<AltaCarga />} />
+          {/* HU 2.2 — Modificación de carga */}
+          <Route path="/cargas/:id/editar" element={<EditarCarga />} />
+          {/* HU 13 — Panel de métricas */}
+          <Route path="/metricas" element={<Metricas />} />
+          {/* HU 10 — Parámetros de la estimación de costos */}
+          <Route path="/parametros" element={<ParametrosOperativos />} />
+        </Route>
 
-      {/* Sólo camionero */}
-      <Route element={<RutaProtegida roles={['camionero']} />}>
-        {/* HU 15/17 — Panel de inicio del camionero */}
-        <Route path="/panel-camionero" element={<PanelCamionero />} />
-        {/* HU 4 y HU 6 — Mis viajes del camionero: asignados y postulaciones */}
-        <Route path="/mis-viajes" element={<Postulaciones />} />
-      </Route>
+        {/* Sólo camionero */}
+        <Route element={<RutaProtegida roles={['camionero']} />}>
+          {/* HU 15/17 — Panel de inicio del camionero */}
+          <Route path="/panel-camionero" element={<PanelCamionero />} />
+          {/* HU 4 y HU 6 — Mis viajes del camionero: asignados y postulaciones */}
+          <Route path="/mis-viajes" element={<Postulaciones />} />
+        </Route>
 
-      {/* Cualquiera con sesión, administrador o camionero */}
-      <Route element={<RutaProtegida />}>
-        <Route path="/perfiles/:id" element={<PerfilReputacion />} />
-        {/* HU 2.5 — Consulta de cargas */}
-        <Route path="/cargas" element={<Cargas />} />
-        <Route path="/cargas/:id" element={<DetalleCarga />} />
-        {/* HU 12 — Centro de notificaciones */}
-        <Route path="/notificaciones" element={<Notificaciones />} />
+        {/* Cualquiera con sesión, administrador o camionero */}
+        <Route element={<RutaProtegida />}>
+          <Route path="/perfiles/:id" element={<PerfilReputacion />} />
+          {/* HU 2.5 — Consulta de cargas */}
+          <Route path="/cargas" element={<Cargas />} />
+          <Route path="/cargas/:id" element={<DetalleCarga />} />
+          {/* HU 12 — Centro de notificaciones */}
+          <Route path="/notificaciones" element={<Notificaciones />} />
+        </Route>
       </Route>
     </Routes>
   );

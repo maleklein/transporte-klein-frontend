@@ -18,6 +18,9 @@ import { evitarFoco } from '../utils/formulario';
 import { LARGOS_MAXIMOS, validar, armarPayload, hoyEnArgentina } from '../utils/validarCarga';
 import { ESTADOS_BLOQUEADOS_EDICION } from '../utils/carga';
 import { etiquetaEstado, motivoEdicionBloqueada } from '../utils/estadosCarga';
+import { useAvisoSinConexion } from '../components/contextoConexion';
+import AvisoSinConexion from '../components/AvisoSinConexion';
+import { avisoSinConexion, esErrorDeConexion } from '../utils/conexion';
 import './AltaCarga.css';
 import './EditarCarga.css';
 
@@ -80,6 +83,8 @@ export default function EditarCarga() {
   const [tocados, setTocados] = useState({});
   const [erroresBackend, setErroresBackend] = useState({});
   const [errorGeneral, setErrorGeneral] = useState('');
+  // Falta de conexión al guardar: se avisa al lado de los botones.
+  const [avisoConexion, setAvisoConexion] = useState(null);
   const [intentoEnviar, setIntentoEnviar] = useState(false);
   const [enviando, setEnviando] = useState(false);
 
@@ -104,6 +109,8 @@ export default function EditarCarga() {
     return undefined;
   };
 
+  const avisarSiFaltaConexion = useAvisoSinConexion();
+
   // Trae la carga al entrar (o si cambia el id en la URL).
   useEffect(() => {
     const controlador = new AbortController();
@@ -124,6 +131,7 @@ export default function EditarCarga() {
       })
       .catch((error) => {
         if (error?.name === 'AbortError') return;
+        if (avisarSiFaltaConexion(error)) return;
         if (error instanceof ErrorDeApi && error.estado === 404) {
           setEstadoPantalla('no-encontrada');
           return;
@@ -137,7 +145,7 @@ export default function EditarCarga() {
       });
 
     return () => controlador.abort();
-  }, [id]);
+  }, [id, avisarSiFaltaConexion]);
 
   // Foco en el primer campo apenas el formulario está listo para editarse.
   useEffect(() => {
@@ -179,6 +187,7 @@ export default function EditarCarga() {
     });
 
     setErrorGeneral('');
+    setAvisoConexion(null);
   };
 
   /**
@@ -218,6 +227,7 @@ export default function EditarCarga() {
     evento.preventDefault();
     setIntentoEnviar(true);
     setErrorGeneral('');
+    setAvisoConexion(null);
 
     if (!formularioValido) {
       const primerCampoConError = Object.keys(erroresValidacion)[0];
@@ -258,6 +268,9 @@ export default function EditarCarga() {
         setEnviando(false);
       } else if (error instanceof ErrorDeApi && error.estado === 409) {
         setMensajeBloqueo(error.message);
+      } else if (esErrorDeConexion(error)) {
+        setAvisoConexion(avisoSinConexion('Los cambios no se guardaron', { formulario: true }));
+        setEnviando(false);
       } else {
         setErrorGeneral(
           error instanceof ErrorDeApi
@@ -417,6 +430,8 @@ export default function EditarCarga() {
             </div>
 
             <div className="ac-footer">
+
+              <AvisoSinConexion aviso={avisoConexion} />
               <button
                 type="button"
                 className="ds-boton ds-boton--cancelar"

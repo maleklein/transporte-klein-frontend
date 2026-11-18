@@ -31,6 +31,7 @@ import {
 } from '../utils/carga';
 import { ESTADOS, etiquetaEstado } from '../utils/estadosCarga';
 import { destinoVolver, volverA } from '../utils/volver';
+import { useAvisoSinConexion } from '../components/contextoConexion';
 import './DetalleCarga.css';
 import './Cargas.css';
 
@@ -119,6 +120,11 @@ export default function Cargas() {
   // 'cargando' | 'ok' | 'error'
   const [estadoPantalla, setEstadoPantalla] = useState('cargando');
   const [mensajeError, setMensajeError] = useState('');
+  // Si el listado ya se mostró una vez. Sin conexión, la primera carga pasa a
+  // la pantalla de "Sin conexión"; si falla al cambiar un filtro, se avisa acá
+  // y el resto de la pantalla (los filtros) queda como estaba.
+  const yaCargoRef = useRef(false);
+  const avisarSiFaltaConexion = useAvisoSinConexion();
 
   // Junta los estados que aparecieron en alguna respuesta, para armar el
   // <select> sin depender de que el filtro actual los deje pasar.
@@ -172,10 +178,12 @@ export default function Cargas() {
         setEstadosDisponibles([...estadosVistosRef.current].sort());
         setCargas(datos);
         setEstadoPantalla('ok');
+        yaCargoRef.current = true;
       })
       .catch((error) => {
         // El pedido se canceló porque cambió un filtro: no es un error real.
         if (error?.name === 'AbortError') return;
+        if (!yaCargoRef.current && avisarSiFaltaConexion(error)) return;
         setMensajeError(
           error instanceof ErrorDeApi
             ? error.message
@@ -185,7 +193,7 @@ export default function Cargas() {
       });
 
     return () => controlador.abort();
-  }, [filtros]);
+  }, [filtros, avisarSiFaltaConexion]);
 
   /**
    * Deja los filtros en blanco y vuelve a traer el listado completo.

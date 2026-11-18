@@ -25,6 +25,8 @@ import {
   validarTipoVehiculo,
   validarUbicacion,
 } from '../utils/validarUsuario';
+import AvisoSinConexion from '../components/AvisoSinConexion';
+import { avisoSinConexion, esErrorDeConexion } from '../utils/conexion';
 import './DetalleCarga.css';
 import './AltaUsuario.css';
 
@@ -154,6 +156,8 @@ export default function AltaUsuario() {
   const [tocados, setTocados] = useState({});
   const [erroresBackend, setErroresBackend] = useState({});
   const [errorGeneral, setErrorGeneral] = useState('');
+  // Falta de conexión al guardar: se avisa al lado de los botones.
+  const [avisoConexion, setAvisoConexion] = useState(null);
   const [mensajeExito, setMensajeExito] = useState('');
   const [intentoEnviar, setIntentoEnviar] = useState(false);
   const [enviando, setEnviando] = useState(false);
@@ -237,6 +241,7 @@ export default function AltaUsuario() {
     });
 
     setErrorGeneral('');
+    setAvisoConexion(null);
   };
 
   /**
@@ -259,6 +264,7 @@ export default function AltaUsuario() {
     evento.preventDefault();
     setIntentoEnviar(true);
     setErrorGeneral('');
+    setAvisoConexion(null);
 
     if (!formularioValido) {
       // Lleva el foco al primer campo con problema.
@@ -291,6 +297,8 @@ export default function AltaUsuario() {
         setErroresBackend({ [error.campo]: mensaje });
         setTocados((previos) => ({ ...previos, [error.campo]: true }));
         document.getElementById(`nu-${error.campo}`)?.focus();
+      } else if (esErrorDeConexion(error)) {
+        setAvisoConexion(avisoSinConexion('El usuario no se registró', { formulario: true }));
       } else {
         setErrorGeneral(mensaje);
       }
@@ -467,6 +475,7 @@ export default function AltaUsuario() {
             de registrar no haría nada.
           */}
           <div className="au-footer">
+            <AvisoSinConexion aviso={avisoConexion} />
             <button
               type="button"
               className="ds-boton ds-boton--cancelar"

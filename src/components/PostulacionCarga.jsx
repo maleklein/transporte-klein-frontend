@@ -8,6 +8,8 @@ import { usuarioActual } from '../api/sesion';
 import { formatearFecha, formatearPeso, motivoSinCapacidad, retiroVencido } from '../utils/carga';
 import { ESTADOS_ABIERTOS } from '../utils/estadosCarga';
 import { evitarFoco } from '../utils/formulario';
+import { useAvisoSinConexion } from './contextoConexion';
+import { esErrorDeConexion, textoSinConexion } from '../utils/conexion';
 import './PostulacionCarga.css';
 
 /**
@@ -42,6 +44,8 @@ export default function PostulacionCarga({ carga, alPostularse }) {
   const esSuya = carga.id_camionero_asignado === usuarioActual()?.id;
   const abierta = ESTADOS_ABIERTOS.includes(carga.estado_actual);
 
+  const avisarSiFaltaConexion = useAvisoSinConexion();
+
   useEffect(() => {
     if (!abierta || esSuya) return undefined;
 
@@ -58,13 +62,15 @@ export default function PostulacionCarga({ carga, alPostularse }) {
       })
       .catch((fallo) => {
         if (fallo?.name === 'AbortError') return;
+        // Sin conexión, el detalle entero pasa a la pantalla de "Sin conexión".
+        if (avisarSiFaltaConexion(fallo)) return;
         // Si no se puede saber, se ofrece el botón igual: el backend rechaza
         // la postulación repetida con un 409 que se muestra en el modal.
         setSituacion('sin-postular');
       });
 
     return () => controlador.abort();
-  }, [carga.id_carga, abierta, esSuya]);
+  }, [carga.id_carga, abierta, esSuya, avisarSiFaltaConexion]);
 
   // Lleva el foco al aviso de éxito apenas aparece, como el resto de los
   // avisos del detalle: quien usa lector de pantalla se entera del resultado.
@@ -91,7 +97,11 @@ export default function PostulacionCarga({ carga, alPostularse }) {
       alPostularse?.();
     } catch (fallo) {
       setError(
-        fallo instanceof ErrorDeApi ? fallo.message : 'Ocurrió un error inesperado al postularte.',
+        esErrorDeConexion(fallo)
+          ? textoSinConexion('La postulación no se envió')
+          : fallo instanceof ErrorDeApi
+            ? fallo.message
+            : 'Ocurrió un error inesperado al postularte.',
       );
     } finally {
       setPostulando(false);

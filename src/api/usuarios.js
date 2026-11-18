@@ -4,21 +4,14 @@
  */
 
 import { headersDeAuth, manejarNoAutorizado } from './sesion';
+import { ErrorDeApi } from './errores';
+import { errorSinConexion, leerConReintentos } from './conexion';
 
 const URL_API = import.meta.env.VITE_API_URL ?? 'http://localhost:3000';
 
-/**
- * Error de la API. Guarda a qué campo del formulario corresponde el mensaje,
- * para poder mostrarlo debajo del input que lo causó.
- */
-export class ErrorDeApi extends Error {
-  constructor(mensaje, campo = null, estado = 0) {
-    super(mensaje);
-    this.name = 'ErrorDeApi';
-    this.campo = campo;
-    this.estado = estado;
-  }
-}
+// `ErrorDeApi` se define en errores.js; se sigue exportando desde acá porque
+// es de donde lo importa el resto de la app.
+export { ErrorDeApi };
 
 /**
  * El backend responde 400 con un único texto: { "message": "..." }.
@@ -65,11 +58,7 @@ export async function crearUsuario(datos) {
     });
   } catch {
     // El servidor no respondió (apagado, sin red, CORS bloqueado).
-    throw new ErrorDeApi(
-      'No se pudo conectar con el servidor. Verificá que el sistema esté encendido e intentá de nuevo.',
-      null,
-      0,
-    );
+    throw errorSinConexion();
   }
 
   // Algunas respuestas de error pueden no traer JSON válido.
@@ -121,17 +110,13 @@ export async function listarUsuarios(filtros = {}, opciones = {}) {
 
   let respuesta;
   try {
-    respuesta = await fetch(`${URL_API}/usuarios${consulta ? `?${consulta}` : ''}`, {
+    respuesta = await leerConReintentos(`${URL_API}/usuarios${consulta ? `?${consulta}` : ''}`, {
       headers: { ...headersDeAuth() },
       signal: opciones.signal,
     });
   } catch (error) {
     if (error?.name === 'AbortError') throw error;
-    throw new ErrorDeApi(
-      'No se pudo conectar con el servidor. Verificá que el sistema esté encendido e intentá de nuevo.',
-      null,
-      0,
-    );
+    throw errorSinConexion();
   }
 
   let cuerpo = null;
@@ -177,11 +162,7 @@ export async function editarUsuario(idUsuario, datos) {
       body: JSON.stringify(datos),
     });
   } catch {
-    throw new ErrorDeApi(
-      'No se pudo conectar con el servidor. Verificá que el sistema esté encendido e intentá de nuevo.',
-      null,
-      0,
-    );
+    throw errorSinConexion();
   }
 
   let cuerpo = null;

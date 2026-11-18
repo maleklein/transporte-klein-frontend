@@ -25,6 +25,8 @@ import {
   validarTipoVehiculo,
   validarUbicacion,
 } from '../utils/validarUsuario';
+import AvisoSinConexion from '../components/AvisoSinConexion';
+import { avisoSinConexion, esErrorDeConexion } from '../utils/conexion';
 import './AltaUsuario.css';
 import './EditarUsuario.css';
 
@@ -164,6 +166,8 @@ export default function EditarUsuario() {
   const [tocados, setTocados] = useState({});
   const [erroresBackend, setErroresBackend] = useState({});
   const [errorGeneral, setErrorGeneral] = useState('');
+  // Falta de conexión al guardar: se avisa al lado de los botones.
+  const [avisoConexion, setAvisoConexion] = useState(null);
   const [mensajeExito, setMensajeExito] = useState('');
   const [intentoEnviar, setIntentoEnviar] = useState(false);
   const [enviando, setEnviando] = useState(false);
@@ -224,6 +228,7 @@ export default function EditarUsuario() {
     });
 
     setErrorGeneral('');
+    setAvisoConexion(null);
   };
 
   /**
@@ -245,6 +250,7 @@ export default function EditarUsuario() {
     evento.preventDefault();
     setIntentoEnviar(true);
     setErrorGeneral('');
+    setAvisoConexion(null);
 
     if (!formularioValido) {
       const primerCampoConError = Object.keys(erroresValidacion)[0];
@@ -277,6 +283,8 @@ export default function EditarUsuario() {
         setErroresBackend({ [error.campo]: mensaje });
         setTocados((previos) => ({ ...previos, [error.campo]: true }));
         document.getElementById(`eu-${error.campo}`)?.focus();
+      } else if (esErrorDeConexion(error)) {
+        setAvisoConexion(avisoSinConexion('Los cambios no se guardaron', { formulario: true }));
       } else {
         setErrorGeneral(mensaje);
       }
@@ -433,6 +441,8 @@ export default function EditarUsuario() {
           </div>
 
           <div className="au-footer">
+
+            <AvisoSinConexion aviso={avisoConexion} />
             <button
               type="button"
               className="ds-boton ds-boton--cancelar"

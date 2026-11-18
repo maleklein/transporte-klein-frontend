@@ -24,6 +24,8 @@ import { usuarioActual } from '../api/sesion';
 import { formatearFechaHora, formatearMarcaCorta, rutaPendientesAsignacion } from '../utils/carga';
 import { agruparPorFecha } from '../utils/agruparPorFecha';
 import { destinoVolver, volverA } from '../utils/volver';
+import { useAvisoSinConexion } from '../components/contextoConexion';
+import { esErrorDeConexion, textoSinConexion } from '../utils/conexion';
 import './Notificaciones.css';
 
 /**
@@ -71,6 +73,7 @@ export default function Notificaciones() {
   // 'cargando' | 'ok' | 'error'
   const [estadoPantalla, setEstadoPantalla] = useState('cargando');
   const [mensajeError, setMensajeError] = useState('');
+  const avisarSiFaltaConexion = useAvisoSinConexion();
 
   // La que se está abriendo (deshabilita su botón mientras se marca) y el
   // error si no se pudo marcar.
@@ -94,6 +97,7 @@ export default function Notificaciones() {
       })
       .catch((error) => {
         if (error?.name === 'AbortError') return;
+        if (avisarSiFaltaConexion(error)) return;
         setMensajeError(
           error instanceof ErrorDeApi
             ? error.message
@@ -103,7 +107,7 @@ export default function Notificaciones() {
       });
 
     return () => controlador.abort();
-  }, []);
+  }, [avisarSiFaltaConexion]);
 
   // Las sin leer cuentan sobre todas, no sólo sobre las 20 que se ven: si no,
   // con avisos sin leer más viejos decía "Ya leíste todas." y escondía
@@ -164,9 +168,11 @@ export default function Notificaciones() {
       refResumen.current?.focus({ preventScroll: true });
     } catch (error) {
       setErrorAlAbrir(
-        error instanceof ErrorDeApi
-          ? error.message
-          : 'No se pudieron marcar las notificaciones como leídas. Intentá de nuevo.',
+        esErrorDeConexion(error)
+          ? textoSinConexion('Las notificaciones no se marcaron como leídas')
+          : error instanceof ErrorDeApi
+            ? error.message
+            : 'No se pudieron marcar las notificaciones como leídas. Intentá de nuevo.',
       );
     } finally {
       setMarcandoTodas(false);
@@ -193,9 +199,11 @@ export default function Notificaciones() {
       setHayMas(datos.length > POR_PAGINA);
     } catch (error) {
       setErrorMas(
-        error instanceof ErrorDeApi
-          ? error.message
-          : 'No se pudieron cargar más notificaciones. Intentá de nuevo.',
+        esErrorDeConexion(error)
+          ? textoSinConexion('No se pudieron traer más notificaciones')
+          : error instanceof ErrorDeApi
+            ? error.message
+            : 'No se pudieron cargar más notificaciones. Intentá de nuevo.',
       );
     } finally {
       setCargandoMas(false);
@@ -219,9 +227,11 @@ export default function Notificaciones() {
         await marcarNotificacionLeida(notificacion.id_notificacion);
       } catch (error) {
         setErrorAlAbrir(
-          error instanceof ErrorDeApi
-            ? error.message
-            : 'No se pudo abrir la notificación. Intentá de nuevo.',
+          esErrorDeConexion(error)
+            ? textoSinConexion('La notificación no se abrió')
+            : error instanceof ErrorDeApi
+              ? error.message
+              : 'No se pudo abrir la notificación. Intentá de nuevo.',
         );
         return;
       } finally {

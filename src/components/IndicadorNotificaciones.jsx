@@ -2,6 +2,8 @@ import { useEffect, useState } from 'react';
 import { NavLink } from 'react-router-dom';
 import { IconoCampana } from './Iconos';
 import { EVENTO_NOTIFICACIONES_CAMBIARON, listarNotificaciones } from '../api/notificaciones';
+import { useConexion } from './contextoConexion';
+import { esErrorDeConexion } from '../utils/conexion';
 import './IndicadorNotificaciones.css';
 
 /**
@@ -25,6 +27,7 @@ const INTERVALO_CONSULTA_MS = 30_000;
  */
 export default function IndicadorNotificaciones() {
   const [noLeidas, setNoLeidas] = useState(0);
+  const { avisarConexionInestable } = useConexion();
 
   useEffect(() => {
     let controlador = null;
@@ -40,8 +43,12 @@ export default function IndicadorNotificaciones() {
         .then((datos) => setNoLeidas(datos.length))
         // Si falla, el contador se queda con lo último que supo: es un
         // indicador, no vale la pena tapar la pantalla con un error. Un 401
-        // ya lo resuelve la capa de API mandando al login.
-        .catch(() => {});
+        // ya lo resuelve la capa de API mandando al login. Si es por falta de
+        // conexión, la barra muestra la franja de "Sin conexión" (esta
+        // consulta es la que se da cuenta de que se cortó).
+        .catch((error) => {
+          if (esErrorDeConexion(error)) avisarConexionInestable();
+        });
     };
 
     consultar();
@@ -55,7 +62,7 @@ export default function IndicadorNotificaciones() {
       window.removeEventListener(EVENTO_NOTIFICACIONES_CAMBIARON, consultar);
       controlador?.abort();
     };
-  }, []);
+  }, [avisarConexionInestable]);
 
   // El backend devuelve 100 como máximo, así que de 99 para arriba el número
   // exacto ya no se conoce: "99+" dice justamente eso.

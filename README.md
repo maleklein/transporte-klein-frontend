@@ -32,6 +32,17 @@ docker run --rm -p 8080:80 transporte-klein-frontend
 
 y abrir http://localhost:8080.
 
+## Sin conexión con el sistema
+
+Si una pantalla no puede traer sus datos porque no hay conexión con el
+backend, se reemplaza entera por "No se pudo conectar con el sistema", con la
+barra superior y el botón **Reintentar**; el sistema además prueba solo si
+volvió y, cuando vuelve, la pantalla se carga sola. Si lo que falla es una
+acción (guardar, cancelar, postularse), el aviso va al lado del botón y la
+pantalla queda como estaba. Si se corta con la pantalla ya cargada, aparece
+una franja debajo de la barra. El detalle está en
+[docs/sin-conexion-verificacion.md](docs/sin-conexion-verificacion.md).
+
 ## Notificaciones (HU 12)
 
 El acceso a las notificaciones está en la barra superior de todas las pantallas

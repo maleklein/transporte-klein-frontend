@@ -11,11 +11,13 @@ import {
   IconoGrafico,
   IconoInicio,
   IconoMenu,
+  IconoSinConexion,
   IconoUsuario,
 } from './Iconos';
 import IndicadorNotificaciones from './IndicadorNotificaciones';
 import { cerrarSesion, usuarioActual } from '../api/sesion';
 import { seccionDeOrigen } from '../utils/volver';
+import { useConexion } from './contextoConexion';
 import './BarraSuperior.css';
 
 /**
@@ -107,7 +109,8 @@ const ACCESOS_CAMIONERO = [
  *
  * También muestra, debajo de la barra, el aviso de "sin permiso" que deja
  * `RutaProtegida` cuando redirige a un usuario que abrió una pantalla de otro
- * rol (HU 15).
+ * rol (HU 15), y la franja de "Sin conexión" cuando se corta la conexión
+ * con la pantalla ya cargada (ver `ControlConexion`).
  *
  * @param {object} [props]
  * @param {{ ruta: string, texto: string, estado?: object|null } | null} [props.volver] - a dónde vuelve la pantalla, el mismo de sus migas de pan (ver `utils/volver`). Si viene, en el celular reemplaza al menú.
@@ -120,6 +123,7 @@ export default function BarraSuperior({ volver = null } = {}) {
   const accesos = !usuario ? [] : usuario.rol === 'camionero' ? ACCESOS_CAMIONERO : ACCESOS_ADMINISTRADOR;
   const avisoAcceso = location.state?.avisoAcceso;
   const rutaPerfil = usuario ? `/perfiles/${usuario.id}` : null;
+  const { pantallaCaida, conexionInestable } = useConexion();
 
   const [menuAbierto, setMenuAbierto] = useState(false);
 
@@ -242,6 +246,16 @@ export default function BarraSuperior({ volver = null } = {}) {
         </div>
       )}
 
+
+      {/* Se cortó la conexión con la pantalla ya cargada. Si la pantalla no se
+          pudo abrir, ya lo dice ella: no hace falta repetirlo acá. */}
+      {conexionInestable && !pantallaCaida && (
+        <p className="bs-aviso-conexion" role="status">
+          <IconoSinConexion width={22} height={22} />
+          <span>Sin conexión con el sistema. Intentando reconectar…</span>
+          <span className="ds-ruedita" aria-hidden="true" />
+        </p>
+      )}
 
       {avisoAcceso && (
         <p className="bs-aviso-acceso" role="alert">
