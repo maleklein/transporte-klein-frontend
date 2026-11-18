@@ -2,27 +2,36 @@
    Menú "Acciones" de una fila (ver MenuAcciones.jsx).
    ========================================================================== */
 
-/* Botón redondo sólo con el ícono ⋯, sin borde: se nota al pasar el mouse
-   o al abrirlo. 40 px, para tocarlo cómodo con el dedo. El gris es el de los
-   bordes: más claro que el texto, para que no compita con los datos de la
-   fila, y con el contraste mínimo de 3:1 para un control. */
+/* Botón con forma de píldora, como las etiquetas de rol y estado de la misma
+   fila, pero más corto y con borde en lugar de fondo: así se lee como un
+   botón y no como un dato. El gris es el de los bordes (contraste de 3:1, el
+   mínimo para un control) para que no compita con los datos de la fila. */
 .ma-boton {
+  position: relative;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 40px;
-  height: 40px;
+  width: 44px;
+  height: 28px;
   padding: 0;
-  background: none;
-  border: none;
-  border-radius: 50%;
+  background: var(--color-fondo);
+  border: 1.5px solid var(--color-borde);
+  border-radius: 999px;
   color: var(--color-borde);
   cursor: pointer;
+}
+
+/* Se ve de 28 px de alto, pero se puede tocar en 44 x 40, cómodo con el dedo. */
+.ma-boton::after {
+  content: '';
+  position: absolute;
+  inset: -6px 0;
 }
 
 .ma-boton:hover,
 .ma-boton[aria-expanded='true'] {
   background: var(--color-primario-claro);
+  border-color: var(--color-primario);
   color: var(--color-primario);
 }
 

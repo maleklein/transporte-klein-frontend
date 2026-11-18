@@ -6,8 +6,8 @@ import './MenuAcciones.css';
 const SEPARACION = 6;
 
 /**
- * Botón de tres puntos (⋯) que despliega las acciones de una fila (Ver ficha,
- * Editar), como en GitHub o Notion. Reemplaza a los botones sueltos de
+ * Botón de tres puntos (⋯), con forma de píldora, que despliega las acciones
+ * de una fila (Ver ficha, Editar), como en GitHub o Notion. Reemplaza a los botones sueltos de
  * cada fila, que ocupaban mucho ancho. No tiene texto visible: el lector de
  * pantalla lee `etiqueta`, y al pasar el mouse aparece "Acciones".
  *

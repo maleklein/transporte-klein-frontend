@@ -170,9 +170,9 @@ export function IconoChevronAbajo(props) {
 export function IconoMasAcciones(props) {
   return (
     <svg {...base} {...props}>
-      <circle cx="5" cy="12" r="1.6" fill="currentColor" />
-      <circle cx="12" cy="12" r="1.6" fill="currentColor" />
-      <circle cx="19" cy="12" r="1.6" fill="currentColor" />
+      <circle cx="5" cy="12" r="1.9" fill="currentColor" />
+      <circle cx="12" cy="12" r="1.9" fill="currentColor" />
+      <circle cx="19" cy="12" r="1.9" fill="currentColor" />
     </svg>
   );
 }
