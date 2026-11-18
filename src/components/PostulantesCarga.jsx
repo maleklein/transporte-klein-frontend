@@ -74,6 +74,9 @@ function ItemPostulante({ postulante, conEtiqueta = true }) {
  * plegados en "Ver los otros postulados", por si se quiere saber quién más se
  * había anotado. Si la carga vuelve a pendiente, todos vuelven a la lista.
  *
+ * En una carga cancelada, el bloque es "Se habían postulado" y no lleva
+ * etiquetas: no hay nada que esperar ni nadie a quien asignar.
+ *
  * El modal de asignación vive acá pero lo abre el botón "Asignar camionero"
  * del progreso de la carga, que es donde está el próximo paso de cada estado:
  * por eso su apertura la maneja el detalle. Un solo botón para asignar, y no
@@ -181,6 +184,7 @@ export default function PostulantesCarga({ carga, version, modalAbierto, alCerra
   // "Sugeridos"), así que el asignado está en la lista con su postulación aceptada.
   const asignado = postulantes.find((postulante) => postulante.estado === 'aceptada');
   const otros = postulantes.filter((postulante) => postulante !== asignado);
+  const cancelada = carga.estado_actual === ESTADOS.CANCELADA;
 
   const cerrarModal = useCallback(() => {
     if (!asignando) alCerrarModal();
@@ -218,7 +222,7 @@ export default function PostulantesCarga({ carga, version, modalAbierto, alCerra
   return (
     <section className="dc-card pp-tarjeta" aria-labelledby={`${idBase}-titulo`}>
       <h2 className="dc-card__titulo" id={`${idBase}-titulo`}>
-        {asignado ? 'Quién lleva la carga' : 'Camioneros postulados'}
+        {asignado ? 'Quién lleva la carga' : cancelada ? 'Se habían postulado' : 'Camioneros postulados'}
         {!asignado && estadoPedido === 'ok' && postulantes.length > 0 && (
           <span className="pp-contador">({postulantes.length})</span>
         )}
@@ -241,8 +245,9 @@ export default function PostulantesCarga({ carga, version, modalAbierto, alCerra
 
       {estadoPedido === 'ok' && postulantes.length === 0 && (
         <p className="pp-mensaje">
-          Todavía no se postuló ningún camionero. Cuando se postule el primero, la carga pasa a
-          pendiente y vas a poder asignarla.
+          {cancelada
+            ? 'Nadie se había postulado a esta carga.'
+            : 'Todavía no se postuló ningún camionero. Cuando se postule el primero, la carga pasa a pendiente y vas a poder asignarla.'}
         </p>
       )}
 
@@ -275,7 +280,7 @@ export default function PostulantesCarga({ carga, version, modalAbierto, alCerra
       {estadoPedido === 'ok' && !asignado && postulantes.length > 0 && (
         <ul className="pp-lista">
           {postulantes.map((postulante) => (
-            <ItemPostulante key={postulante.id_postulacion} postulante={postulante} />
+            <ItemPostulante key={postulante.id_postulacion} postulante={postulante} conEtiqueta={!cancelada} />
           ))}
         </ul>
       )}
