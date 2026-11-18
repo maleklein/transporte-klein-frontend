@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { obtenerReputacion } from '../api/calificaciones';
 import { usuarioActual } from '../api/sesion';
 import { formatearFecha, formatearMarcaCorta } from '../utils/carga';
@@ -11,6 +11,7 @@ import {
   IconoFlechaAtras,
   IconoReintentar,
 } from './Iconos';
+import { useAvisoSinConexion } from './contextoConexion';
 import './Calificaciones.css';
 
 /**
@@ -141,21 +142,30 @@ export default function ReputacionUsuario({ idUsuario, mostrarIdentidad = false 
   const [datos, setDatos] = useState(null);
   const [error, setError] = useState('');
   const [cargando, setCargando] = useState(true);
+  const yaCargoRef = useRef(false);
+  const avisarSiFaltaConexion = useAvisoSinConexion();
 
   useEffect(() => {
     const controlador = new AbortController();
     setCargando(true);
     setError('');
     obtenerReputacion(idUsuario, pagina, controlador.signal)
-      .then(setDatos)
+      .then((recibidos) => {
+        setDatos(recibidos);
+        yaCargoRef.current = true;
+      })
       .catch((e) => {
-        if (e.name !== 'AbortError') setError(e.message);
+        if (e.name === 'AbortError') return;
+        // Sin conexión, si todavía no se mostró nada, pasa a la pantalla de
+        // "Sin conexión"; al cambiar de página, se avisa acá.
+        if (!yaCargoRef.current && avisarSiFaltaConexion(e)) return;
+        setError(e.message);
       })
       .finally(() => {
         if (!controlador.signal.aborted) setCargando(false);
       });
     return () => controlador.abort();
-  }, [idUsuario, pagina, version]);
+  }, [idUsuario, pagina, version, avisarSiFaltaConexion]);
 
   // La primera vez no hay nada que mostrar. Al cambiar de página, en cambio,
   // queda la anterior a la vista (atenuada) para que la pantalla no salte.

@@ -6,6 +6,8 @@ import { listarPostulantes } from '../api/cargas';
 import { ErrorDeApi } from '../api/usuarios';
 import { formatearMarcaCorta, formatearPeso } from '../utils/carga';
 import { ESTADOS } from '../utils/estadosCarga';
+import { useAvisoSinConexion } from './contextoConexion';
+import { esErrorDeConexion, textoSinConexion } from '../utils/conexion';
 import './PostulantesCarga.css';
 
 /** Cada cuánto se vuelve a pedir la lista mientras la carga espera asignación. */
@@ -59,6 +61,7 @@ export default function PostulantesCarga({ carga, version, modalAbierto, alCerra
   const [refresco, setRefresco] = useState(0);
   // Si ya se mostró una lista: un refresco que falla no la reemplaza por un error.
   const refHayLista = useRef(false);
+  const avisarSiFaltaConexion = useAvisoSinConexion();
 
   // Se vuelve a pedir después de cada cambio de estado (`version`): asignar o
   // volver a pendiente cambian cómo quedó cada postulación. Mientras llega,
@@ -78,6 +81,8 @@ export default function PostulantesCarga({ carga, version, modalAbierto, alCerra
         // Si ya había una lista a la vista (un refresco de fondo), se deja:
         // no vale la pena tapar los postulados con un error pasajero.
         if (refHayLista.current) return;
+        // Sin conexión, el detalle entero pasa a la pantalla de "Sin conexión".
+        if (avisarSiFaltaConexion(fallo)) return;
         setErrorPedido(
           fallo instanceof ErrorDeApi
             ? fallo.message
@@ -87,7 +92,7 @@ export default function PostulantesCarga({ carga, version, modalAbierto, alCerra
       });
 
     return () => controlador.abort();
-  }, [carga.id_carga, version, refresco]);
+  }, [carga.id_carga, version, refresco, avisarSiFaltaConexion]);
 
   // Refresco periódico, solo mientras la carga está pendiente (después de
   // asignarla ya no llegan postulaciones) y con la pestaña a la vista.
@@ -149,7 +154,11 @@ export default function PostulantesCarga({ carga, version, modalAbierto, alCerra
       alCerrarModal();
     } catch (fallo) {
       setErrorAsignacion(
-        fallo instanceof ErrorDeApi ? fallo.message : 'Ocurrió un error inesperado al asignar la carga.',
+        esErrorDeConexion(fallo)
+          ? textoSinConexion('La carga no se asignó')
+          : fallo instanceof ErrorDeApi
+            ? fallo.message
+            : 'Ocurrió un error inesperado al asignar la carga.',
       );
     } finally {
       setAsignando(false);

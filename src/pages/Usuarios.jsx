@@ -20,6 +20,7 @@ import TextoResaltado from '../components/TextoResaltado';
 import { avisoSinResultados, coincideBusqueda } from '../utils/buscarUsuarios';
 import { formatearDni } from '../utils/formatoUsuario';
 import { destinoVolver, volverA } from '../utils/volver';
+import { useAvisoSinConexion } from '../components/contextoConexion';
 import './DetalleCarga.css';
 import './Usuarios.css';
 
@@ -123,6 +124,8 @@ export default function Usuarios() {
         })
       : null;
 
+  const avisarSiFaltaConexion = useAvisoSinConexion();
+
   // Pide los usuarios una sola vez, al entrar.
   useEffect(() => {
     const controlador = new AbortController();
@@ -134,6 +137,7 @@ export default function Usuarios() {
       })
       .catch((error) => {
         if (error?.name === 'AbortError') return;
+        if (avisarSiFaltaConexion(error)) return;
         setMensajeError(
           error instanceof ErrorDeApi
             ? error.message
@@ -143,7 +147,7 @@ export default function Usuarios() {
       });
 
     return () => controlador.abort();
-  }, []);
+  }, [avisarSiFaltaConexion]);
 
   /**
    * Cambia un filtro escribiéndolo en la URL. `replace` para no llenar el

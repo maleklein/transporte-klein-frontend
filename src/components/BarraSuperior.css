@@ -52,6 +52,34 @@
    usuario que abrió una pantalla de otro rol. Mismos colores que el aviso de
    error (`.ds-aviso--error`), pero como franja de todo el ancho, debajo de la
    barra: por eso sólo lleva el borde de abajo. */
+/* Franja de "Sin conexión": amarilla porque no es un error de lo que hizo
+   el usuario, y la pantalla sigue sirviendo para mirar. */
+.bs-aviso-conexion {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  margin: 0;
+  padding: 10px 28px;
+  border-bottom: 2px solid var(--color-advertencia);
+  background: var(--color-advertencia-claro);
+  color: var(--color-advertencia);
+  font-weight: 600;
+  text-align: center;
+}
+
+.bs-aviso-conexion svg {
+  flex-shrink: 0;
+}
+
+@media (max-width: 720px) {
+  .bs-aviso-conexion {
+    justify-content: flex-start;
+    padding: 10px 16px;
+    text-align: left;
+  }
+}
+
 .bs-aviso-acceso {
   display: flex;
   align-items: flex-start;

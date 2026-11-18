@@ -46,6 +46,8 @@ import {
   ESTADOS_BLOQUEADOS_CANCELACION,
   motivoAccionesBloqueadas,
 } from '../utils/estadosCarga';
+import { useAvisoSinConexion } from '../components/contextoConexion';
+import { esErrorDeConexion, textoSinConexion } from '../utils/conexion';
 import './DetalleCarga.css';
 
 /**
@@ -114,6 +116,7 @@ export default function DetalleCarga() {
   // 'cargando' | 'ok' | 'no-encontrada' | 'error'
   const [estadoPantalla, setEstadoPantalla] = useState('cargando');
   const [mensajeError, setMensajeError] = useState('');
+  const avisarSiFaltaConexion = useAvisoSinConexion();
 
   // Bitácora de cambios de estado (HU 8), en orden cronológico tal como la
   // devuelve el backend. `versionHistorial` se incrementa después de cada
@@ -250,9 +253,11 @@ export default function DetalleCarga() {
       setMensajeCancelacion('La carga se canceló correctamente.');
     } catch (error) {
       setErrorCancelacion(
-        error instanceof ErrorDeApi
-          ? error.message
-          : 'Ocurrió un error inesperado al cancelar la carga.',
+        esErrorDeConexion(error)
+          ? textoSinConexion('La carga no se canceló')
+          : error instanceof ErrorDeApi
+            ? error.message
+            : 'Ocurrió un error inesperado al cancelar la carga.',
       );
     } finally {
       setCancelando(false);
@@ -288,6 +293,7 @@ export default function DetalleCarga() {
       })
       .catch((error) => {
         if (error?.name === 'AbortError') return;
+        if (avisarSiFaltaConexion(error)) return;
         if (error instanceof ErrorDeApi && error.estado === 404) {
           setEstadoPantalla('no-encontrada');
           return;
@@ -301,7 +307,7 @@ export default function DetalleCarga() {
       });
 
     return () => controlador.abort();
-  }, [id]);
+  }, [id, avisarSiFaltaConexion]);
 
   const hayCarga = estadoPantalla === 'ok';
 
@@ -356,6 +362,9 @@ export default function DetalleCarga() {
       })
       .catch((error) => {
         if (error?.name === 'AbortError') return;
+        // La primera vez es parte de abrir el detalle; después de un cambio de
+        // estado, el error se muestra en el bloque, como siempre.
+        if (versionHistorial === 0 && avisarSiFaltaConexion(error)) return;
         setErrorHistorial(
           error instanceof ErrorDeApi
             ? error.message
@@ -365,7 +374,7 @@ export default function DetalleCarga() {
       });
 
     return () => controlador.abort();
-  }, [id, hayCarga, versionHistorial]);
+  }, [id, hayCarga, versionHistorial, avisarSiFaltaConexion]);
 
   const descripcion =
     carga && typeof carga.observaciones === 'string' && carga.observaciones.trim()

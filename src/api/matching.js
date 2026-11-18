@@ -1,5 +1,6 @@
 import { ErrorDeApi } from './usuarios';
 import { headersDeAuth, manejarNoAutorizado } from './sesion';
+import { errorSinConexion, leerConReintentos } from './conexion';
 
 const URL_API = import.meta.env.VITE_API_URL ?? 'http://localhost:3000';
 
@@ -7,14 +8,14 @@ const URL_API = import.meta.env.VITE_API_URL ?? 'http://localhost:3000';
 export async function obtenerSugeridos(idCarga, opciones = {}) {
   let respuesta;
   try {
-    respuesta = await fetch(`${URL_API}/matching/${encodeURIComponent(idCarga)}`, {
+    respuesta = await leerConReintentos(`${URL_API}/matching/${encodeURIComponent(idCarga)}`, {
       headers: { ...headersDeAuth() },
       signal: opciones.signal,
       cache: 'no-store',
     });
   } catch (error) {
     if (error?.name === 'AbortError') throw error;
-    throw new ErrorDeApi('No se pudo conectar con el servidor para obtener sugerencias.', null, 0);
+    throw errorSinConexion();
   }
 
   const cuerpo = await respuesta.json().catch(() => null);

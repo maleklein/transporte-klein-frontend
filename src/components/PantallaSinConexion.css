@@ -1,0 +1,93 @@
+/* Pantalla de "Sin conexión" (como una página 404): centrada en los dos
+   sentidos en el alto que deja la barra superior. */
+.psc-contenido {
+  max-width: var(--ancho-medio);
+  margin: 0 auto;
+  padding: 0 28px;
+}
+
+.psc-pantalla {
+  min-height: calc(100vh - 150px);
+  min-height: calc(100dvh - 150px);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  padding: 48px 0;
+  text-align: center;
+}
+
+.psc-icono {
+  display: grid;
+  place-items: center;
+  width: 120px;
+  height: 120px;
+  margin-bottom: 8px;
+  border-radius: 50%;
+  background: var(--color-primario-claro);
+  color: var(--color-primario);
+}
+
+.psc-antetitulo {
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--color-texto-suave);
+}
+
+.psc-titulo {
+  font-size: 30px;
+  line-height: 1.25;
+  font-weight: 700;
+  color: var(--color-primario);
+}
+
+/* El foco lo pone el código al abrir la pantalla: no hace falta el recuadro. */
+.psc-titulo:focus {
+  outline: none;
+}
+
+.psc-texto {
+  max-width: 540px;
+  font-size: var(--texto-label);
+  color: var(--color-texto-suave);
+}
+
+/* Reserva el renglón aunque esté vacío, para que el botón no salte. */
+.psc-estado {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 1.5em;
+  margin-top: 8px;
+  font-weight: 600;
+  color: var(--color-primario);
+}
+
+@media (max-width: 720px) {
+  .psc-contenido {
+    padding: 0 16px;
+  }
+
+  .psc-pantalla {
+    min-height: calc(100vh - 110px);
+    min-height: calc(100dvh - 110px);
+    padding: 32px 0;
+  }
+
+  .psc-icono {
+    width: 96px;
+    height: 96px;
+  }
+
+  .psc-icono svg {
+    width: 48px;
+    height: 48px;
+  }
+
+  .psc-titulo {
+    font-size: 24px;
+  }
+}

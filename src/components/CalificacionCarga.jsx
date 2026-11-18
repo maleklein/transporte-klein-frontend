@@ -3,6 +3,8 @@ import { Link, useLocation } from 'react-router-dom';
 import { emitirCalificacion, obtenerCalificacionViaje } from '../api/calificaciones';
 import { IconoCheck, IconoGuardar, IconoInfo, IconoReintentar } from './Iconos';
 import { volverA } from '../utils/volver';
+import { useAvisoSinConexion } from './contextoConexion';
+import { esErrorDeConexion, textoSinConexion } from '../utils/conexion';
 import './Calificaciones.css';
 
 /** Se monta para una carga entregada. El servidor determina la contraparte y el permiso. */
@@ -20,6 +22,7 @@ export default function CalificacionCarga({ idCarga }) {
   const [cargando, setCargando] = useState(true);
   const [sinPermiso, setSinPermiso] = useState(false);
   const enviando = useRef(false);
+  const avisarSiFaltaConexion = useAvisoSinConexion();
 
   useEffect(() => {
     const controlador = new AbortController();
@@ -30,12 +33,14 @@ export default function CalificacionCarga({ idCarga }) {
       .then(setDatos)
       .catch((e) => {
         if (e.name === 'AbortError') return;
+        // Sin conexión, el detalle entero pasa a la pantalla de "Sin conexión".
+        if (avisarSiFaltaConexion(e)) return;
         setError(e.message);
         setSinPermiso(e.estado === 403);
       })
       .finally(() => { if (!controlador.signal.aborted) setCargando(false); });
     return () => controlador.abort();
-  }, [idCarga, version]);
+  }, [idCarga, version, avisarSiFaltaConexion]);
 
   async function enviar(evento) {
     evento.preventDefault();
@@ -52,6 +57,8 @@ export default function CalificacionCarga({ idCarga }) {
         // 409: el viaje ya se calificó (por ejemplo, desde otra pestaña). Informa, no es un error.
         setAviso({ tipo: 'info', texto: e.message });
         setVersion((v) => v + 1);
+      } else if (esErrorDeConexion(e)) {
+        setError(textoSinConexion('La calificación no se envió', { formulario: true }));
       } else setError(e.message);
     } finally {
       enviando.current = false;

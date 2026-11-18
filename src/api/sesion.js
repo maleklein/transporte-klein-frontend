@@ -11,6 +11,8 @@
  * `obtenerSesion` / `headersDeAuth` y no se entera de cómo se creó.
  */
 
+import { ESTADOS_SIN_RESPUESTA, textoSinConexion } from '../utils/conexion';
+
 /** Clave con la que se guarda la sesión en `localStorage`. */
 const CLAVE = 'sesion';
 
@@ -46,9 +48,7 @@ export async function iniciarSesion(email, contrasena) {
       body: JSON.stringify({ email, contraseña: contrasena }),
     });
   } catch {
-    throw new Error(
-      'No se pudo conectar con el servidor. Verificá que el sistema esté encendido e intentá de nuevo.',
-    );
+    throw new Error(textoSinConexion('No se pudo ingresar'));
   }
 
   let cuerpo = null;
@@ -59,6 +59,8 @@ export async function iniciarSesion(email, contrasena) {
   }
 
   if (!respuesta.ok) {
+    // Railway responde 502-504 si el backend no contesta: es falta de conexión.
+    if (ESTADOS_SIN_RESPUESTA.includes(respuesta.status)) throw new Error(textoSinConexion('No se pudo ingresar'));
     throw new Error(cuerpo?.message ?? `No se pudo iniciar sesión (código ${respuesta.status}).`);
   }
 

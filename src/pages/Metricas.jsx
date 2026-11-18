@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import {
   Bar,
   BarChart,
@@ -20,6 +20,7 @@ import { evitarFoco } from '../utils/formulario';
 import { formatearFecha } from '../utils/carga';
 import { etiquetaEstado, sufijoEstado } from '../utils/estadosCarga';
 import { destinoVolver } from '../utils/volver';
+import { useAvisoSinConexion } from '../components/contextoConexion';
 import './DetalleCarga.css';
 import './Metricas.css';
 
@@ -142,6 +143,10 @@ export default function Metricas() {
   // 'cargando' | 'ok' | 'error'
   const [estadoPantalla, setEstadoPantalla] = useState('cargando');
   const [mensajeError, setMensajeError] = useState('');
+  // Sin conexión, la primera carga pasa a la pantalla de "Sin conexión"; si
+  // falla al cambiar el período, se avisa acá y los filtros quedan como estaban.
+  const yaCargoRef = useRef(false);
+  const avisarSiFaltaConexion = useAvisoSinConexion();
 
   useEffect(() => {
     const controlador = new AbortController();
@@ -152,10 +157,12 @@ export default function Metricas() {
       .then((datos) => {
         setMetricas(datos);
         setEstadoPantalla('ok');
+        yaCargoRef.current = true;
       })
       .catch((error) => {
         // El pedido se canceló porque se disparó otro: no es un error real.
         if (error?.name === 'AbortError') return;
+        if (!yaCargoRef.current && avisarSiFaltaConexion(error)) return;
         setMensajeError(
           error instanceof ErrorDeApi
             ? error.message
@@ -165,7 +172,7 @@ export default function Metricas() {
       });
 
     return () => controlador.abort();
-  }, [periodo, intentoRecarga]);
+  }, [periodo, intentoRecarga, avisarSiFaltaConexion]);
 
   /** Vuelve a pedir el mismo período, tras un error de red o de servidor. */
   const reintentar = () => setIntentoRecarga((version) => version + 1);

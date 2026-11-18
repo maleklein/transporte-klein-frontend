@@ -4,6 +4,7 @@
 
 import { ErrorDeApi } from './usuarios';
 import { headersDeAuth, manejarNoAutorizado } from './sesion';
+import { errorSinConexion } from './conexion';
 
 /** URL base del backend. Se puede pisar con la variable de entorno VITE_API_URL. */
 const URL_API = import.meta.env.VITE_API_URL ?? 'http://localhost:3000';
@@ -34,11 +35,7 @@ export async function asignarCargaACamionero(idCarga, idCamionero) {
       body: JSON.stringify({ id_camionero: idCamionero }),
     });
   } catch {
-    throw new ErrorDeApi(
-      'No se pudo conectar con el servidor. Verificá que el sistema esté encendido e intentá de nuevo.',
-      null,
-      0,
-    );
+    throw errorSinConexion();
   }
 
   let cuerpo = null;

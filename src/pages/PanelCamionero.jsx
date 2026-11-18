@@ -20,6 +20,7 @@ import { ErrorDeApi } from '../api/usuarios';
 import { formatearFecha } from '../utils/carga';
 import { esViajeEnCurso, grupoDePostulacion } from '../utils/postulaciones';
 import { desdeInicio } from '../utils/volver';
+import { useAvisoSinConexion } from '../components/contextoConexion';
 import './PanelCamionero.css';
 
 /** Cuántos viajes en curso se listan en el panel; el resto, en Mis viajes. */
@@ -38,6 +39,7 @@ const MAXIMO_VIAJES_A_LA_VISTA = 3;
  */
 function useDato(pedir, version, queFallo) {
   const [dato, setDato] = useState({ estado: 'cargando', valor: null, error: '' });
+  const avisarSiFaltaConexion = useAvisoSinConexion();
 
   useEffect(() => {
     const controlador = new AbortController();
@@ -47,6 +49,8 @@ function useDato(pedir, version, queFallo) {
       .then((valor) => setDato({ estado: 'ok', valor, error: '' }))
       .catch((fallo) => {
         if (fallo?.name === 'AbortError') return;
+        // Sin conexión, el panel entero pasa a la pantalla de "Sin conexión".
+        if (avisarSiFaltaConexion(fallo)) return;
         setDato({
           estado: 'error',
           valor: null,

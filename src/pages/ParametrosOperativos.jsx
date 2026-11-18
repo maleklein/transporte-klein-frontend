@@ -18,6 +18,8 @@ import { ErrorDeApi } from '../api/usuarios';
 import { evitarFoco } from '../utils/formulario';
 import { PARAMETROS_COSTO, formatearFechaHora, formatearPesos } from '../utils/carga';
 import { destinoVolver } from '../utils/volver';
+import { useAvisoSinConexion } from '../components/contextoConexion';
+import { esErrorDeConexion, textoSinConexion } from '../utils/conexion';
 import './DetalleCarga.css';
 import './AltaUsuario.css';
 import './ParametrosOperativos.css';
@@ -87,6 +89,7 @@ export default function ParametrosOperativos() {
   const [guardando, setGuardando] = useState(false);
   const [errorGuardado, setErrorGuardado] = useState('');
   const [mensajeExito, setMensajeExito] = useState('');
+  const avisarSiFaltaConexion = useAvisoSinConexion();
 
   useEffect(() => {
     let vigente = true;
@@ -101,6 +104,7 @@ export default function ParametrosOperativos() {
       })
       .catch((error) => {
         if (!vigente) return;
+        if (avisarSiFaltaConexion(error)) return;
         setMensajeError(
           error instanceof ErrorDeApi ? error.message : 'No se pudieron cargar los parámetros. Intentá de nuevo.',
         );
@@ -110,7 +114,7 @@ export default function ParametrosOperativos() {
     return () => {
       vigente = false;
     };
-  }, [intentoRecarga]);
+  }, [intentoRecarga, avisarSiFaltaConexion]);
 
   const vigentePorClave = Object.fromEntries(parametros.map((parametro) => [parametro.clave, parametro]));
 
@@ -172,7 +176,11 @@ export default function ParametrosOperativos() {
         setModalAbierto(false);
       } else {
         setErrorGuardado(
-          error instanceof ErrorDeApi ? error.message : 'No se pudieron guardar los parámetros. Intentá de nuevo.',
+          esErrorDeConexion(error)
+            ? textoSinConexion('Los parámetros no se guardaron')
+            : error instanceof ErrorDeApi
+              ? error.message
+              : 'No se pudieron guardar los parámetros. Intentá de nuevo.',
         );
       }
     } finally {

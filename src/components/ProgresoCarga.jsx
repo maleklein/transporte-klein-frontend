@@ -12,6 +12,7 @@ import {
   requiereConfirmacion,
   transicionesDesde,
 } from '../utils/estadosCarga';
+import { esErrorDeConexion, textoSinConexion } from '../utils/conexion';
 import './ProgresoCarga.css';
 
 /**
@@ -288,9 +289,11 @@ export default function ProgresoCarga({ estado, eventos = [], alCambiarEstado, a
       refFoco.current = foco;
     } catch (fallo) {
       setError(
-        fallo instanceof ErrorDeApi
-          ? fallo.message
-          : 'Ocurrió un error inesperado al cambiar el estado.',
+        esErrorDeConexion(fallo)
+          ? textoSinConexion('La carga no cambió de estado')
+          : fallo instanceof ErrorDeApi
+            ? fallo.message
+            : 'Ocurrió un error inesperado al cambiar el estado.',
       );
     } finally {
       setCambiandoA(null);

@@ -505,3 +505,29 @@ select.ds-campo__input,
   background: var(--color-peligro-claro);
   color: var(--color-peligro-oscuro);
 }
+
+/* --------------------------------------------------------------------------
+   Ruedita de "intentando…" (falta de conexión): gira al lado de un texto que
+   dice qué se está esperando. Sin animación si el sistema lo pide.
+   -------------------------------------------------------------------------- */
+.ds-ruedita {
+  flex-shrink: 0;
+  width: 18px;
+  height: 18px;
+  border: 3px solid currentColor;
+  border-right-color: transparent;
+  border-radius: 50%;
+  animation: ds-girar 0.9s linear infinite;
+}
+
+@keyframes ds-girar {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ds-ruedita {
+    animation: none;
+  }
+}

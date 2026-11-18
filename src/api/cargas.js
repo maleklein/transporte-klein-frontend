@@ -5,6 +5,7 @@
 
 import { ErrorDeApi } from './usuarios';
 import { headersDeAuth, manejarNoAutorizado } from './sesion';
+import { errorSinConexion, leerConReintentos } from './conexion';
 
 /** URL base del backend. Se puede pisar con la variable de entorno VITE_API_URL. */
 const URL_API = import.meta.env.VITE_API_URL ?? 'http://localhost:3000';
@@ -43,11 +44,7 @@ export async function crearCarga(datos) {
     });
   } catch {
     // El servidor no respondió (apagado, sin red, CORS bloqueado).
-    throw new ErrorDeApi(
-      'No se pudo conectar con el servidor. Verificá que el sistema esté encendido e intentá de nuevo.',
-      null,
-      0,
-    );
+    throw errorSinConexion();
   }
 
   let cuerpo = null;
@@ -104,11 +101,7 @@ export async function editarCarga(id, datos) {
     });
   } catch {
     // El servidor no respondió (apagado, sin red, CORS bloqueado).
-    throw new ErrorDeApi(
-      'No se pudo conectar con el servidor. Verificá que el sistema esté encendido e intentá de nuevo.',
-      null,
-      0,
-    );
+    throw errorSinConexion();
   }
 
   let cuerpo = null;
@@ -165,18 +158,14 @@ export async function listarCargas(filtros = {}, opciones = {}) {
 
   let respuesta;
   try {
-    respuesta = await fetch(`${URL_API}/cargas${consulta ? `?${consulta}` : ''}`, {
+    respuesta = await leerConReintentos(`${URL_API}/cargas${consulta ? `?${consulta}` : ''}`, {
       headers: { ...headersDeAuth() },
       signal: opciones.signal,
     });
   } catch (error) {
     // Un pedido cancelado no es un error a mostrar: lo maneja quien llamó.
     if (error?.name === 'AbortError') throw error;
-    throw new ErrorDeApi(
-      'No se pudo conectar con el servidor. Verificá que el sistema esté encendido e intentá de nuevo.',
-      null,
-      0,
-    );
+    throw errorSinConexion();
   }
 
   let cuerpo = null;
@@ -217,17 +206,13 @@ export async function listarCargas(filtros = {}, opciones = {}) {
 export async function obtenerCarga(id, opciones = {}) {
   let respuesta;
   try {
-    respuesta = await fetch(`${URL_API}/cargas/${encodeURIComponent(id)}`, {
+    respuesta = await leerConReintentos(`${URL_API}/cargas/${encodeURIComponent(id)}`, {
       headers: { ...headersDeAuth() },
       signal: opciones.signal,
     });
   } catch (error) {
     if (error?.name === 'AbortError') throw error;
-    throw new ErrorDeApi(
-      'No se pudo conectar con el servidor. Verificá que el sistema esté encendido e intentá de nuevo.',
-      null,
-      0,
-    );
+    throw errorSinConexion();
   }
 
   let cuerpo = null;
@@ -271,17 +256,13 @@ export async function obtenerCarga(id, opciones = {}) {
 export async function obtenerHistorialCarga(id, opciones = {}) {
   let respuesta;
   try {
-    respuesta = await fetch(`${URL_API}/cargas/${encodeURIComponent(id)}/historial`, {
+    respuesta = await leerConReintentos(`${URL_API}/cargas/${encodeURIComponent(id)}/historial`, {
       headers: { ...headersDeAuth() },
       signal: opciones.signal,
     });
   } catch (error) {
     if (error?.name === 'AbortError') throw error;
-    throw new ErrorDeApi(
-      'No se pudo conectar con el servidor. Verificá que el sistema esté encendido e intentá de nuevo.',
-      null,
-      0,
-    );
+    throw errorSinConexion();
   }
 
   let cuerpo = null;
@@ -326,11 +307,7 @@ export async function recalcularKmCarga(id) {
       headers: { ...headersDeAuth() },
     });
   } catch {
-    throw new ErrorDeApi(
-      'No se pudo conectar con el servidor. Verificá que el sistema esté encendido e intentá de nuevo.',
-      null,
-      0,
-    );
+    throw errorSinConexion();
   }
 
   let cuerpo = null;
@@ -377,11 +354,7 @@ export async function cambiarEstadoCarga(id, estado) {
       body: JSON.stringify({ estado }),
     });
   } catch {
-    throw new ErrorDeApi(
-      'No se pudo conectar con el servidor. Verificá que el sistema esté encendido e intentá de nuevo.',
-      null,
-      0,
-    );
+    throw errorSinConexion();
   }
 
   let cuerpo = null;
@@ -427,11 +400,7 @@ export async function cancelarCarga(id) {
       headers: { ...headersDeAuth() },
     });
   } catch {
-    throw new ErrorDeApi(
-      'No se pudo conectar con el servidor. Verificá que el sistema esté encendido e intentá de nuevo.',
-      null,
-      0,
-    );
+    throw errorSinConexion();
   }
 
   let cuerpo = null;
@@ -475,11 +444,7 @@ export async function postularACarga(idCarga) {
       headers: { ...headersDeAuth() },
     });
   } catch (error) {
-    throw new ErrorDeApi(
-      'No se pudo conectar con el servidor. Verificá que el sistema esté encendido e intentá de nuevo.',
-      null,
-      0,
-    );
+    throw errorSinConexion();
   }
 
   let cuerpo = null;
@@ -508,13 +473,13 @@ export async function postularACarga(idCarga) {
 export async function obtenerMisPostulaciones(opciones = {}) {
   let respuesta;
   try {
-    respuesta = await fetch(`${URL_API}/postulaciones/mis-postulaciones`, {
+    respuesta = await leerConReintentos(`${URL_API}/postulaciones/mis-postulaciones`, {
       headers: { ...headersDeAuth() },
       signal: opciones.signal,
     });
   } catch (error) {
     if (error?.name === 'AbortError') throw error;
-    throw new ErrorDeApi('No se pudo conectar con el servidor.', null, 0);
+    throw errorSinConexion();
   }
 
   let cuerpo = null;
@@ -550,17 +515,13 @@ export async function obtenerMisPostulaciones(opciones = {}) {
 export async function listarPostulantes(idCarga, opciones = {}) {
   let respuesta;
   try {
-    respuesta = await fetch(`${URL_API}/cargas/${encodeURIComponent(idCarga)}/postulaciones`, {
+    respuesta = await leerConReintentos(`${URL_API}/cargas/${encodeURIComponent(idCarga)}/postulaciones`, {
       headers: { ...headersDeAuth() },
       signal: opciones.signal,
     });
   } catch (error) {
     if (error?.name === 'AbortError') throw error;
-    throw new ErrorDeApi(
-      'No se pudo conectar con el servidor. Verificá que el sistema esté encendido e intentá de nuevo.',
-      null,
-      0,
-    );
+    throw errorSinConexion();
   }
 
   let cuerpo = null;

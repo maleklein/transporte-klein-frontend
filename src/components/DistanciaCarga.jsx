@@ -3,6 +3,7 @@ import { IconoReintentar, IconoRuta } from './Iconos';
 import { ErrorDeApi } from '../api/usuarios';
 import { evitarFoco } from '../utils/formulario';
 import { formatearKm } from '../utils/carga';
+import { esErrorDeConexion, textoSinConexion } from '../utils/conexion';
 
 /**
  * Dato "Distancia estimada" del detalle de carga (HU 9).
@@ -48,9 +49,11 @@ export default function DistanciaCarga({ carga, puedeReintentar, alRecalcular })
       await alRecalcular();
     } catch (error) {
       setErrorReintento(
-        error instanceof ErrorDeApi
-          ? error.message
-          : 'No se pudo recalcular la distancia. Intentá de nuevo.',
+        esErrorDeConexion(error)
+          ? textoSinConexion('La distancia no se recalculó')
+          : error instanceof ErrorDeApi
+            ? error.message
+            : 'No se pudo recalcular la distancia. Intentá de nuevo.',
       );
     } finally {
       setRecalculando(false);

@@ -18,6 +18,8 @@ import {
   armarPayload,
   hoyEnArgentina,
 } from '../utils/validarCarga';
+import AvisoSinConexion from '../components/AvisoSinConexion';
+import { avisoSinConexion, esErrorDeConexion } from '../utils/conexion';
 import './DetalleCarga.css';
 import './AltaCarga.css';
 
@@ -45,6 +47,8 @@ export default function AltaCarga() {
   const [tocados, setTocados] = useState({});
   const [erroresBackend, setErroresBackend] = useState({});
   const [errorGeneral, setErrorGeneral] = useState('');
+  // Falta de conexión al guardar: se avisa al lado de los botones.
+  const [avisoConexion, setAvisoConexion] = useState(null);
   const [intentoEnviar, setIntentoEnviar] = useState(false);
   const [enviando, setEnviando] = useState(false);
 
@@ -113,6 +117,7 @@ export default function AltaCarga() {
     });
 
     setErrorGeneral('');
+    setAvisoConexion(null);
   };
 
   const alCambiar = (campo) => (evento) => {
@@ -143,6 +148,7 @@ export default function AltaCarga() {
     evento.preventDefault();
     setIntentoEnviar(true);
     setErrorGeneral('');
+    setAvisoConexion(null);
 
     if (!formularioValido) {
       // Lleva el foco al primer campo con problema.
@@ -178,6 +184,8 @@ export default function AltaCarga() {
 
         const primerCampo = Object.keys(error.errores)[0];
         document.getElementById(`nc-${primerCampo}`)?.focus();
+      } else if (esErrorDeConexion(error)) {
+        setAvisoConexion(avisoSinConexion('La carga no se registró', { formulario: true }));
       } else {
         setErrorGeneral(
           error instanceof ErrorDeApi
@@ -310,6 +318,7 @@ export default function AltaCarga() {
             de registrar no haría nada.
           */}
           <div className="ac-footer">
+            <AvisoSinConexion aviso={avisoConexion} />
             <button
               type="button"
               className="ds-boton ds-boton--cancelar"
