@@ -9,9 +9,10 @@ import {
   XAxis,
   YAxis,
 } from 'recharts';
-import { useLocation, useNavigate } from 'react-router-dom';
+import { useLocation } from 'react-router-dom';
 import BarraSuperior from '../components/BarraSuperior';
-import { IconoAlerta, IconoFlechaAtras, IconoGrafico } from '../components/Iconos';
+import MigasDePan from '../components/MigasDePan';
+import { IconoAlerta, IconoGrafico } from '../components/Iconos';
 import SelectorPeriodo from '../components/SelectorPeriodo';
 import { obtenerMetricas } from '../api/metricas';
 import { ErrorDeApi } from '../api/usuarios';
@@ -119,9 +120,8 @@ function formatearPorcentaje(tasa) {
  * @returns {JSX.Element}
  */
 export default function Metricas() {
-  const navigate = useNavigate();
-  // Si se entró desde el panel de inicio, el botón de volver lleva ahí; desde
-  // la barra superior no hay botón.
+  // Desde dónde se llegó, para las migas y la flecha del celular (desde la
+  // barra superior no hay a dónde volver).
   const destino = destinoVolver(useLocation(), null);
   // Pantalla angosta (celular): el gráfico de estados inclina los nombres.
   const [angosto, setAngosto] = useState(() => window.matchMedia('(max-width: 600px)').matches);
@@ -189,16 +189,7 @@ export default function Metricas() {
       <BarraSuperior volver={destino} />
 
       <main className="us-contenido">
-        {destino && (
-          <button
-            type="button"
-            className="dc-volver bs-volver-pantalla"
-            onClick={() => navigate(destino.ruta, { state: destino.estado ?? null })}
-          >
-            <IconoFlechaAtras width={20} height={20} />
-            {destino.texto}
-          </button>
-        )}
+        <MigasDePan volver={destino} actual="Métricas" />
 
         <div className="us-encabezado">
           <h1 className="mt-titulo">

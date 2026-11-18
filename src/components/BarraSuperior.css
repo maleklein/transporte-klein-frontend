@@ -158,7 +158,7 @@
     font-size: 0;
   }
 
-  /* El "Volver a …" de la pantalla: en el celular lo hace la flecha ‹ de la barra. */
+  /* Las migas de pan de la pantalla: en el celular las reemplaza la flecha ‹ de la barra. */
   .bs-volver-pantalla {
     display: none !important;
   }

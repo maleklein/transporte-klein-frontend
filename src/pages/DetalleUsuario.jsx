@@ -1,16 +1,16 @@
-import { Navigate, useLocation, useNavigate } from 'react-router-dom';
+import { Navigate, useLocation } from 'react-router-dom';
 import {
   IconoCalendario,
   IconoCamion,
   IconoCorreo,
   IconoDocumento,
   IconoEtiqueta,
-  IconoFlechaAtras,
   IconoPeso,
   IconoUbicacion,
   IconoUsuario,
 } from '../components/Iconos';
 import BarraSuperior from '../components/BarraSuperior';
+import MigasDePan from '../components/MigasDePan';
 import ReputacionUsuario from '../components/ReputacionUsuario';
 import { formatearFecha } from '../utils/carga';
 import { destinoVolver } from '../utils/volver';
@@ -32,7 +32,6 @@ import './DetalleUsuario.css';
  * @returns {JSX.Element}
  */
 export default function DetalleUsuario() {
-  const navigate = useNavigate();
   const location = useLocation();
   const usuario = location.state?.usuario;
   // Vuelve al listado con la búsqueda y los filtros que tenía (`/usuarios?buscar=...`).
@@ -47,10 +46,7 @@ export default function DetalleUsuario() {
       <BarraSuperior volver={volver} />
 
       <main className="dc-contenido">
-        <button type="button" className="dc-volver bs-volver-pantalla" onClick={() => navigate(volver.ruta, { state: volver.estado ?? null })}>
-          <IconoFlechaAtras width={20} height={20} />
-          {volver.texto}
-        </button>
+        <MigasDePan volver={volver} actual={`${usuario.nombre} ${usuario.apellido}`} />
 
         <header className="dc-encabezado">
           <h1 className="dc-titulo">

@@ -11,6 +11,7 @@ import {
   IconoGuardar,
 } from '../components/Iconos';
 import BarraSuperior from '../components/BarraSuperior';
+import MigasDePan from '../components/MigasDePan';
 import Campo from '../components/Campo';
 import ComboBox from '../components/ComboBox';
 import { evitarFoco } from '../utils/formulario';
@@ -149,8 +150,8 @@ export default function EditarUsuario() {
   const usuario = location.state?.usuario;
   // Al cancelar o guardar, el listado vuelve con la búsqueda y los filtros que tenía.
   // A dónde vuelve, con el `state` del listado (si se había entrado desde el
-  // inicio, el listado sigue ofreciendo "Volver al inicio").
-  const listado = destinoVolver(location, { ruta: '/usuarios' });
+  // inicio, las migas del listado siguen empezando por Inicio).
+  const listado = destinoVolver(location, { ruta: '/usuarios', texto: 'Volver a Usuarios' });
   const rutaListado = listado.ruta;
   const esCamionero = usuario?.rol === 'camionero';
   // Darse de baja a uno mismo deja la cuenta sin poder volver a activarse: el
@@ -289,6 +290,8 @@ export default function EditarUsuario() {
       <BarraSuperior />
 
       <main className="au-contenido">
+        <MigasDePan volver={listado} actual="Editar usuario" />
+
         <h1 className="au-titulo">
           <IconoEditar width={26} height={26} />
           Editar Usuario

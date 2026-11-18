@@ -8,7 +8,6 @@ import {
   IconoCheck,
   IconoDocumento,
   IconoEditar,
-  IconoFlechaAtras,
   IconoInfo,
   IconoPeso,
   IconoUbicacion,
@@ -19,6 +18,7 @@ import EconomiaCarga from '../components/EconomiaCarga';
 import CalificacionCarga from '../components/CalificacionCarga';
 import EstadoCarga from '../components/EstadoCarga';
 import HistorialCarga from '../components/HistorialCarga';
+import MigasDePan from '../components/MigasDePan';
 import ModalConfirmacion from '../components/ModalConfirmacion';
 import PostulacionCarga from '../components/PostulacionCarga';
 import PostulantesCarga from '../components/PostulantesCarga';
@@ -93,7 +93,12 @@ export default function DetalleCarga() {
   const navigate = useNavigate();
   const location = useLocation();
   // Vuelve a la pantalla desde la que se entró (el inicio, Mis viajes, un aviso); si se entró directo, al listado.
-  const volver = destinoVolver(location, { ruta: '/cargas', texto: 'Volver a Cargas' });
+  // Entrando directo (con la URL), vuelve al listado; para el camionero se llama como en la barra.
+  const volver = destinoVolver(location, {
+    ruta: '/cargas',
+    texto: 'Volver a Cargas',
+    ...(usuarioActual()?.rol === 'camionero' ? { miga: 'Cargas disponibles' } : {}),
+  });
   const { id } = useParams();
 
   const [carga, setCarga] = useState(null);
@@ -372,10 +377,7 @@ export default function DetalleCarga() {
       <BarraSuperior volver={volver} />
 
       <main className="dc-contenido">
-        <button type="button" className="dc-volver bs-volver-pantalla" onClick={() => navigate(volver.ruta, { state: volver.estado })}>
-          <IconoFlechaAtras width={20} height={20} />
-          {volver.texto}
-        </button>
+        <MigasDePan volver={volver} actual={`Carga #${id}`} />
 
         {estadoPantalla === 'cargando' && <p className="dc-mensaje">Cargando carga...</p>}
 

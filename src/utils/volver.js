@@ -1,7 +1,8 @@
 import { rutaInicio } from '../api/sesion';
 
 /**
- * El botón de volver de una pantalla lleva a la pantalla desde la que se entró.
+ * Las migas de pan de una pantalla (y, en el celular, la flecha ‹ de la barra)
+ * llevan a la pantalla desde la que se entró.
  *
  * La pantalla de origen lo pasa en el `state` del router al navegar
  * (`navigate(ruta, { state: volverA(...) })` o `<Link state={volverA(...)}>`), y
@@ -15,10 +16,12 @@ import { rutaInicio } from '../api/sesion';
  * @param {string} ruta - a dónde vuelve, con la búsqueda si hacía falta (`/cargas?estado=pendiente`).
  * @param {string} texto - el texto del botón ("Volver al inicio").
  * @param {object|null} [estado] - el `state` de la pantalla de origen (`location.state`).
- * @returns {{ volverA: { ruta: string, texto: string, estado: object|null } }} el `state` para el router.
+ * @param {string} [miga] - el nombre de la pantalla de origen en las migas, si no alcanza con
+ *   sacarlo del texto ("Carga #45" en lugar de "La carga").
+ * @returns {{ volverA: { ruta: string, texto: string, estado: object|null, miga?: string } }} el `state` para el router.
  */
-export function volverA(ruta, texto, estado = null) {
-  return { volverA: { ruta, texto, estado } };
+export function volverA(ruta, texto, estado = null, miga = undefined) {
+  return { volverA: { ruta, texto, estado, ...(miga ? { miga } : {}) } };
 }
 
 /**
@@ -30,6 +33,66 @@ export function volverA(ruta, texto, estado = null) {
  */
 export function destinoVolver(location, porDefecto) {
   return location.state?.volverA ?? porDefecto;
+}
+
+/** Hasta cuántas pantallas para atrás se sigue la cadena (corta un `state` mal armado). */
+const MAXIMO_MIGAS = 6;
+
+/**
+ * El nombre de una pantalla a partir del texto para volver a ella:
+ * "Volver a Cargas" → "Cargas", "Volver al inicio" → "Inicio".
+ *
+ * @param {string} texto
+ * @returns {string}
+ */
+function nombrePantalla(texto = '') {
+  const nombre = texto.replace(/^volver (a la |al |a )/i, '');
+  return nombre.charAt(0).toUpperCase() + nombre.slice(1);
+}
+
+/**
+ * Las migas de pan de la pantalla actual, de la más lejana a la más cercana.
+ *
+ * Sigue la misma cadena que el botón de volver: cada `volverA` guarda en
+ * `estado` el `state` de la pantalla de origen, que a su vez tiene su propio
+ * `volverA`. Así, si a una carga se entró desde Mis viajes, las migas son
+ * Inicio › Mis viajes, y la de Mis viajes devuelve sus filtros. Si la cadena
+ * no arranca en el panel de inicio, se agrega adelante.
+ *
+ * @param {{ ruta: string, texto: string, estado?: object|null, miga?: string } | null} volver - lo que devuelve `destinoVolver`.
+ * @param {string} rol - 'administrador' o 'camionero'.
+ * @returns {{ ruta: string, nombre: string, estado: object|null }[]}
+ */
+export function migasDesde(volver, rol) {
+  const migas = [];
+  let actual = volver;
+  while (actual && migas.length < MAXIMO_MIGAS) {
+    migas.unshift({ ruta: actual.ruta, nombre: actual.miga ?? nombrePantalla(actual.texto), estado: actual.estado ?? null });
+    actual = actual.estado?.volverA ?? null;
+  }
+
+  const inicio = rutaInicio(rol);
+  if (migas[0]?.ruta.split('?')[0] !== inicio) {
+    migas.unshift({ ruta: inicio, nombre: 'Inicio', estado: null });
+  }
+  return migas;
+}
+
+/**
+ * La primera pantalla de la cadena después del inicio (sin la búsqueda), o
+ * `null` si se llegó directo desde el inicio o sin `state`.
+ *
+ * La barra superior la usa para resaltar la sección desde la que se llegó y no
+ * sólo la de la dirección: una carga abierta desde Mis viajes es `/cargas/1`,
+ * pero el usuario está dentro de Mis viajes (Inicio › Mis viajes › Carga #1).
+ *
+ * @param {{ ruta: string, texto: string, estado?: object|null, miga?: string } | null} volver - lo que devuelve `destinoVolver`.
+ * @param {string} rol - 'administrador' o 'camionero'.
+ * @returns {string|null} la ruta, por ejemplo `/mis-viajes`.
+ */
+export function seccionDeOrigen(volver, rol) {
+  const [, primera] = migasDesde(volver, rol);
+  return primera ? primera.ruta.split('?')[0] : null;
 }
 
 /**

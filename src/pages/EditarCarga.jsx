@@ -10,6 +10,7 @@ import {
   IconoGuardar,
 } from '../components/Iconos';
 import BarraSuperior from '../components/BarraSuperior';
+import MigasDePan from '../components/MigasDePan';
 import Campo from '../components/Campo';
 import CampoFecha from '../components/CampoFecha';
 import SelectorUbicacion from '../components/SelectorUbicacion';
@@ -273,6 +274,11 @@ export default function EditarCarga() {
       <BarraSuperior />
 
       <main className="ac-contenido">
+        <MigasDePan
+          volver={{ ruta: `/cargas/${id}`, texto: 'Volver a la carga', estado: location.state, miga: `Carga #${id}` }}
+          actual="Editar carga"
+        />
+
         <h1 className="ac-titulo">
           <IconoEditar width={26} height={26} />
           Editar Carga

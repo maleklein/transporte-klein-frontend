@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import { emitirCalificacion, obtenerCalificacionViaje } from '../api/calificaciones';
 import { IconoCheck, IconoGuardar, IconoInfo, IconoReintentar } from './Iconos';
 import { volverA } from '../utils/volver';
@@ -7,6 +7,8 @@ import './Calificaciones.css';
 
 /** Se monta para una carga entregada. El servidor determina la contraparte y el permiso. */
 export default function CalificacionCarga({ idCarga }) {
+  // El perfil de la contraparte vuelve a la carga con el `state` con el que se abrió, así sus migas siguen la misma cadena.
+  const location = useLocation();
   const [datos, setDatos] = useState(null);
   const [error, setError] = useState('');
   // { tipo: 'exito' | 'info', texto } o null.
@@ -72,7 +74,7 @@ export default function CalificacionCarga({ idCarga }) {
           {!sinPermiso && !datos && <button type="button" className="ds-boton ds-boton--secundario" onClick={() => setVersion((v) => v + 1)}><IconoReintentar />Reintentar</button>}
         </div>}
         {!sinPermiso && datos && <>
-          <p>Contraparte: <Link to={`/perfiles/${datos.contraparte.id_usuario}`} state={volverA(`/cargas/${idCarga}`, 'Volver a la carga')}>
+          <p>Contraparte: <Link to={`/perfiles/${datos.contraparte.id_usuario}`} state={volverA(`/cargas/${idCarga}`, 'Volver a la carga', location.state, `Carga #${idCarga}`)}>
             {datos.contraparte.nombre} {datos.contraparte.apellido}
           </Link>. Consultá su perfil y reputación.</p>
           {datos.emitida ? <div className="cal-evaluacion">

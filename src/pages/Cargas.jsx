@@ -12,7 +12,6 @@ import {
   IconoCajaMas,
   IconoCalendario,
   IconoCerrar,
-  IconoFlechaAtras,
   IconoOjo,
   IconoPeso,
   IconoRuta,
@@ -20,6 +19,7 @@ import {
   IconoUsuario,
 } from '../components/Iconos';
 import BarraSuperior from '../components/BarraSuperior';
+import MigasDePan from '../components/MigasDePan';
 import EstadoCarga from '../components/EstadoCarga';
 import SelectorPeriodo from '../components/SelectorPeriodo';
 import {
@@ -207,7 +207,7 @@ export default function Cargas() {
   const irAlDetalle = (carga) => {
     // Con la búsqueda incluida, volver del detalle deja los filtros como estaban.
     navigate(`/cargas/${carga.id_carga}`, {
-      state: volverA(location.pathname + location.search, 'Volver a Cargas', location.state),
+      state: volverA(location.pathname + location.search, 'Volver a Cargas', location.state, esCamionero ? 'Cargas disponibles' : 'Cargas'),
     });
   };
 
@@ -323,16 +323,7 @@ export default function Cargas() {
       <BarraSuperior volver={destino} />
 
       <main className="us-contenido">
-        {destino && (
-          <button
-            type="button"
-            className="dc-volver bs-volver-pantalla"
-            onClick={() => navigate(destino.ruta, { state: destino.estado ?? null })}
-          >
-            <IconoFlechaAtras width={20} height={20} />
-            {destino.texto}
-          </button>
-        )}
+        <MigasDePan volver={destino} actual={esCamionero ? 'Cargas disponibles' : 'Cargas'} />
 
         <div className="us-encabezado">
           <h1 className="ds-titulo-pagina">
@@ -350,7 +341,7 @@ export default function Cargas() {
               className="ds-boton ds-boton--primario"
               onClick={() =>
                 navigate('/cargas/nueva', {
-                  state: volverA(location.pathname + location.search, 'Volver a Cargas', location.state),
+                  state: volverA(location.pathname + location.search, 'Volver a Cargas', location.state, esCamionero ? 'Cargas disponibles' : 'Cargas'),
                 })
               }
             >
