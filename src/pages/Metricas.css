@@ -9,12 +9,13 @@
 }
 
 /* --------------------------------------------------------------------------
-   Selector de rango: dos fechas + "Aplicar". Mismo tratamiento que la barra
-   de filtros del listado de cargas (`.cg-filtros`).
+   Período: un solo campo con el calendario de rango (SelectorPeriodo). Mismo
+   tratamiento que la barra de filtros del listado de cargas (`.cg-filtros`).
    -------------------------------------------------------------------------- */
 .mt-filtros {
   display: grid;
-  grid-template-columns: 1fr 1fr auto;
+  /* Un solo campo, el período: del ancho de un filtro, no de toda la caja. */
+  grid-template-columns: minmax(0, 360px);
   gap: 16px;
   align-items: end;
   padding: 20px;
@@ -33,27 +34,10 @@
   margin-bottom: 8px;
 }
 
-.mt-aplicar {
-  white-space: nowrap;
-}
-
 @media (max-width: 720px) {
   .mt-filtros {
     grid-template-columns: 1fr;
   }
-
-  .mt-aplicar {
-    width: 100%;
-  }
-}
-
-.mt-error-validacion {
-  display: flex;
-  align-items: flex-start;
-  gap: 8px;
-  margin: 0 0 16px;
-  color: var(--color-peligro);
-  font-weight: 600;
 }
 
 .mt-periodo {

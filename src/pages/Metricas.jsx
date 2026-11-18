@@ -11,19 +11,16 @@ import {
 } from 'recharts';
 import { useLocation, useNavigate } from 'react-router-dom';
 import BarraSuperior from '../components/BarraSuperior';
-import CampoFecha from '../components/CampoFecha';
 import { IconoAlerta, IconoFlechaAtras, IconoGrafico } from '../components/Iconos';
+import SelectorPeriodo from '../components/SelectorPeriodo';
 import { obtenerMetricas } from '../api/metricas';
 import { ErrorDeApi } from '../api/usuarios';
 import { evitarFoco } from '../utils/formulario';
-import { formatearFecha } from '../utils/carga';
+import { formatearFecha, rangoDePeriodo } from '../utils/carga';
 import { etiquetaEstado, sufijoEstado } from '../utils/estadosCarga';
 import { destinoVolver } from '../utils/volver';
 import './DetalleCarga.css';
 import './Metricas.css';
-
-/** Cuántos días para atrás, contando hoy, arma el rango por defecto. */
-const DIAS_RANGO_POR_DEFECTO = 30;
 
 /** Orden fijo en el que se muestran los estados en el gráfico de barras. */
 const ORDEN_ESTADOS = ['disponible', 'pendiente', 'aceptada', 'en_viaje', 'entregada', 'cancelada'];
@@ -68,45 +65,15 @@ const MARGEN_GRAFICO = (angosto) => ({ top: 8, right: 8, left: angosto ? 28 : 0,
 const CAPA_CUADRICULA = 250;
 
 /**
- * Arma una fecha AAAA-MM-DD a partir de los getters locales de `Date` (no de
- * `toISOString`, que convierte a UTC y podría correr el día según la zona
- * horaria del navegador).
- *
- * @param {Date} fecha - fecha de referencia, ya en hora local.
- * @returns {string} la fecha en formato AAAA-MM-DD.
- */
-function aFechaLocal(fecha) {
-  const dosDigitos = (numero) => String(numero).padStart(2, '0');
-  return `${fecha.getFullYear()}-${dosDigitos(fecha.getMonth() + 1)}-${dosDigitos(fecha.getDate())}`;
-}
-
-/**
- * Calcula el período por defecto: los últimos 30 días, incluido hoy, en hora
- * local del navegador.
+ * Período por defecto: los últimos 30 días, incluido hoy, en hora local del
+ * navegador. Es el acceso "Últimos 30 días" del selector de período, el mismo
+ * que cuenta el panel de inicio.
  *
  * @returns {{fechaDesde: string, fechaHasta: string}}
  */
 function calcularPeriodoPorDefecto() {
-  const hoy = new Date();
-  const desde = new Date(hoy);
-  desde.setDate(hoy.getDate() - (DIAS_RANGO_POR_DEFECTO - 1));
-  return { fechaDesde: aFechaLocal(desde), fechaHasta: aFechaLocal(hoy) };
-}
-
-/**
- * Valida el rango de fechas elegido antes de consultar al backend.
- *
- * @param {string} fechaDesde
- * @param {string} fechaHasta
- * @returns {string} el mensaje de error a mostrar, o cadena vacía si el rango es válido.
- */
-function validarPeriodo(fechaDesde, fechaHasta) {
-  if (!fechaDesde || !fechaHasta) return 'Completá las dos fechas.';
-  // Las fechas vienen en formato AAAA-MM-DD: comparar como texto alcanza.
-  if (fechaDesde > fechaHasta) {
-    return 'La fecha "Desde" no puede ser posterior a la fecha "Hasta".';
-  }
-  return '';
+  const { desde, hasta } = rangoDePeriodo('ultimos-30');
+  return { fechaDesde: desde, fechaHasta: hasta };
 }
 
 /**
@@ -149,11 +116,12 @@ function formatearPorcentaje(tasa) {
  * administrador del proyecto).
  *
  * Por defecto consulta los últimos 30 días en hora local del navegador. El
- * selector de rango no vuelve a consultar en cada tecla: hay que completar
- * las dos fechas y apretar "Aplicar"; antes de pedir valida que estén
- * completas y que "Desde" no sea posterior a "Hasta". Al entrar a la
- * pantalla siempre vuelve a pedir el período por defecto, sin cachear lo de
- * una visita anterior.
+ * período se elige en un solo calendario (`SelectorPeriodo`, el mismo del
+ * filtro "Creada" de Cargas): con un acceso rápido o marcando el primer y el
+ * último día y apretando "Aplicar" en el panel. Cada período elegido vuelve a
+ * pedir las métricas; como el calendario marca los dos extremos en orden, no
+ * hay un período al revés que validar. Al entrar a la pantalla siempre vuelve
+ * a pedir el período por defecto, sin cachear lo de una visita anterior.
  *
  * @returns {JSX.Element}
  */
@@ -171,15 +139,8 @@ export default function Metricas() {
     return () => consulta.removeEventListener('change', alCambiar);
   }, []);
 
-  const [periodoInicial] = useState(calcularPeriodoPorDefecto);
-
-  // Lo que el usuario está escribiendo en los campos de fecha.
-  const [desdeTexto, setDesdeTexto] = useState(periodoInicial.fechaDesde);
-  const [hastaTexto, setHastaTexto] = useState(periodoInicial.fechaHasta);
-  const [errorValidacion, setErrorValidacion] = useState('');
-
-  // El período efectivamente aplicado: el que dispara el pedido a GET /metricas.
-  const [periodo, setPeriodo] = useState(periodoInicial);
+  // El período elegido: cada cambio dispara el pedido a GET /metricas.
+  const [periodo, setPeriodo] = useState(calcularPeriodoPorDefecto);
   // Se incrementa para volver a pedir el mismo período (botón "Reintentar"),
   // mismo recurso que `versionHistorial` en DetalleCarga.jsx.
   const [intentoRecarga, setIntentoRecarga] = useState(0);
@@ -212,19 +173,6 @@ export default function Metricas() {
 
     return () => controlador.abort();
   }, [periodo, intentoRecarga]);
-
-  /**
-   * Valida el rango elegido y, si es válido, lo aplica (lo que dispara el
-   * pedido a `GET /metricas`). Si no, deja el mensaje inline y no consulta.
-   *
-   * @returns {void}
-   */
-  const aplicar = () => {
-    const mensaje = validarPeriodo(desdeTexto, hastaTexto);
-    setErrorValidacion(mensaje);
-    if (mensaje) return;
-    setPeriodo({ fechaDesde: desdeTexto, fechaHasta: hastaTexto });
-  };
 
   /** Vuelve a pedir el mismo período, tras un error de red o de servidor. */
   const reintentar = () => setIntentoRecarga((version) => version + 1);
@@ -267,36 +215,16 @@ export default function Metricas() {
         </div>
 
         <div className="mt-filtros">
-          <div className="mt-filtro">
-            <label className="ds-campo__label" htmlFor="mt-desde">
-              Desde
-            </label>
-            <CampoFecha id="mt-desde" etiqueta="Desde" valor={desdeTexto} alCambiar={setDesdeTexto} />
-          </div>
-
-          <div className="mt-filtro">
-            <label className="ds-campo__label" htmlFor="mt-hasta">
-              Hasta
-            </label>
-            <CampoFecha id="mt-hasta" etiqueta="Hasta" valor={hastaTexto} alCambiar={setHastaTexto} />
-          </div>
-
-          <button
-            type="button"
-            className="ds-boton ds-boton--primario mt-aplicar"
-            onClick={aplicar}
-            onMouseDown={evitarFoco}
-          >
-            Aplicar
-          </button>
+          <SelectorPeriodo
+            id="mt-periodo"
+            etiqueta="Período"
+            className="mt-filtro"
+            desde={periodo.fechaDesde}
+            hasta={periodo.fechaHasta}
+            alCambiar={({ desde, hasta }) => setPeriodo({ fechaDesde: desde, fechaHasta: hasta })}
+            permitirVacio={false}
+          />
         </div>
-
-        {errorValidacion && (
-          <p className="mt-error-validacion" role="alert">
-            <IconoAlerta width={18} height={18} />
-            {errorValidacion}
-          </p>
-        )}
 
         <p className="mt-periodo">
           Del {formatearFecha(periodo.fechaDesde)} al {formatearFecha(periodo.fechaHasta)}
