@@ -141,12 +141,6 @@
     border-bottom: 2px solid var(--color-borde-suave);
   }
 
-  /* Sin "Cualquier fecha" (Métricas) quedan tres accesos: el último ocupa
-     toda la fila en lugar de quedar solo a la mitad. */
-  .sp-accesos--sin-vacio > li:last-child {
-    grid-column: 1 / -1;
-  }
-
   .sp-acceso {
     padding: 8px 2px;
     white-space: nowrap;

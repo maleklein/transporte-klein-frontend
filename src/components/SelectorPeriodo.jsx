@@ -25,10 +25,9 @@ import './SelectorPeriodo.css';
  * calendario, con "Aplicar". El campo muestra el nombre del acceso o el rango
  * elegido ("01/11/2026 – 15/11/2026").
  *
- * Como filtro (`permitirVacio`, el de Cargas) se puede quedar sin período:
- * suma el acceso "Cualquier fecha" y, con un período elegido, el campo se
- * marca como filtro aplicado y lleva una × que lo quita. Sin `permitirVacio`
- * (Métricas) siempre hay un período elegido.
+ * Se puede quedar sin período: el primer acceso es para eso ("Cualquier
+ * fecha" en Cargas, "Todo el historial" en Métricas). Con un período elegido,
+ * el campo se marca como filtro aplicado y lleva una × que lo quita.
  *
  * Una carga no puede crearse en el futuro: los días después de hoy no se
  * pueden elegir.
@@ -36,11 +35,11 @@ import './SelectorPeriodo.css';
  * @param {object} props
  * @param {string} props.id - id del campo (para la etiqueta).
  * @param {string} props.etiqueta - el nombre que se ve arriba del campo ("Creada", "Período").
- * @param {boolean} [props.permitirVacio=true] - se puede elegir "Cualquier fecha" y quitar el período con la ×.
+ * @param {string} [props.textoVacio='Cualquier fecha'] - lo que muestra sin período, en el campo y en su acceso.
  * @param {string} [props.className] - clase de maquetación del contenedor, la de los otros filtros de la pantalla.
  * @param {string} props.desde - AAAA-MM-DD, o '' sin límite.
  * @param {string} props.hasta - AAAA-MM-DD, o '' sin límite.
- * @param {function({desde: string, hasta: string}): void} props.alCambiar - recibe el período nuevo ('' y '' para "Cualquier fecha").
+ * @param {function({desde: string, hasta: string}): void} props.alCambiar - recibe el período nuevo ('' y '' sin período).
  * @returns {JSX.Element}
  */
 export default function SelectorPeriodo({
@@ -49,7 +48,7 @@ export default function SelectorPeriodo({
   desde,
   hasta,
   alCambiar,
-  permitirVacio = true,
+  textoVacio = 'Cualquier fecha',
   className = '',
 }) {
   const idEtiqueta = useId();
@@ -128,7 +127,7 @@ export default function SelectorPeriodo({
           id={id}
           ref={refBoton}
           className={`ds-campo__input ds-campo__input--desplegable sp-campo${
-            !nombre ? ' sp-campo--vacio' : permitirVacio ? ' ds-campo__input--activo' : ''
+            nombre ? ' ds-campo__input--activo' : ' sp-campo--vacio'
           }`}
           aria-labelledby={`${idEtiqueta} ${id}`}
           aria-haspopup="dialog"
@@ -136,10 +135,10 @@ export default function SelectorPeriodo({
           aria-controls={abierto ? idPanel : undefined}
           onClick={() => (abierto ? cerrar() : abrir())}
         >
-          {nombre || 'Cualquier fecha'}
+          {nombre || textoVacio}
         </button>
 
-        {nombre && permitirVacio && (
+        {nombre && (
           <BotonQuitarFiltro
             etiqueta={etiqueta}
             alQuitar={() => {
@@ -153,19 +152,17 @@ export default function SelectorPeriodo({
 
       {abierto && (
         <div className="sp-panel" id={idPanel} ref={refPanel} role="dialog" aria-label={etiqueta}>
-          <ul className={`sp-accesos${permitirVacio ? '' : ' sp-accesos--sin-vacio'}`}>
-            {permitirVacio && (
-              <li>
-                <button
-                  type="button"
-                  className={`sp-acceso${nombre ? '' : ' sp-acceso--elegido'}`}
-                  aria-pressed={!nombre}
-                  onClick={() => elegir({ desde: '', hasta: '' })}
-                >
-                  Cualquier fecha
-                </button>
-              </li>
-            )}
+          <ul className="sp-accesos">
+            <li>
+              <button
+                type="button"
+                className={`sp-acceso${nombre ? '' : ' sp-acceso--elegido'}`}
+                aria-pressed={!nombre}
+                onClick={() => elegir({ desde: '', hasta: '' })}
+              >
+                {textoVacio}
+              </button>
+            </li>
             {PERIODOS_CREACION.map((periodo) => (
               <li key={periodo.id}>
                 <button
