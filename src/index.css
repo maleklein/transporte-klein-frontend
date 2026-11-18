@@ -414,6 +414,10 @@ select.ds-campo__input,
   position: relative;
 }
 
+/* El botón mide 44 x 44 (la zona que se toca) pero no se ve: lo que se ve es
+   un círculo de 32px dibujado con ::before, que se pinta al pasar el mouse,
+   al tocarlo o con el foco. Así el círculo deja aire con el borde del campo
+   (que mide 48 o 52) en lugar de chocarlo. */
 .ds-quitar-filtro {
   position: absolute;
   top: 50%;
@@ -425,19 +429,43 @@ select.ds-campo__input,
   height: var(--area-tactil);
   padding: 0;
   border: none;
-  border-radius: 50%;
-  background: transparent;
+  background: none;
   color: var(--color-primario);
   cursor: pointer;
 }
 
+.ds-quitar-filtro::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  width: 32px;
+  height: 32px;
+  margin: auto;
+  border-radius: 50%;
+  transition: background-color 0.12s ease;
+}
+
+/* La × por encima del círculo. */
+.ds-quitar-filtro svg {
+  position: relative;
+}
+
 @media (hover: hover) {
-  .ds-quitar-filtro:hover {
+  .ds-quitar-filtro:hover::before {
     background: rgba(31, 78, 121, 0.14);
   }
 }
 
+.ds-quitar-filtro:active::before {
+  background: rgba(31, 78, 121, 0.22);
+}
+
+/* El foco va en el círculo, no en la zona de 44 que no se ve. */
 .ds-quitar-filtro:focus-visible {
+  outline: none;
+}
+
+.ds-quitar-filtro:focus-visible::before {
   outline: 3px solid var(--color-primario);
   outline-offset: 1px;
 }
