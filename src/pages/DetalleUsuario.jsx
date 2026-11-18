@@ -13,6 +13,7 @@ import BarraSuperior from '../components/BarraSuperior';
 import MigasDePan from '../components/MigasDePan';
 import ReputacionUsuario from '../components/ReputacionUsuario';
 import { formatearFecha } from '../utils/carga';
+import { formatearDni } from '../utils/formatoUsuario';
 import { destinoVolver } from '../utils/volver';
 import './DetalleCarga.css';
 import './DetalleUsuario.css';
@@ -78,7 +79,7 @@ export default function DetalleUsuario() {
                 <IconoDocumento width={15} height={15} />
                 DNI
               </dt>
-              <dd>{usuario.dni}</dd>
+              <dd>{formatearDni(usuario.dni)}</dd>
             </div>
             <div className="dc-dato">
               <dt>

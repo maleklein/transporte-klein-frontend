@@ -1,0 +1,89 @@
+/* ==========================================================================
+   Menú "Acciones" de una fila (ver MenuAcciones.jsx).
+   ========================================================================== */
+
+/* Botón con forma de píldora, como las etiquetas de rol y estado de la misma
+   fila, pero más chico y con borde en lugar de fondo: así se lee como un
+   botón y no como un dato. El borde es de 2 px, como el de la tabla. El gris es el de los bordes (contraste de 3:1, el
+   mínimo para un control) para que no compita con los datos de la fila. */
+/* flex y no inline-flex: como bloque, la celda lo centra en la fila; en
+   línea quedaba apoyado en la línea del texto, 3 px más arriba. */
+.ma-boton {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 22px;
+  padding: 0;
+  background: var(--color-fondo);
+  border: 2px solid var(--color-borde);
+  border-radius: 999px;
+  color: var(--color-borde);
+  cursor: pointer;
+}
+
+/* Se ve de 22 px de alto, pero se puede tocar en 44 x 40, cómodo con el dedo. */
+.ma-boton::after {
+  content: '';
+  position: absolute;
+  inset: -9px -2px;
+}
+
+.ma-boton:hover,
+.ma-boton[aria-expanded='true'] {
+  background: var(--color-primario-claro);
+  border-color: var(--color-primario);
+  color: var(--color-primario);
+}
+
+.ma-boton:focus-visible {
+  outline: 3px solid var(--color-primario);
+  outline-offset: 2px;
+}
+
+/* fixed: la tabla está en una caja con desplazamiento, y un menú absoluto
+   quedaba recortado. La posición la calcula el componente. */
+.ma-menu {
+  position: fixed;
+  z-index: 50;
+  min-width: 170px;
+  margin: 0;
+  padding: 6px;
+  list-style: none;
+  background: var(--color-fondo);
+  border: 2px solid var(--color-borde-suave);
+  border-radius: var(--radio);
+  box-shadow: 0 8px 24px rgba(23, 57, 90, 0.18);
+}
+
+.ma-opcion {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  min-height: 40px;
+  padding: 8px 12px;
+  background: none;
+  border: none;
+  border-radius: var(--radio-chico);
+  font-family: var(--fuente);
+  font-size: var(--texto-base);
+  font-weight: 600;
+  color: var(--color-texto);
+  text-align: left;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.ma-opcion svg {
+  flex: none;
+  color: var(--color-primario);
+}
+
+.ma-opcion:hover,
+.ma-opcion:focus-visible {
+  background: var(--color-primario-claro);
+  color: var(--color-primario);
+  outline: none;
+}

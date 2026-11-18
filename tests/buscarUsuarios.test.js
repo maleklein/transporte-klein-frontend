@@ -122,6 +122,16 @@ describe('tramosResaltados', () => {
     expect(resaltado('46604678', '46.604')).toEqual(['46604']);
   });
 
+  it('marca el DNI mostrado con puntos, se busque con puntos o sin', () => {
+    expect(resaltado('46.604.678', '46604')).toEqual(['46.604']);
+    expect(resaltado('46.604.678', '46.604')).toEqual(['46.604']);
+    expect(resaltado('46.604.678', '6046')).toEqual(['604.6']);
+  });
+
+  it('un punto que no está entre dígitos se busca como cualquier letra', () => {
+    expect(resaltado('carla.romero@klein.com', 'carla.romero')).toEqual(['carla.romero']);
+  });
+
   it('marca todas las veces que aparece', () => {
     expect(resaltado('Ana Mariana', 'ana')).toEqual(['Ana', 'ana']);
   });

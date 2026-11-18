@@ -118,7 +118,7 @@ export const avisoSinResultados = ({ busqueda, rol, estado, coincidenSinFiltros 
  * Romero" se marca "Carla" y en "31234567", "123". Compara sin mayúsculas ni
  * tildes, pero devuelve el texto original ("gomez" marca "Gómez").
  *
- * @param {unknown} texto - lo que se muestra (nombre y apellido, el DNI o el email).
+ * @param {unknown} texto - lo que se muestra (nombre y apellido, el DNI con puntos o el email).
  * @param {string} busqueda - lo escrito en el campo de búsqueda.
  * @returns {{ texto: string, coincide: boolean }[]} los tramos en orden; juntos forman el texto.
  */
@@ -129,9 +129,13 @@ export const tramosResaltados = (texto, busqueda) => {
 
   // Se simplifica letra por letra para saber de qué letra del original viene
   // cada letra del texto simplificado ("é" pasa a "e" y sigue en su lugar).
+  // Los puntos entre dígitos se saltean: el DNI se muestra como "45.168.258"
+  // y la búsqueda "45168" tiene que encontrarlo.
+  const esPuntoDeMiles = (i) => original[i] === '.' && /\d/.test(original[i - 1] ?? '') && /\d/.test(original[i + 1] ?? '');
   let simplificado = '';
   const origen = [];
   for (let i = 0; i < original.length; i += 1) {
+    if (esPuntoDeMiles(i)) continue;
     for (const letra of simplificar(original[i])) {
       simplificado += letra;
       origen.push(i);
@@ -145,6 +149,10 @@ export const tramosResaltados = (texto, busqueda) => {
       for (let k = desde; k < desde + palabra.length; k += 1) marcadas[origen[k]] = true;
       desde = simplificado.indexOf(palabra, desde + 1);
     }
+  }
+  // Un punto de miles en medio de lo marcado también se marca ("45.168").
+  for (let i = 0; i < original.length; i += 1) {
+    if (esPuntoDeMiles(i) && marcadas[i - 1] && marcadas[i + 1]) marcadas[i] = true;
   }
 
   const tramos = [];

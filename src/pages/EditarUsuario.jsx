@@ -13,6 +13,7 @@ import {
 import BarraSuperior from '../components/BarraSuperior';
 import MigasDePan from '../components/MigasDePan';
 import Campo from '../components/Campo';
+import CampoDni from '../components/CampoDni';
 import ComboBox from '../components/ComboBox';
 import { evitarFoco } from '../utils/formulario';
 import { destinoVolver } from '../utils/volver';
@@ -38,7 +39,8 @@ function valoresIniciales(usuario) {
   return {
     nombre: usuario.nombre ?? '',
     apellido: usuario.apellido ?? '',
-    dni: usuario.dni ?? '',
+    // Sólo los dígitos: los puntos los pone el campo al mostrarlo.
+    dni: String(usuario.dni ?? '').replace(/\D/g, ''),
     email: usuario.email ?? '',
     estado: usuario.estado ?? 'activo',
     ubicacion: usuario.camionero?.ubicacion ?? '',
@@ -340,15 +342,13 @@ export default function EditarUsuario() {
             </div>
 
             <div className="ds-fila-2">
-              <Campo
+              <CampoDni
                 id="eu-dni"
                 etiqueta="DNI"
                 error={errorDe('dni')}
-                type="text"
-                inputMode="numeric"
-                placeholder="Ej: 27845112"
+                placeholder="Ej: 27.845.112"
                 value={valores.dni}
-                onChange={alCambiar('dni')}
+                onCambio={(dni) => alCambiar('dni')({ target: { value: dni } })}
                 onBlur={alSalirDelCampo('dni')}
               />
               <Campo
