@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
-import { Navigate, useLocation, useNavigate } from 'react-router-dom';
-import { editarUsuario, ErrorDeApi } from '../api/usuarios';
+import { useLocation, useNavigate, useParams } from 'react-router-dom';
+import { editarUsuario, ErrorDeApi, obtenerUsuario } from '../api/usuarios';
 import { usuarioActual } from '../api/sesion';
 import {
   IconoAlerta,
@@ -15,7 +15,7 @@ import Campo from '../components/Campo';
 import CampoDni from '../components/CampoDni';
 import ComboBox from '../components/ComboBox';
 import { evitarFoco } from '../utils/formulario';
-import { destinoVolver } from '../utils/volver';
+import { destinoVolver, volverA } from '../utils/volver';
 import { aplicarMayusculaInicial, validarNombreApellido } from '../utils/validarNombreApellido';
 import {
   validarCapacidadKg,
@@ -25,6 +25,7 @@ import {
   validarUbicacion,
 } from '../utils/validarUsuario';
 import AvisoSinConexion from '../components/AvisoSinConexion';
+import { useAvisoSinConexion } from '../components/contextoConexion';
 import { avisoSinConexion, esErrorDeConexion } from '../utils/conexion';
 import './AltaUsuario.css';
 import './EditarUsuario.css';
@@ -132,12 +133,12 @@ function armarPayload(valores, esCamionero) {
 const CAMPOS_CON_MAYUSCULA = ['nombre', 'apellido'];
 
 /**
- * Pantalla de edición de usuarios (HU 1.2), en la ruta /usuarios/editar.
+ * Pantalla de edición de usuarios (HU 1.2), en la ruta /usuarios/:id/editar.
  *
  * Se entra desde el botón "Editar" de la ficha del usuario, que le pasa por
- * router state el usuario y a dónde volver (no hay `GET /usuarios/:id`
- * individual). Si se entra directo a la ruta sin ese state (por ejemplo,
- * refrescando la página), se vuelve al listado.
+ * router state el usuario y a dónde volver. Si se entra directo a la ruta (o
+ * se recarga), pide el usuario al backend (`GET /usuarios/:id`) y vuelve a su
+ * ficha.
  *
  * Muestra el formulario precargado con los datos actuales, valida lo que se
  * escribe y lo envía al backend. Al cancelar vuelve a la ficha tal como
@@ -148,16 +149,83 @@ const CAMPOS_CON_MAYUSCULA = ['nombre', 'apellido'];
  * @returns {JSX.Element}
  */
 export default function EditarUsuario() {
-  const navigate = useNavigate();
+  const { id } = useParams();
   const location = useLocation();
-  // Puede no venir (ej: se entró directo a la URL sin pasar por la ficha).
-  // Los hooks de abajo se llaman igual, sin condicionarlos a esto, y recién
-  // al final del componente se decide si hay que redirigir.
-  const usuario = location.state?.usuario;
-  // A dónde vuelve (la ficha), con el `state` de la ficha: así la ficha sigue
-  // sabiendo volver al listado con sus filtros, y las migas son
+  const avisarSiFaltaConexion = useAvisoSinConexion();
+
+  // Desde la ficha llega el usuario que se estaba viendo; si no, se pide.
+  const previo = location.state?.usuario;
+  const [usuario, setUsuario] = useState(previo && String(previo.id_usuario) === id ? previo : null);
+  // 'cargando' | 'ok' | 'no-encontrado' | 'error'
+  const [estadoPantalla, setEstadoPantalla] = useState(usuario ? 'ok' : 'cargando');
+  const [mensajeError, setMensajeError] = useState('');
+
+  useEffect(() => {
+    if (usuario) return undefined;
+    const controlador = new AbortController();
+    obtenerUsuario(id, { signal: controlador.signal })
+      .then((datos) => {
+        setUsuario(datos);
+        setEstadoPantalla('ok');
+      })
+      .catch((error) => {
+        if (error?.name === 'AbortError') return;
+        if (avisarSiFaltaConexion(error)) return;
+        if (error instanceof ErrorDeApi && [400, 404].includes(error.estado)) {
+          setEstadoPantalla('no-encontrado');
+          return;
+        }
+        setMensajeError(
+          error instanceof ErrorDeApi ? error.message : 'No se pudieron cargar los datos del usuario. Intentá de nuevo.',
+        );
+        setEstadoPantalla('error');
+      });
+    return () => controlador.abort();
+  }, [id, usuario, avisarSiFaltaConexion]);
+
+  if (estadoPantalla !== 'ok' || !usuario) {
+    const alListado = { ruta: '/usuarios', texto: 'Volver a Usuarios' };
+    return (
+      <>
+        <BarraSuperior volver={alListado} />
+        <main className="au-contenido">
+          <MigasDePan volver={alListado} actual="Editar usuario" />
+          {estadoPantalla === 'cargando' && <p className="eu-mensaje">Cargando usuario...</p>}
+          {estadoPantalla !== 'cargando' && (
+            <div className="ds-aviso ds-aviso--error" role="alert">
+              <IconoAlerta width={22} height={22} />
+              {estadoPantalla === 'no-encontrado'
+                ? 'No encontramos ese usuario. Puede que la dirección sea incorrecta.'
+                : mensajeError}
+            </div>
+          )}
+        </main>
+      </>
+    );
+  }
+
+  // A dónde vuelve: la ficha. Desde la ficha llega con el `state` de la ficha
+  // (así sigue sabiendo volver al listado con sus filtros); entrando directo,
+  // la ficha vuelve al listado sin filtros. Las migas son
   // Usuarios › Ana Suárez › Editar usuario.
-  const volver = destinoVolver(location, { ruta: '/usuarios', texto: 'Volver a Usuarios' });
+  const volver = destinoVolver(location, {
+    ...volverA(`/usuarios/${id}`, 'Volver a la ficha', volverA('/usuarios', 'Volver a Usuarios'),
+      `${usuario.nombre} ${usuario.apellido}`).volverA,
+  });
+
+  return <FormularioEdicion usuario={usuario} volver={volver} />;
+}
+
+/**
+ * El formulario, ya con el usuario a editar.
+ *
+ * @param {object} props
+ * @param {object} props.usuario - el usuario, tal como lo devuelve el backend.
+ * @param {{ ruta: string, texto: string, estado?: object|null, miga?: string }} props.volver - la ficha.
+ * @returns {JSX.Element}
+ */
+function FormularioEdicion({ usuario, volver }) {
+  const navigate = useNavigate();
   const esCamionero = usuario?.rol === 'camionero';
   // Darse de baja a uno mismo deja la cuenta sin poder volver a activarse: el
   // backend lo rechaza (409) y acá directamente no se ofrece la opción.
@@ -292,8 +360,6 @@ export default function EditarUsuario() {
       setEnviando(false);
     }
   };
-
-  if (!usuario) return <Navigate to="/usuarios" replace />;
 
   return (
     <>
