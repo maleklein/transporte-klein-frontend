@@ -5,13 +5,13 @@ import {
   IconoCaja,
   IconoCalendario,
   IconoCerrar,
-  IconoCheck,
   IconoDocumento,
   IconoEditar,
   IconoInfo,
   IconoPeso,
   IconoUbicacion,
 } from '../components/Iconos';
+import AvisoExito from '../components/AvisoExito';
 import BarraSuperior from '../components/BarraSuperior';
 import DistanciaCarga from '../components/DistanciaCarga';
 import EconomiaCarga from '../components/EconomiaCarga';
@@ -107,7 +107,7 @@ export default function DetalleCarga() {
 
   // Mensaje que deja el alta (o la edición) al traer acá la carga. Se guarda
   // al entrar y se saca del historial: si no, volvería a aparecer con F5.
-  const [avisoExito] = useState(location.state?.avisoExito ?? '');
+  const [avisoExito, setAvisoExito] = useState(location.state?.avisoExito ?? '');
   useEffect(() => {
     if (!location.state?.avisoExito) return;
     const { avisoExito: _usado, ...resto } = location.state;
@@ -493,10 +493,7 @@ export default function DetalleCarga() {
             )}
 
             {avisoExito && !mensajeCancelacion && (
-              <div className="ds-aviso ds-aviso--exito" role="status">
-                <IconoCheck width={20} height={20} />
-                {avisoExito}
-              </div>
+              <AvisoExito alCerrar={() => setAvisoExito('')}>{avisoExito}</AvisoExito>
             )}
 
             {esAdministrador && retiroVencido(carga) && (
@@ -511,15 +508,9 @@ export default function DetalleCarga() {
             )}
 
             {mensajeCancelacion && (
-              <div
-                className="ds-aviso ds-aviso--exito"
-                role="status"
-                tabIndex={-1}
-                ref={refAvisoCancelacion}
-              >
-                <IconoCheck width={20} height={20} />
+              <AvisoExito ref={refAvisoCancelacion} alCerrar={() => setMensajeCancelacion('')}>
                 {mensajeCancelacion}
-              </div>
+              </AvisoExito>
             )}
 
             <section className="dc-card">

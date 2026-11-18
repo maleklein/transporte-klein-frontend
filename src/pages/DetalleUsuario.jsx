@@ -3,7 +3,6 @@ import { Navigate, useLocation, useNavigate } from 'react-router-dom';
 import {
   IconoCalendario,
   IconoCamion,
-  IconoCheck,
   IconoCorreo,
   IconoDocumento,
   IconoEditar,
@@ -13,6 +12,7 @@ import {
   IconoUsuario,
 } from '../components/Iconos';
 import { ultimaVersionDe } from '../api/usuarios';
+import AvisoExito from '../components/AvisoExito';
 import BarraSuperior from '../components/BarraSuperior';
 import MigasDePan from '../components/MigasDePan';
 import ReputacionUsuario from '../components/ReputacionUsuario';
@@ -48,7 +48,7 @@ export default function DetalleUsuario() {
 
   // Aviso que deja la edición al volver. Se guarda al entrar y se saca del
   // historial: si no, volvería a aparecer con atrás y adelante.
-  const [avisoExito] = useState(location.state?.avisoExito ?? '');
+  const [avisoExito, setAvisoExito] = useState(location.state?.avisoExito ?? '');
   useEffect(() => {
     if (!location.state?.avisoExito) return;
     const { avisoExito: _usado, ...resto } = location.state;
@@ -115,12 +115,7 @@ export default function DetalleUsuario() {
           </div>
         </header>
 
-        {avisoExito && (
-          <div className="ds-aviso ds-aviso--exito" role="status">
-            <IconoCheck width={20} height={20} />
-            {avisoExito}
-          </div>
-        )}
+        {avisoExito && <AvisoExito alCerrar={() => setAvisoExito('')}>{avisoExito}</AvisoExito>}
 
         <section className="dc-card">
           <h2 className="dc-card__titulo">Datos personales</h2>

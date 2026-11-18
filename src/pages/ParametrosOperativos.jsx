@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
 import { useLocation } from 'react-router-dom';
+import AvisoExito from '../components/AvisoExito';
 import BarraSuperior from '../components/BarraSuperior';
 import MigasDePan from '../components/MigasDePan';
 import Campo from '../components/Campo';
@@ -7,7 +8,6 @@ import ModalConfirmacion from '../components/ModalConfirmacion';
 import {
   IconoAjustes,
   IconoAlerta,
-  IconoCheck,
   IconoGuardar,
   IconoInfo,
   IconoReintentar,
@@ -233,10 +233,7 @@ export default function ParametrosOperativos() {
           <form onSubmit={alEnviar} noValidate className="au-formulario">
             <div className="au-body">
               {mensajeExito && (
-                <div className="ds-aviso ds-aviso--exito" role="status">
-                  <IconoCheck />
-                  {mensajeExito}
-                </div>
+                <AvisoExito alCerrar={() => setMensajeExito('')}>{mensajeExito}</AvisoExito>
               )}
 
               {PARAMETROS_COSTO.map(({ clave, etiqueta }) => {

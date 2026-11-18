@@ -285,6 +285,65 @@ body {
   color: var(--color-confirmar-oscuro);
 }
 
+/* Aviso con × (AvisoExito.jsx): el texto ocupa el ancho y la × va arriba a la
+   derecha, centrada con el primer renglón. Como la × de quitar filtro, se
+   toca en 44 x 44 y se ve como un círculo de 32 que se pinta con el mouse, al
+   tocarlo o con el foco. Los márgenes negativos la meten en el relleno del
+   aviso: así no lo hace más alto. */
+.ds-aviso__texto {
+  flex: 1;
+  min-width: 0;
+}
+
+.ds-aviso__cerrar {
+  position: relative;
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  width: var(--area-tactil);
+  height: var(--area-tactil);
+  margin: -10px -12px -10px 0;
+  padding: 0;
+  border: none;
+  background: none;
+  color: inherit;
+  cursor: pointer;
+}
+
+.ds-aviso__cerrar::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  width: 32px;
+  height: 32px;
+  margin: auto;
+  border-radius: 50%;
+  transition: background-color 0.12s ease;
+}
+
+.ds-aviso__cerrar svg {
+  position: relative;
+}
+
+@media (hover: hover) {
+  .ds-aviso__cerrar:hover::before {
+    background: color-mix(in srgb, currentColor 14%, transparent);
+  }
+}
+
+.ds-aviso__cerrar:active::before {
+  background: color-mix(in srgb, currentColor 22%, transparent);
+}
+
+.ds-aviso__cerrar:focus-visible {
+  outline: none;
+}
+
+.ds-aviso__cerrar:focus-visible::before {
+  outline: 3px solid currentColor;
+  outline-offset: 1px;
+}
+
 .ds-aviso--error {
   border-color: var(--color-peligro);
   background: var(--color-peligro-claro);
