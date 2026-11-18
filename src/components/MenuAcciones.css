@@ -3,29 +3,29 @@
    ========================================================================== */
 
 /* Botón con forma de píldora, como las etiquetas de rol y estado de la misma
-   fila, pero más corto y con borde en lugar de fondo: así se lee como un
-   botón y no como un dato. El gris es el de los bordes (contraste de 3:1, el
+   fila, pero más chico y con borde en lugar de fondo: así se lee como un
+   botón y no como un dato. El borde es de 2 px, como el de la tabla. El gris es el de los bordes (contraste de 3:1, el
    mínimo para un control) para que no compita con los datos de la fila. */
 .ma-boton {
   position: relative;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 44px;
-  height: 28px;
+  width: 40px;
+  height: 22px;
   padding: 0;
   background: var(--color-fondo);
-  border: 1.5px solid var(--color-borde);
+  border: 2px solid var(--color-borde);
   border-radius: 999px;
   color: var(--color-borde);
   cursor: pointer;
 }
 
-/* Se ve de 28 px de alto, pero se puede tocar en 44 x 40, cómodo con el dedo. */
+/* Se ve de 22 px de alto, pero se puede tocar en 44 x 40, cómodo con el dedo. */
 .ma-boton::after {
   content: '';
   position: absolute;
-  inset: -6px 0;
+  inset: -9px -2px;
 }
 
 .ma-boton:hover,
