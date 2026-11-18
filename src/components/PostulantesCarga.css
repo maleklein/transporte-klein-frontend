@@ -280,3 +280,31 @@
 
 .pp-desglose dt { font-weight: 700; }
 .pp-desglose dd { margin: 2px 0 0; color: var(--color-texto-suave); }
+
+/* --------------------------------------------------------------------------
+   Con la carga asignada: los demás postulados, plegados debajo del asignado.
+   -------------------------------------------------------------------------- */
+
+.pp-otros {
+  margin-top: 8px;
+}
+
+/* Con su triángulo de siempre (por eso no es flex, que lo esconde) y 44 px de
+   alto: 11 + 22,5 de línea + 11. */
+.pp-otros summary {
+  width: fit-content;
+  padding: 11px 0;
+  border-radius: var(--radio-chico);
+  font-size: var(--texto-ayuda);
+  font-weight: 700;
+  color: var(--color-primario);
+  cursor: pointer;
+}
+
+.pp-otros summary:hover {
+  text-decoration: underline;
+}
+
+.pp-otros[open] > summary {
+  margin-bottom: 8px;
+}
