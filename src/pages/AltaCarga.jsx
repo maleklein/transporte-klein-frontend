@@ -5,6 +5,7 @@ import { ErrorDeApi } from '../api/usuarios';
 import { IconoAlerta, IconoCajaMas, IconoCerrar, IconoFlechaAtras, IconoGuardar } from '../components/Iconos';
 import BarraSuperior from '../components/BarraSuperior';
 import Campo from '../components/Campo';
+import CampoFecha from '../components/CampoFecha';
 import SelectorUbicacion from '../components/SelectorUbicacion';
 import { evitarFoco } from '../utils/formulario';
 import { formatearKm } from '../utils/carga';
@@ -265,16 +266,20 @@ export default function AltaCarga() {
               />
             </div>
 
-            <Campo
-              id="nc-fecha"
-              etiqueta="Fecha de retiro"
-              error={errorDe('fecha')}
-              type="date"
-              min={hoyEnArgentina()}
-              value={valores.fecha}
-              onChange={alCambiar('fecha')}
-              onBlur={alSalirDelCampo('fecha')}
-            />
+            <Campo id="nc-fecha" etiqueta="Fecha de retiro" error={errorDe('fecha')}>
+              {({ id, idError, tieneError }) => (
+                <CampoFecha
+                  id={id}
+                  etiqueta="Fecha de retiro"
+                  valor={valores.fecha}
+                  alCambiar={(fecha) => alCambiar('fecha')({ target: { value: fecha } })}
+                  alSalir={alSalirDelCampo('fecha')}
+                  min={hoyEnArgentina()}
+                  tieneError={tieneError}
+                  idError={idError}
+                />
+              )}
+            </Campo>
 
             <Campo
               id="nc-observaciones"

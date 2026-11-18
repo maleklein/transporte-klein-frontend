@@ -10,6 +10,8 @@ import {
   rangoDePeriodo,
   textoAFecha,
 } from '../utils/carga';
+import BotonQuitarFiltro from './BotonQuitarFiltro';
+import './Calendario.css';
 import './FiltroFechaCreada.css';
 
 /**
@@ -20,6 +22,9 @@ import './FiltroFechaCreada.css';
  * primer y el último día. Los accesos se aplican con un toque; el rango del
  * calendario, con "Aplicar". El campo muestra el nombre del acceso o el rango
  * elegido ("01/11/2026 – 15/11/2026").
+ *
+ * Con un período elegido, el campo se marca como filtro aplicado y lleva una ×
+ * que lo vuelve a "Cualquier fecha".
  *
  * Una carga no puede crearse en el futuro: los días después de hoy no se
  * pueden elegir.
@@ -102,19 +107,34 @@ export default function FiltroFechaCreada({ id, desde, hasta, alCambiar }) {
       <span className="ds-campo__label" id={idEtiqueta}>
         Creada
       </span>
-      <button
-        type="button"
-        id={id}
-        ref={refBoton}
-        className={`ds-campo__input ds-campo__input--desplegable ffc-campo${nombre ? '' : ' ffc-campo--vacio'}`}
-        aria-labelledby={`${idEtiqueta} ${id}`}
-        aria-haspopup="dialog"
-        aria-expanded={abierto}
-        aria-controls={abierto ? idPanel : undefined}
-        onClick={() => (abierto ? cerrar() : abrir())}
-      >
-        {nombre || 'Cualquier fecha'}
-      </button>
+      <div className="ds-filtro-control">
+        <button
+          type="button"
+          id={id}
+          ref={refBoton}
+          className={`ds-campo__input ds-campo__input--desplegable ffc-campo${
+            nombre ? ' ds-campo__input--activo' : ' ffc-campo--vacio'
+          }`}
+          aria-labelledby={`${idEtiqueta} ${id}`}
+          aria-haspopup="dialog"
+          aria-expanded={abierto}
+          aria-controls={abierto ? idPanel : undefined}
+          onClick={() => (abierto ? cerrar() : abrir())}
+        >
+          {nombre || 'Cualquier fecha'}
+        </button>
+
+        {nombre && (
+          <BotonQuitarFiltro
+            etiqueta="Creada"
+            alQuitar={() => {
+              setAbierto(false);
+              alCambiar({ desde: '', hasta: '' });
+              refBoton.current?.focus();
+            }}
+          />
+        )}
+      </div>
 
       {abierto && (
         <div className="ffc-panel" id={idPanel} ref={refPanel} role="dialog" aria-label="Período de creación">
@@ -143,7 +163,7 @@ export default function FiltroFechaCreada({ id, desde, hasta, alCambiar }) {
             ))}
           </ul>
 
-          <div className="ffc-calendario">
+          <div className="ffc-calendario calendario">
             <DayPicker
               mode="range"
               locale={es}

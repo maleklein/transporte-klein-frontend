@@ -1,4 +1,5 @@
 import { useEffect, useId, useMemo, useRef, useState } from 'react';
+import BotonQuitarFiltro from './BotonQuitarFiltro';
 import './ComboBox.css';
 
 /**
@@ -54,6 +55,9 @@ function paraComparar(texto) {
  *   opciones (rol, estado) para que todos se vean y se abran igual. Una letra
  *   salta a la primera opción que empieza con ella.
  * @param {boolean} [props.deshabilitado=false] - no se puede abrir ni cambiar.
+ * @param {string} [props.etiquetaFiltro] - si viene, el campo es un filtro de
+ *   un listado: con un valor elegido se marca como aplicado y lleva una × para
+ *   quitarlo (ver `BotonQuitarFiltro`). Es el nombre del filtro ("Rol").
  * @returns {JSX.Element}
  */
 export default function ComboBox({
@@ -69,6 +73,7 @@ export default function ComboBox({
   refInput,
   buscable = true,
   deshabilitado = false,
+  etiquetaFiltro,
 }) {
   const idInterno = useId();
   const idLista = `${id ?? idInterno}-lista`;
@@ -80,6 +85,16 @@ export default function ComboBox({
 
   const refRaiz = useRef(null);
   const refLista = useRef(null);
+  const refInputInterno = useRef(null);
+
+  /** Guarda el input en la ref propia (para la ×) y en la de afuera, si hay. */
+  const asignarRefInput = (nodo) => {
+    refInputInterno.current = nodo;
+    if (typeof refInput === 'function') refInput(nodo);
+    else if (refInput) refInput.current = nodo;
+  };
+
+  const filtroAplicado = Boolean(etiquetaFiltro) && valor !== '' && !deshabilitado;
 
   // La opción vacía va como una opción más y no como un botón aparte: así se
   // navega con las mismas flechas y se anuncia igual que el resto.
@@ -339,11 +354,11 @@ export default function ComboBox({
     <div className="cb" ref={refRaiz}>
       <input
         id={id}
-        ref={refInput}
+        ref={asignarRefInput}
         type="text"
         className={`ds-campo__input ds-campo__input--desplegable${buscable ? '' : ' cb-input--sin-busqueda'}${
           tieneError ? ' ds-campo__input--error' : ''
-        }`}
+        }${filtroAplicado ? ' ds-campo__input--activo' : ''}`}
         role="combobox"
         aria-expanded={abierto}
         aria-controls={idLista}
@@ -372,6 +387,17 @@ export default function ComboBox({
           alSalir?.();
         }}
       />
+
+      {filtroAplicado && (
+        <BotonQuitarFiltro
+          etiqueta={etiquetaFiltro}
+          alQuitar={() => {
+            cerrar();
+            alElegir('');
+            refInputInterno.current?.focus();
+          }}
+        />
+      )}
 
       <ul className="cb-lista" id={idLista} role="listbox" ref={refLista} hidden={!abierto}>
         {visibles.map((opcion, indice) => (

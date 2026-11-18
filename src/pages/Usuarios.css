@@ -88,6 +88,20 @@
 /* Con el contenedor adelante, para ganarle al padding de `.ds-campo__input`. */
 .us-buscar .us-buscar__input {
   padding-left: 44px;
+  padding-right: 48px;
+}
+
+/* Sin la cruz del navegador: la reemplaza la × de los filtros aplicados, que
+   se ve igual en todos los navegadores y en los demás filtros. */
+.us-buscar__input::-webkit-search-cancel-button {
+  -webkit-appearance: none;
+  appearance: none;
+  display: none;
+}
+
+/* Con algo escrito, la lupa toma el azul del filtro aplicado. */
+.us-buscar:has(.ds-campo__input--activo) .us-buscar__icono {
+  color: var(--color-primario);
 }
 
 @media (max-width: 1060px) {

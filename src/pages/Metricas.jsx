@@ -11,6 +11,7 @@ import {
 } from 'recharts';
 import { useLocation, useNavigate } from 'react-router-dom';
 import BarraSuperior from '../components/BarraSuperior';
+import CampoFecha from '../components/CampoFecha';
 import { IconoAlerta, IconoFlechaAtras, IconoGrafico } from '../components/Iconos';
 import { obtenerMetricas } from '../api/metricas';
 import { ErrorDeApi } from '../api/usuarios';
@@ -270,26 +271,14 @@ export default function Metricas() {
             <label className="ds-campo__label" htmlFor="mt-desde">
               Desde
             </label>
-            <input
-              id="mt-desde"
-              type="date"
-              className="ds-campo__input"
-              value={desdeTexto}
-              onChange={(evento) => setDesdeTexto(evento.target.value)}
-            />
+            <CampoFecha id="mt-desde" etiqueta="Desde" valor={desdeTexto} alCambiar={setDesdeTexto} />
           </div>
 
           <div className="mt-filtro">
             <label className="ds-campo__label" htmlFor="mt-hasta">
               Hasta
             </label>
-            <input
-              id="mt-hasta"
-              type="date"
-              className="ds-campo__input"
-              value={hastaTexto}
-              onChange={(evento) => setHastaTexto(evento.target.value)}
-            />
+            <CampoFecha id="mt-hasta" etiqueta="Hasta" valor={hastaTexto} alCambiar={setHastaTexto} />
           </div>
 
           <button

@@ -13,6 +13,7 @@ import {
   IconoUsuarioMas,
 } from '../components/Iconos';
 import BarraSuperior from '../components/BarraSuperior';
+import BotonQuitarFiltro from '../components/BotonQuitarFiltro';
 import ComboBox from '../components/ComboBox';
 import TextoResaltado from '../components/TextoResaltado';
 import { avisoSinResultados, coincideBusqueda } from '../utils/buscarUsuarios';
@@ -85,6 +86,8 @@ export default function Usuarios() {
   const [parametrosUrl, setParametrosUrl] = useSearchParams();
   const filtros = useMemo(() => filtrosDeUrl(parametrosUrl), [parametrosUrl]);
   const busqueda = filtros.buscar.trim();
+  // Para devolverle el foco al campo de búsqueda al quitarla con la ×.
+  const refBuscar = useRef(null);
 
   const [usuarios, setUsuarios] = useState([]);
   const [idDestacado, setIdDestacado] = useState(null);
@@ -261,17 +264,27 @@ export default function Usuarios() {
             <label className="ds-campo__label" htmlFor="us-buscar">
               Buscar
             </label>
-            <div className="us-buscar">
+            <div className="us-buscar ds-filtro-control">
               <IconoBuscar className="us-buscar__icono" width={20} height={20} />
               <input
                 id="us-buscar"
+                ref={refBuscar}
                 type="search"
-                className="ds-campo__input us-buscar__input"
+                className={`ds-campo__input us-buscar__input${filtros.buscar ? ' ds-campo__input--activo' : ''}`}
                 placeholder="Nombre, apellido, DNI o email..."
                 autoComplete="off"
                 value={filtros.buscar}
                 onChange={alCambiarFiltro('buscar')}
               />
+              {filtros.buscar && (
+                <BotonQuitarFiltro
+                  etiqueta="Buscar"
+                  alQuitar={() => {
+                    alCambiarFiltro('buscar')({ target: { value: '' } });
+                    refBuscar.current?.focus();
+                  }}
+                />
+              )}
             </div>
           </div>
 
@@ -287,6 +300,7 @@ export default function Usuarios() {
               alElegir={(valor) => alCambiarFiltro('rol')({ target: { value: valor } })}
               marcador="Todos los roles"
               textoOpcionVacia="Todos los roles"
+              etiquetaFiltro="Rol"
             />
           </div>
 
@@ -302,6 +316,7 @@ export default function Usuarios() {
               alElegir={(valor) => alCambiarFiltro('estado')({ target: { value: valor } })}
               marcador="Todos los estados"
               textoOpcionVacia="Todos los estados"
+              etiquetaFiltro="Estado"
             />
           </div>
 

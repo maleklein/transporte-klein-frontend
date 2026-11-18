@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { useLocation, useNavigate, useSearchParams } from 'react-router-dom';
 import { listarCargas } from '../api/cargas';
 import { listarProvincias } from '../api/geografia';
+import CampoFecha from '../components/CampoFecha';
 import ComboBox from '../components/ComboBox';
 import { ErrorDeApi } from '../api/usuarios';
 import { usuarioActual } from '../api/sesion';
@@ -385,6 +386,7 @@ export default function Cargas() {
                 alElegir={cambiarEstadoFiltro}
                 marcador="Todos los estados"
                 textoOpcionVacia="Todos los estados"
+                etiquetaFiltro="Estado"
               />
             </div>
           )}
@@ -409,14 +411,13 @@ export default function Cargas() {
             <label className="ds-campo__label" htmlFor="cg-fecha">
               Fecha de retiro
             </label>
-            <input
+            <CampoFecha
               id="cg-fecha"
-              type="date"
-              className="ds-campo__input"
-              value={filtros.fecha}
-              onChange={(evento) =>
-                setFiltros((previos) => ({ ...previos, fecha: evento.target.value }))
-              }
+              etiqueta="Fecha de retiro"
+              valor={filtros.fecha}
+              alCambiar={(fecha) => setFiltros((previos) => ({ ...previos, fecha }))}
+              marcador="Cualquier fecha"
+              esFiltro
             />
           </div>
 
@@ -442,6 +443,7 @@ export default function Cargas() {
               }
               marcador="Todas las provincias"
               textoOpcionVacia="Todas las provincias"
+              etiquetaFiltro="Provincia de destino"
             />
           </div>
 
