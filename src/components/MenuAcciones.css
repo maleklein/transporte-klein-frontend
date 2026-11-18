@@ -23,11 +23,13 @@
   cursor: pointer;
 }
 
-/* Se ve de 22 px de alto, pero se puede tocar en 44 x 40, cómodo con el dedo. */
+/* Se ve de 40 x 22 px, pero se puede tocar en 44 x 44, cómodo con el dedo.
+   El inset se cuenta desde adentro del borde de 2 px: 18 + 13 + 13 = 44 de
+   alto y 36 + 4 + 4 = 44 de ancho. */
 .ma-boton::after {
   content: '';
   position: absolute;
-  inset: -9px -2px;
+  inset: -13px -4px;
 }
 
 .ma-boton:hover,

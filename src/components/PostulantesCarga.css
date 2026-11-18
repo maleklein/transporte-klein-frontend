@@ -261,12 +261,13 @@
 }
 
 .pp-desglose {
-  padding: 10px 14px;
+  padding: 0 14px;
   font-size: var(--texto-ayuda);
 }
 
 .pp-desglose summary {
-  min-height: 32px;
+  /* 11 + 22,5 de línea + 11: los 44px que se tocan cómodo. */
+  padding: 11px 0;
   cursor: pointer;
   font-weight: 600;
 }
@@ -274,7 +275,7 @@
 .pp-desglose dl {
   display: grid;
   gap: 10px;
-  margin: 8px 0;
+  margin: 0 0 12px;
 }
 
 .pp-desglose dt { font-weight: 700; }

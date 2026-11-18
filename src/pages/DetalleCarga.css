@@ -215,7 +215,7 @@
 }
 
 .dk-reintentar {
-  min-height: 36px;
+  min-height: var(--area-tactil);
   padding: 6px 12px;
   font-size: var(--texto-ayuda);
 }
@@ -332,6 +332,7 @@
 .ec-enlace {
   display: inline-flex;
   align-items: center;
+  min-height: var(--area-tactil);
   gap: 6px;
   font-weight: 700;
   color: var(--color-primario);
@@ -461,7 +462,8 @@
 }
 
 .hc-ver-mas {
-  margin-top: 14px;
+  min-height: var(--area-tactil);
+  margin-top: 8px;
   padding: 6px 2px;
   background: none;
   border: none;

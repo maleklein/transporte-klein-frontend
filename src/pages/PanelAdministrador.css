@@ -43,6 +43,9 @@
 }
 
 .pa-enlace {
+  display: inline-flex;
+  align-items: center;
+  min-height: var(--area-tactil);
   font-weight: 700;
   color: var(--color-primario);
 }

@@ -65,12 +65,20 @@
   outline-offset: 1px;
 }
 
-/* Celular: días un poco más chicos para que entre la semana entera. */
+/* Celular: cada día de 44px de alto y tan ancho como su columna, hasta 44px.
+   Con 44 fijos no entraría la semana en los celulares más angostos. */
 @media (max-width: 720px) {
   .calendario .rdp-root {
-    --rdp-day-height: 38px;
-    --rdp-day_button-height: 36px;
-    --rdp-day_button-width: 34px;
+    --rdp-day-height: var(--area-tactil);
+    --rdp-day_button-height: var(--area-tactil);
+    --rdp-day_button-width: min(var(--area-tactil), 100%);
+    --rdp-nav-height: var(--area-tactil);
+  }
+
+  .calendario .rdp-button_previous,
+  .calendario .rdp-button_next {
+    width: var(--area-tactil);
+    height: var(--area-tactil);
   }
 }
 
