@@ -6,9 +6,11 @@
    fila, pero más chico y con borde en lugar de fondo: así se lee como un
    botón y no como un dato. El borde es de 2 px, como el de la tabla. El gris es el de los bordes (contraste de 3:1, el
    mínimo para un control) para que no compita con los datos de la fila. */
+/* flex y no inline-flex: como bloque, la celda lo centra en la fila; en
+   línea quedaba apoyado en la línea del texto, 3 px más arriba. */
 .ma-boton {
   position: relative;
-  display: inline-flex;
+  display: flex;
   align-items: center;
   justify-content: center;
   width: 40px;
