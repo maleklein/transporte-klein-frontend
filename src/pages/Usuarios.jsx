@@ -6,8 +6,7 @@ import {
   IconoBuscar,
   IconoCheck,
   IconoCerrar,
-  IconoEditar,
-  IconoOjo,
+  IconoChevronDerecha,
   IconoUsuario,
   IconoUsuarioMas,
 } from '../components/Iconos';
@@ -15,9 +14,8 @@ import BarraSuperior from '../components/BarraSuperior';
 import MigasDePan from '../components/MigasDePan';
 import BotonQuitarFiltro from '../components/BotonQuitarFiltro';
 import ComboBox from '../components/ComboBox';
-import MenuAcciones from '../components/MenuAcciones';
 import TextoResaltado from '../components/TextoResaltado';
-import { avisoSinResultados, coincideBusqueda } from '../utils/buscarUsuarios';
+import { avisoSinResultados, coincideBusqueda, datoQueCoincide } from '../utils/buscarUsuarios';
 import { formatearDni } from '../utils/formatoUsuario';
 import { destinoVolver, volverA } from '../utils/volver';
 import { useAvisoSinConexion } from '../components/contextoConexion';
@@ -53,6 +51,14 @@ const filtrosDeUrl = (parametros) => {
 };
 
 /**
+ * Cómo se lee el rol en el listado.
+ *
+ * @param {string} rol
+ * @returns {string}
+ */
+const nombreRol = (rol) => (rol === 'camionero' ? 'Camionero' : 'Administrador');
+
+/**
  * Si un usuario pasa los filtros. La búsqueda mira nombre, apellido, DNI y email a
  * la vez (ver `coincideBusqueda`); rol y estado tienen que ser iguales.
  *
@@ -73,8 +79,10 @@ const cumpleFiltros = (usuario, filtros) => {
  * Al entrar pide `GET /usuarios` una sola vez, y la búsqueda (nombre, apellido, DNI o email) y
  * los filtros de rol y estado se aplican sobre esa lista, sin volver a pedirla:
  * así filtrar es instantáneo y no aparece "Cargando usuarios..." a cada cambio.
- * Cada fila tiene una acción para ver la ficha de solo lectura y otra para
- * editar el usuario.
+ * Tocar un usuario abre su ficha de solo lectura, y desde la ficha se edita.
+ * En la computadora es una tabla con todos los datos; en el celular, donde la
+ * tabla no entra, una lista con el nombre, el rol y el estado (como Ajustes
+ * del iPhone), y el resto de los datos está en la ficha.
  *
  * La búsqueda y los filtros viven en la URL, que es su única fuente: así, al
  * volver de la ficha o de la edición, el listado sigue como se lo dejó. Entrar
@@ -220,18 +228,6 @@ export default function Usuarios() {
   const irAlDetalle = (usuario) => {
     navigate('/usuarios/detalle', { state: { usuario, ...volverAlListado } });
   };
-
-  /**
-   * Navega a la pantalla de edición de un usuario, llevando sus datos por
-   * router state.
-   *
-   * @param {object} usuario - la fila del listado sobre la que se hizo click.
-   * @returns {void}
-   */
-  const irAEditar = (usuario) => {
-    navigate('/usuarios/editar', { state: { usuario, ...volverAlListado } });
-  };
-
 
   return (
     <>
@@ -387,21 +383,34 @@ export default function Usuarios() {
                     <th scope="col">Estado</th>
                     <th scope="col">Datos del vehículo</th>
                     <th scope="col">
-                      <span className="us-columna-oculta">Acciones</span>
+                      <span className="us-columna-oculta">Ficha</span>
                     </th>
                   </tr>
                 </thead>
                 <tbody>
                   {usuariosVisibles.map((usuario) => (
+                    // Toda la fila abre la ficha con el mouse. Con el teclado y el
+                    // lector de pantalla, el botón es el nombre.
                     <tr
                       key={usuario.id_usuario}
-                      className={usuario.id_usuario === idDestacado ? 'us-fila--nueva' : undefined}
+                      className={`us-fila${usuario.id_usuario === idDestacado ? ' us-fila--nueva' : ''}`}
+                      onClick={() => irAlDetalle(usuario)}
                     >
                       <td>
-                        <TextoResaltado
-                          texto={`${usuario.nombre} ${usuario.apellido}`}
-                          busqueda={filtros.buscar}
-                        />
+                        <button
+                          type="button"
+                          className="us-abrir"
+                          onClick={(evento) => {
+                            evento.stopPropagation();
+                            irAlDetalle(usuario);
+                          }}
+                        >
+                          <span className="us-solo-lectores">Ver ficha de </span>
+                          <TextoResaltado
+                            texto={`${usuario.nombre} ${usuario.apellido}`}
+                            busqueda={filtros.buscar}
+                          />
+                        </button>
                       </td>
                       <td>
                         <TextoResaltado texto={formatearDni(usuario.dni)} busqueda={filtros.buscar} />
@@ -415,7 +424,7 @@ export default function Usuarios() {
                             usuario.rol === 'camionero' ? ' ds-etiqueta-rol--camionero' : ''
                           }`}
                         >
-                          {usuario.rol === 'camionero' ? 'Camionero' : 'Administrador'}
+                          {nombreRol(usuario.rol)}
                         </span>
                       </td>
                       <td>
@@ -432,19 +441,65 @@ export default function Usuarios() {
                           ? `${usuario.camionero.ubicacion} — ${usuario.camionero.tipo_vehiculo} (${usuario.camionero.capacidad_kg} kg)`
                           : '—'}
                       </td>
-                      <td>
-                        <MenuAcciones
-                          etiqueta={`Acciones para ${usuario.nombre} ${usuario.apellido}`}
-                          opciones={[
-                            { texto: 'Ver ficha', Icono: IconoOjo, alElegir: () => irAlDetalle(usuario) },
-                            { texto: 'Editar', Icono: IconoEditar, alElegir: () => irAEditar(usuario) },
-                          ]}
-                        />
+                      <td className="us-flecha">
+                        <IconoChevronDerecha width={22} height={22} aria-hidden="true" />
                       </td>
                     </tr>
                   ))}
                 </tbody>
               </table>
+            )}
+
+            {/*
+              En el celular, una lista en lugar de la tabla: nombre, rol y
+              estado, y se toca para abrir la ficha. Si la búsqueda encontró al
+              usuario por el DNI o el email, ese dato se agrega al rol, para que
+              se vea por qué apareció. Se dibujan las dos y el CSS muestra una.
+            */}
+            {!aviso && usuariosVisibles.length > 0 && (
+              <ul className="us-lista">
+                {usuariosVisibles.map((usuario) => {
+                  const dato = datoQueCoincide(usuario, filtros.buscar);
+                  return (
+                    <li key={usuario.id_usuario}>
+                      <button
+                        type="button"
+                        className={`us-item${usuario.id_usuario === idDestacado ? ' us-fila--nueva' : ''}`}
+                        onClick={() => irAlDetalle(usuario)}
+                      >
+                        <span className="us-item__texto">
+                          <span className="us-item__nombre">
+                            <TextoResaltado
+                              texto={`${usuario.nombre} ${usuario.apellido}`}
+                              busqueda={filtros.buscar}
+                            />
+                          </span>
+                          <span className="us-item__dato">
+                            {nombreRol(usuario.rol)}
+                            {dato && (
+                              <>
+                                {' · '}
+                                <TextoResaltado
+                                  texto={dato === 'dni' ? formatearDni(usuario.dni) : usuario.email}
+                                  busqueda={filtros.buscar}
+                                />
+                              </>
+                            )}
+                          </span>
+                        </span>
+                        <span
+                          className={`ds-etiqueta-estado${
+                            usuario.estado === 'inactivo' ? ' ds-etiqueta-estado--inactivo' : ''
+                          }`}
+                        >
+                          {usuario.estado === 'inactivo' ? 'Inactivo' : 'Activo'}
+                        </span>
+                        <IconoChevronDerecha className="us-item__flecha" width={22} height={22} aria-hidden="true" />
+                      </button>
+                    </li>
+                  );
+                })}
+              </ul>
             )}
           </div>
         )}

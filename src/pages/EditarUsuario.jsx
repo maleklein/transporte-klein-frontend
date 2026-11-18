@@ -6,7 +6,6 @@ import {
   IconoAlerta,
   IconoCamion,
   IconoCerrar,
-  IconoCheck,
   IconoEditar,
   IconoGuardar,
 } from '../components/Iconos';
@@ -32,7 +31,7 @@ import './EditarUsuario.css';
 
 /**
  * Arma los valores iniciales del formulario a partir del usuario que llegó
- * por router state (los datos ya cargados que trae el listado).
+ * por router state (los datos que ya tenía la ficha, que vienen del listado).
  *
  * @param {object} usuario - usuario a editar, tal como lo devuelve `GET /usuarios`.
  * @returns {object} valores iniciales del formulario.
@@ -135,28 +134,30 @@ const CAMPOS_CON_MAYUSCULA = ['nombre', 'apellido'];
 /**
  * Pantalla de edición de usuarios (HU 1.2), en la ruta /usuarios/editar.
  *
- * El usuario a editar llega por router state desde el listado (no hay
- * `GET /usuarios/:id` individual). Si se entra directo a la ruta sin ese
- * state (por ejemplo, refrescando la página), se vuelve al listado.
+ * Se entra desde el botón "Editar" de la ficha del usuario, que le pasa por
+ * router state el usuario y a dónde volver (no hay `GET /usuarios/:id`
+ * individual). Si se entra directo a la ruta sin ese state (por ejemplo,
+ * refrescando la página), se vuelve al listado.
  *
  * Muestra el formulario precargado con los datos actuales, valida lo que se
- * escribe, lo envía al backend y, al cancelar o al guardar con éxito, navega
- * de vuelta a /usuarios. El rol y la contraseña no se editan desde acá.
+ * escribe y lo envía al backend. Al cancelar vuelve a la ficha tal como
+ * estaba; al guardar, a la ficha con los datos nuevos y el aviso, como la
+ * edición de una carga vuelve a su detalle. El rol y la contraseña no se
+ * editan desde acá.
  *
  * @returns {JSX.Element}
  */
 export default function EditarUsuario() {
   const navigate = useNavigate();
   const location = useLocation();
-  // Puede no venir (ej: se entró directo a la URL sin pasar por el listado).
+  // Puede no venir (ej: se entró directo a la URL sin pasar por la ficha).
   // Los hooks de abajo se llaman igual, sin condicionarlos a esto, y recién
   // al final del componente se decide si hay que redirigir.
   const usuario = location.state?.usuario;
-  // Al cancelar o guardar, el listado vuelve con la búsqueda y los filtros que tenía.
-  // A dónde vuelve, con el `state` del listado (si se había entrado desde el
-  // inicio, las migas del listado siguen empezando por Inicio).
-  const listado = destinoVolver(location, { ruta: '/usuarios', texto: 'Volver a Usuarios' });
-  const rutaListado = listado.ruta;
+  // A dónde vuelve (la ficha), con el `state` de la ficha: así la ficha sigue
+  // sabiendo volver al listado con sus filtros, y las migas son
+  // Usuarios › Ana Suárez › Editar usuario.
+  const volver = destinoVolver(location, { ruta: '/usuarios', texto: 'Volver a Usuarios' });
   const esCamionero = usuario?.rol === 'camionero';
   // Darse de baja a uno mismo deja la cuenta sin poder volver a activarse: el
   // backend lo rechaza (409) y acá directamente no se ofrece la opción.
@@ -168,12 +169,10 @@ export default function EditarUsuario() {
   const [errorGeneral, setErrorGeneral] = useState('');
   // Falta de conexión al guardar: se avisa al lado de los botones.
   const [avisoConexion, setAvisoConexion] = useState(null);
-  const [mensajeExito, setMensajeExito] = useState('');
   const [intentoEnviar, setIntentoEnviar] = useState(false);
   const [enviando, setEnviando] = useState(false);
 
   const refPrimerCampo = useRef(null);
-  const refTemporizador = useRef(null);
 
   const erroresValidacion = usuario ? validar(valores, esCamionero) : {};
   const formularioValido = Object.keys(erroresValidacion).length === 0;
@@ -197,14 +196,12 @@ export default function EditarUsuario() {
     return () => clearTimeout(foco);
   }, []);
 
-  useEffect(() => () => clearTimeout(refTemporizador.current), []);
-
   /**
-   * Cancela la edición y vuelve al listado de usuarios, sin guardar nada.
+   * Cancela la edición y vuelve a la ficha, sin guardar nada.
    *
    * @returns {void}
    */
-  const cancelar = () => navigate(rutaListado, { state: listado.estado ?? null });
+  const cancelar = () => navigate(volver.ruta, { state: volver.estado ?? null });
 
   /**
    * Maneja el cambio en un campo del formulario y limpia errores previos.
@@ -243,8 +240,8 @@ export default function EditarUsuario() {
 
   /**
    * Maneja el envío del formulario: valida, guarda los cambios contra el
-   * backend y, si sale bien, muestra el mensaje de éxito y vuelve al
-   * listado de usuarios. Si falla, muestra el error correspondiente.
+   * backend y, si sale bien, vuelve a la ficha con los datos nuevos y el
+   * aviso. Si falla, muestra el error correspondiente.
    */
   const alEnviar = async (evento) => {
     evento.preventDefault();
@@ -266,13 +263,16 @@ export default function EditarUsuario() {
         armarPayload(valores, esCamionero),
       );
 
-      setMensajeExito(
-        `Los datos de ${usuarioActualizado.nombre} ${usuarioActualizado.apellido} se guardaron correctamente.`,
-      );
-
-      refTemporizador.current = setTimeout(() => {
-        navigate(rutaListado, { state: { ...(listado.estado ?? {}), usuarioActualizado } });
-      }, 1800);
+      // `replace`: el formulario sale del historial, así "atrás" desde la
+      // ficha no vuelve a un formulario ya guardado.
+      navigate(volver.ruta, {
+        replace: true,
+        state: {
+          ...(volver.estado ?? {}),
+          usuario: usuarioActualizado,
+          avisoExito: `Los datos de ${usuarioActualizado.nombre} ${usuarioActualizado.apellido} se guardaron correctamente.`,
+        },
+      });
     } catch (error) {
       const esDeApi = error instanceof ErrorDeApi;
       const mensaje = esDeApi
@@ -300,7 +300,7 @@ export default function EditarUsuario() {
       <BarraSuperior />
 
       <main className="au-contenido">
-        <MigasDePan volver={listado} actual="Editar usuario" />
+        <MigasDePan volver={volver} actual="Editar usuario" />
 
         <h1 className="au-titulo">
           <IconoEditar width={26} height={26} />
@@ -309,13 +309,6 @@ export default function EditarUsuario() {
 
         <form onSubmit={alEnviar} noValidate className="au-formulario">
           <div className="au-body">
-            {mensajeExito && (
-              <div className="ds-aviso ds-aviso--exito" role="status">
-                <IconoCheck />
-                {mensajeExito}
-              </div>
-            )}
-
             {errorGeneral && (
               <div className="ds-aviso ds-aviso--error" role="alert">
                 <IconoAlerta width={22} height={22} />
@@ -457,7 +450,7 @@ export default function EditarUsuario() {
               type="submit"
               className="ds-boton ds-boton--confirmar"
               onMouseDown={evitarFoco}
-              disabled={enviando || Boolean(mensajeExito)}
+              disabled={enviando}
             >
               <IconoGuardar />
               {enviando ? 'Guardando...' : 'Guardar Cambios'}

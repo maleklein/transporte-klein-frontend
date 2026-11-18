@@ -130,7 +130,7 @@
 }
 
 .us-tabla-caja {
-  /* relative: el texto oculto de la columna "Acciones" es absolute y, sin
+  /* relative: el texto oculto de la columna de la flecha es absolute y, sin
      esto, se ubicaba respecto de la página y no de la caja. Quedaba fuera
      del desplazamiento de la tabla, ensanchaba la página a ~900 px y el
      celular la achicaba entera para que entrara. */
@@ -142,8 +142,8 @@
 
 /* Barra de desplazamiento horizontal siempre a la vista cuando la tabla no
    entra (en el celular, por ejemplo): la del sistema, en la Mac, sólo
-   aparece mientras se desplaza, y "Acciones" quedaba afuera sin que
-   se notara. Chrome y Safari la dibujan con estas reglas; Firefox, con la de
+   aparece mientras se desplaza, y las últimas columnas quedaban afuera sin
+   que se notara. Chrome y Safari la dibujan con estas reglas; Firefox, con la de
    abajo. */
 .us-tabla-caja::-webkit-scrollbar {
   height: 14px;
@@ -195,10 +195,118 @@
   border-bottom: none;
 }
 
-/* Resalta brevemente el usuario recién agregado */
-/* La fila del usuario recién creado o editado se resalta y se desvanece sola:
-   alcanza para ubicarla, y no queda verde como si significara otra cosa. */
-.us-tabla tr.us-fila--nueva td {
+/* Toda la fila abre la ficha: se marca al pasar el mouse, como un botón. */
+.us-fila {
+  cursor: pointer;
+}
+
+@media (hover: hover) {
+  .us-fila:hover td {
+    background: var(--color-primario-claro);
+  }
+}
+
+/* El nombre es el botón que abre la ficha (teclado y lector de pantalla). Se
+   ve como el texto de la fila; el foco, con el contorno de siempre. */
+.us-abrir {
+  padding: 0;
+  border: none;
+  background: none;
+  font: inherit;
+  font-weight: 600;
+  color: var(--color-texto);
+  text-align: left;
+  cursor: pointer;
+}
+
+/* La flecha › del final, que dice que la fila se abre. */
+.us-flecha {
+  width: 44px;
+  color: var(--color-primario);
+}
+
+.us-flecha svg {
+  display: block;
+}
+
+/* Lista del celular (en lugar de la tabla, ver Usuarios.jsx). En la compu no
+   se muestra. */
+.us-lista {
+  display: none;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.us-lista li + li {
+  border-top: 1px solid var(--color-borde-suave);
+}
+
+.us-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  min-height: 64px;
+  padding: 10px 8px 10px 16px;
+  border: none;
+  background: none;
+  font: inherit;
+  color: var(--color-texto);
+  text-align: left;
+  cursor: pointer;
+}
+
+.us-item:active {
+  background: var(--color-primario-claro);
+}
+
+.us-item:focus-visible {
+  outline-offset: -3px;
+}
+
+.us-item__texto {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.us-item__nombre {
+  font-weight: 600;
+  overflow-wrap: anywhere;
+}
+
+.us-item__dato {
+  font-size: var(--texto-ayuda);
+  color: var(--color-texto-suave);
+  overflow-wrap: anywhere;
+}
+
+.us-item .ds-etiqueta-estado {
+  flex-shrink: 0;
+}
+
+.us-item__flecha {
+  flex-shrink: 0;
+  color: var(--color-primario);
+}
+
+@media (max-width: 720px) {
+  .us-tabla {
+    display: none;
+  }
+
+  .us-lista {
+    display: block;
+  }
+}
+
+/* La fila del usuario recién creado se resalta y se desvanece sola: alcanza
+   para ubicarla, y no queda verde como si significara otra cosa. */
+.us-tabla tr.us-fila--nueva td,
+.us-item.us-fila--nueva {
   animation: us-resaltado 4s ease-out forwards;
 }
 
@@ -213,13 +321,13 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .us-tabla tr.us-fila--nueva td {
+  .us-tabla tr.us-fila--nueva td,
+  .us-item.us-fila--nueva {
     animation-duration: 0.01s;
     animation-delay: 3s;
   }
 }
 
-/* Encabezado de la columna de acciones: sin texto visible, solo para lectores de pantalla. */
 /* Texto que no se ve pero sí lee el lector de pantalla. */
 .us-columna-oculta,
 .us-solo-lectores {

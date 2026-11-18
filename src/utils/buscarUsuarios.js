@@ -64,6 +64,25 @@ export const coincideBusqueda = (usuario, busqueda) => {
   return palabras.every((palabra) => datos.includes(palabra));
 };
 
+/**
+ * Si la búsqueda encontró al usuario por su DNI o su email y no sólo por el
+ * nombre, cuál de los dos. La lista del celular muestra nombre y rol, no el DNI
+ * ni el email: con esto agrega el dato que coincidió, para que se vea por qué
+ * apareció ese usuario.
+ *
+ * @param {{ nombre?: string, apellido?: string, dni?: string|number, email?: string }} usuario
+ * @param {string} busqueda
+ * @returns {'dni'|'email'|null} `null` si no hay búsqueda o alcanza con el nombre.
+ */
+export const datoQueCoincide = (usuario, busqueda) => {
+  const nombre = normalizarBusqueda(`${usuario.nombre ?? ''} ${usuario.apellido ?? ''}`);
+  const resto = palabrasDeBusqueda(busqueda).filter((palabra) => !nombre.includes(palabra));
+  if (resto.length === 0) return null;
+  if (resto.some((palabra) => normalizarBusqueda(usuario.dni).includes(palabra))) return 'dni';
+  if (resto.some((palabra) => normalizarBusqueda(usuario.email).includes(palabra))) return 'email';
+  return null;
+};
+
 const PLURAL_ROL = { administrador: 'administradores', camionero: 'camioneros' };
 const PLURAL_ESTADO = { activo: 'activos', inactivo: 'inactivos' };
 
