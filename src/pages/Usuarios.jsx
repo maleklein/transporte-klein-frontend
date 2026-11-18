@@ -102,7 +102,7 @@ export default function Usuarios() {
 
   const [usuarios, setUsuarios] = useState([]);
   const [idDestacado, setIdDestacado] = useState(null);
-  // Qué se acaba de hacer al volver del alta o la edición ("Se guardaron los cambios de...").
+  // El aviso que deja el alta al volver ("El usuario Ana Suárez se registró correctamente.").
   const [avisoExito, setAvisoExito] = useState('');
   // 'cargando' | 'ok' | 'error'
   const [estadoPantalla, setEstadoPantalla] = useState('cargando');
@@ -184,20 +184,16 @@ export default function Usuarios() {
     );
   };
 
-  // Las pantallas de alta y edición vuelven acá pasando el usuario creado o
-  // actualizado por router state, para poder resaltar su fila.
+  // El alta vuelve acá pasando el usuario creado por router state, para
+  // resaltar su fila y avisar. (La edición vuelve a la ficha, no acá.)
   useEffect(() => {
-    const usuario = location.state?.usuarioCreado ?? location.state?.usuarioActualizado;
+    const usuario = location.state?.usuarioCreado;
     if (!usuario) return;
     if (idProcesadoRef.current === usuario.id_usuario) return;
 
     idProcesadoRef.current = usuario.id_usuario;
     setIdDestacado(usuario.id_usuario);
-    setAvisoExito(
-      location.state?.usuarioCreado
-        ? `Se registró a ${usuario.nombre} ${usuario.apellido}.`
-        : `Se guardaron los cambios de ${usuario.nombre} ${usuario.apellido}.`,
-    );
+    setAvisoExito(`El usuario ${usuario.nombre} ${usuario.apellido} se registró correctamente.`);
 
     // Limpia el state para no volver a destacarlo si el usuario navega con
     // atrás/adelante. Con `search`, para no perder la búsqueda y los filtros.
