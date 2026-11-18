@@ -15,6 +15,7 @@ import {
 } from './Iconos';
 import IndicadorNotificaciones from './IndicadorNotificaciones';
 import { cerrarSesion, usuarioActual } from '../api/sesion';
+import { seccionDeOrigen } from '../utils/volver';
 import './BarraSuperior.css';
 
 /**
@@ -146,10 +147,15 @@ export default function BarraSuperior({ volver = null } = {}) {
     navigate('/', { replace: true });
   };
 
+  // Si se llegó desde una sección de la barra (Mis viajes → una carga), se
+  // resalta esa, igual que en las migas; si no, la que corresponde a la dirección.
+  const origen = usuario ? seccionDeOrigen(volver, usuario.rol) : null;
+  const accesoOrigen = accesos.find(({ to }) => to === origen);
+
   /** Los accesos como enlaces, con la sección actual resaltada. */
   const enlaces = (claseExtra = '') =>
     accesos.map(({ to, texto, Icono, activo }) => {
-      const esActivo = activo(location.pathname);
+      const esActivo = accesoOrigen ? to === accesoOrigen.to : activo(location.pathname);
       return (
         <Link
           key={to}

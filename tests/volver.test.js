@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { desdeInicio, migasDesde, volverA } from '../src/utils/volver';
+import { desdeInicio, migasDesde, seccionDeOrigen, volverA } from '../src/utils/volver';
 
 /** Sólo los nombres de las migas, en orden. */
 const nombres = (migas) => migas.map((miga) => miga.nombre);
@@ -47,5 +47,28 @@ describe('migasDesde', () => {
   it('pasa a mayúscula el nombre que viene en minúscula', () => {
     const { volverA: volver } = volverA('/cargas/45', 'Volver a la carga');
     expect(nombres(migasDesde(volver, 'administrador'))).toEqual(['Inicio', 'Carga']);
+  });
+});
+
+describe('seccionDeOrigen', () => {
+  it('una carga abierta desde Mis viajes está dentro de Mis viajes', () => {
+    const { volverA: volver } = volverA('/mis-viajes', 'Volver a Mis viajes', desdeInicio('camionero'));
+    expect(seccionDeOrigen(volver, 'camionero')).toBe('/mis-viajes');
+  });
+
+  it('sin la búsqueda del listado', () => {
+    const { volverA: volver } = volverA('/cargas?estado=pendiente', 'Volver a Cargas');
+    expect(seccionDeOrigen(volver, 'administrador')).toBe('/cargas');
+  });
+
+  it('se toma la primera después del inicio, no la más cercana', () => {
+    const estadoDetalle = volverA('/mis-viajes', 'Volver a Mis viajes');
+    const { volverA: volver } = volverA('/cargas/1', 'Volver a la carga', estadoDetalle, 'Carga #1');
+    expect(seccionDeOrigen(volver, 'camionero')).toBe('/mis-viajes');
+  });
+
+  it('null si se llegó desde el inicio o sin state', () => {
+    expect(seccionDeOrigen(desdeInicio('camionero').volverA, 'camionero')).toBeNull();
+    expect(seccionDeOrigen(null, 'camionero')).toBeNull();
   });
 });

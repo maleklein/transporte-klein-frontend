@@ -79,6 +79,23 @@ export function migasDesde(volver, rol) {
 }
 
 /**
+ * La primera pantalla de la cadena después del inicio (sin la búsqueda), o
+ * `null` si se llegó directo desde el inicio o sin `state`.
+ *
+ * La barra superior la usa para resaltar la sección desde la que se llegó y no
+ * sólo la de la dirección: una carga abierta desde Mis viajes es `/cargas/1`,
+ * pero el usuario está dentro de Mis viajes (Inicio › Mis viajes › Carga #1).
+ *
+ * @param {{ ruta: string, texto: string, estado?: object|null, miga?: string } | null} volver - lo que devuelve `destinoVolver`.
+ * @param {string} rol - 'administrador' o 'camionero'.
+ * @returns {string|null} la ruta, por ejemplo `/mis-viajes`.
+ */
+export function seccionDeOrigen(volver, rol) {
+  const [, primera] = migasDesde(volver, rol);
+  return primera ? primera.ruta.split('?')[0] : null;
+}
+
+/**
  * Para los accesos de los paneles de inicio: el botón de volver lleva de nuevo al panel.
  *
  * @param {string} rol - 'administrador' o 'camionero'.

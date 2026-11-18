@@ -93,7 +93,12 @@ export default function DetalleCarga() {
   const navigate = useNavigate();
   const location = useLocation();
   // Vuelve a la pantalla desde la que se entró (el inicio, Mis viajes, un aviso); si se entró directo, al listado.
-  const volver = destinoVolver(location, { ruta: '/cargas', texto: 'Volver a Cargas' });
+  // Entrando directo (con la URL), vuelve al listado; para el camionero se llama como en la barra.
+  const volver = destinoVolver(location, {
+    ruta: '/cargas',
+    texto: 'Volver a Cargas',
+    ...(usuarioActual()?.rol === 'camionero' ? { miga: 'Cargas disponibles' } : {}),
+  });
   const { id } = useParams();
 
   const [carga, setCarga] = useState(null);
