@@ -55,7 +55,7 @@
   flex-direction: column;
   gap: 6px;
   min-height: 190px;
-  padding: 18px 20px;
+  padding: var(--relleno-tarjeta);
   border: 2px solid var(--color-borde-suave);
   border-radius: var(--radio);
   background: var(--color-fondo);
@@ -245,3 +245,15 @@
   color: var(--color-primario);
 }
 
+/* Celular, una tarjeta por fila: sin el alto mínimo, que en la grilla las
+   empareja pero acá solo deja espacio vacío, y con el número más chico.
+   Va al final para pisar los tamaños de arriba. */
+@media (max-width: 560px) {
+  .pcm-tarjeta {
+    min-height: 0;
+  }
+
+  .pcm-tarjeta__valor {
+    font-size: 32px;
+  }
+}

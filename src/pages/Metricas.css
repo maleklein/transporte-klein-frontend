@@ -18,7 +18,7 @@
   grid-template-columns: minmax(0, 360px);
   gap: 16px;
   align-items: end;
-  padding: 20px;
+  padding: var(--relleno-caja);
   margin-bottom: 12px;
   border: 2px solid var(--color-borde-suave);
   border-radius: var(--radio);
@@ -84,7 +84,7 @@
 }
 
 .mt-tarjeta {
-  padding: 18px 20px;
+  padding: var(--relleno-tarjeta);
   border: 2px solid var(--color-borde-suave);
   border-radius: var(--radio);
   background: var(--color-fondo);
@@ -128,7 +128,7 @@
 }
 
 .mt-grafico-card {
-  padding: 18px 20px;
+  padding: var(--relleno-tarjeta);
   border: 2px solid var(--color-borde-suave);
   border-radius: var(--radio);
   background: var(--color-fondo);

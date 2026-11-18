@@ -15,7 +15,7 @@
 .us-contenido {
   max-width: var(--ancho-amplio);
   margin: 0 auto;
-  padding: 28px;
+  padding: var(--margen-pagina);
 }
 
 .us-encabezado {
@@ -52,7 +52,7 @@
   grid-template-columns: minmax(0, 2fr) minmax(205px, 1fr) minmax(205px, 1fr) auto;
   gap: 16px;
   align-items: end;
-  padding: 20px;
+  padding: var(--relleno-caja);
   margin-bottom: 20px;
   border: 2px solid var(--color-borde-suave);
   border-radius: var(--radio);

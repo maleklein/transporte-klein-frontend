@@ -1,7 +1,7 @@
 .ac-contenido {
   max-width: var(--ancho-angosto);
   margin: 0 auto;
-  padding: 28px;
+  padding: var(--margen-pagina);
 }
 
 .ac-titulo {
@@ -21,7 +21,7 @@
 }
 
 .ac-body {
-  padding: 24px 26px 8px;
+  padding: 24px var(--relleno-form-x) 8px;
 }
 
 /* El textarea reusa .ds-campo__input, que fija min-height para inputs de una linea. */
@@ -37,7 +37,7 @@
   justify-content: flex-end;
   flex-wrap: wrap;
   gap: 12px;
-  padding: 18px 26px 24px;
+  padding: 18px var(--relleno-form-x) 24px;
   border-top: 2px solid var(--color-fondo-alt);
 }
 

@@ -13,7 +13,7 @@
 .pg-card {
   container-type: inline-size;
   margin: 20px 0;
-  padding: 22px 24px;
+  padding: var(--relleno-tarjeta-grande);
   border: 2px solid var(--color-borde-suave);
   border-radius: var(--radio);
 }
