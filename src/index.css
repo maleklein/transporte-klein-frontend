@@ -508,7 +508,11 @@ select.ds-campo__input,
 
 /* --------------------------------------------------------------------------
    Ruedita de "intentando…" (falta de conexión): gira al lado de un texto que
-   dice qué se está esperando. Sin animación si el sistema lo pide.
+   dice qué se está esperando.
+
+   Con "Reducir movimiento" activado en el sistema gira más lento, pero no se
+   frena: quieta parece una "C" rota y no avisa que se está esperando algo.
+   Es chica y no se desplaza, que no es el movimiento que esa opción evita.
    -------------------------------------------------------------------------- */
 .ds-ruedita {
   flex-shrink: 0;
@@ -528,6 +532,6 @@ select.ds-campo__input,
 
 @media (prefers-reduced-motion: reduce) {
   .ds-ruedita {
-    animation: none;
+    animation-duration: 2s;
   }
 }
