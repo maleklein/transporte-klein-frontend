@@ -320,34 +320,6 @@ select.ds-campo__input,
   background-size: 14px 9px;
 }
 
-/* Fechas en el iPhone. Safari dibuja el campo de fecha con su propio
-   aspecto: le da un ancho mínimo propio (se salía de la caja, más ancho que
-   los otros campos), centra la fecha y, vacío, no muestra nada (parecía un
-   campo de texto en blanco). Sólo en iOS (-webkit-touch-callout únicamente
-   existe ahí): se le saca ese aspecto, se alinea a la izquierda como los
-   demás y lleva un calendario a la derecha, igual que la flecha de los
-   desplegables. En la computadora y en Android queda el del navegador. */
-@supports (-webkit-touch-callout: none) {
-  input[type='date'].ds-campo__input {
-    -webkit-appearance: none;
-    appearance: none;
-    display: block;
-    min-width: 0;
-    max-width: 100%;
-    text-align: left;
-    padding-right: 44px;
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='18' height='18' viewBox='0 0 24 24' fill='none' stroke='%234A5568' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Crect x='3' y='4' width='18' height='18' rx='2'/%3E%3Cpath d='M16 2v4M8 2v4M3 10h18'/%3E%3C/svg%3E");
-    background-repeat: no-repeat;
-    background-position: right 14px center;
-    background-size: 18px 18px;
-  }
-
-  input[type='date'].ds-campo__input::-webkit-date-and-time-value {
-    margin: 0;
-    text-align: left;
-  }
-}
-
 .ds-campo__input::placeholder {
   color: #6B7280;
 }
@@ -385,6 +357,68 @@ select.ds-campo__input,
   font-size: var(--texto-ayuda);
   font-weight: 600;
   margin-top: 6px;
+}
+
+/* Filtro aplicado: el campo de un filtro con valor se pinta de celeste con
+   borde azul, para que se vea de un vistazo qué está filtrando el listado
+   (los filtros quedan en la URL: se puede llegar a una pantalla ya filtrada).
+   A la derecha, en lugar de la flecha o el calendario, lleva una × que lo
+   quita (`BotonQuitarFiltro`). */
+.ds-campo__input--activo {
+  border-color: var(--color-primario);
+  background-color: var(--color-primario-claro);
+  color: var(--color-primario-oscuro);
+  font-weight: 600;
+}
+
+.ds-campo__input--activo.ds-campo__input--desplegable,
+.ds-campo__input--activo.ds-campo__input--fecha {
+  background-image: none;
+}
+
+/* Contenedor del campo y su ×: la × se ubica sobre el borde derecho. */
+.ds-filtro-control {
+  position: relative;
+}
+
+.ds-quitar-filtro {
+  position: absolute;
+  top: 50%;
+  right: 6px;
+  transform: translateY(-50%);
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  padding: 0;
+  border: none;
+  border-radius: 50%;
+  background: transparent;
+  color: var(--color-primario);
+  cursor: pointer;
+}
+
+@media (hover: hover) {
+  .ds-quitar-filtro:hover {
+    background: rgba(31, 78, 121, 0.14);
+  }
+}
+
+.ds-quitar-filtro:focus-visible {
+  outline: 3px solid var(--color-primario);
+  outline-offset: 1px;
+}
+
+/* Campo de fecha (CampoFecha): un botón con la forma de los demás campos y un
+   calendario a la derecha, en el lugar de la flecha de los desplegables. */
+.ds-campo__input--fecha {
+  padding-right: 44px;
+  text-align: left;
+  cursor: pointer;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='18' height='18' viewBox='0 0 24 24' fill='none' stroke='%234A5568' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Crect x='3' y='4' width='18' height='18' rx='2'/%3E%3Cpath d='M16 2v4M8 2v4M3 10h18'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 14px center;
+  background-size: 18px 18px;
 }
 
 /* Layout: máximo 2 columnas en todo el proyecto */

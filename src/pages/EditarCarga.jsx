@@ -11,9 +11,10 @@ import {
 } from '../components/Iconos';
 import BarraSuperior from '../components/BarraSuperior';
 import Campo from '../components/Campo';
+import CampoFecha from '../components/CampoFecha';
 import SelectorUbicacion from '../components/SelectorUbicacion';
 import { evitarFoco } from '../utils/formulario';
-import { LARGOS_MAXIMOS, validar, armarPayload } from '../utils/validarCarga';
+import { LARGOS_MAXIMOS, validar, armarPayload, hoyEnArgentina } from '../utils/validarCarga';
 import { ESTADOS_BLOQUEADOS_EDICION } from '../utils/carga';
 import { etiquetaEstado, motivoEdicionBloqueada } from '../utils/estadosCarga';
 import './AltaCarga.css';
@@ -369,15 +370,22 @@ export default function EditarCarga() {
                 />
               </div>
 
-              <Campo
-                id="ec-fecha"
-                etiqueta="Fecha de retiro"
-                error={errorDe('fecha')}
-                type="date"
-                value={valores.fecha}
-                onChange={alCambiar('fecha')}
-                onBlur={alSalirDelCampo('fecha')}
-              />
+              <Campo id="ec-fecha" etiqueta="Fecha de retiro" error={errorDe('fecha')}>
+                {({ id: idCampo, idError, tieneError }) => (
+                  <CampoFecha
+                    id={idCampo}
+                    etiqueta="Fecha de retiro"
+                    valor={valores.fecha}
+                    alCambiar={(fecha) => alCambiar('fecha')({ target: { value: fecha } })}
+                    alSalir={alSalirDelCampo('fecha')}
+                    // Desde hoy, o desde la fecha que ya tenía si pasó: esa se
+                    // puede dejar como está (ver `validar`).
+                    min={fechaOriginal && fechaOriginal < hoyEnArgentina() ? fechaOriginal : hoyEnArgentina()}
+                    tieneError={tieneError}
+                    idError={idError}
+                  />
+                )}
+              </Campo>
 
               <Campo
                 id="ec-observaciones"

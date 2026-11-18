@@ -87,67 +87,6 @@
   padding-left: 8px;
 }
 
-/* Colores del sistema para react-day-picker: extremos del rango en azul,
-   días del medio en celeste, hoy en negrita azul. */
-.ffc-calendario .rdp-root {
-  --rdp-accent-color: var(--color-primario);
-  --rdp-accent-background-color: var(--color-primario-claro);
-  --rdp-range_middle-background-color: var(--color-primario-claro);
-  --rdp-range_middle-color: var(--color-primario);
-  --rdp-range_start-date-background-color: var(--color-primario);
-  --rdp-range_end-date-background-color: var(--color-primario);
-  --rdp-today-color: var(--color-primario);
-  --rdp-day-height: 40px;
-  --rdp-day-width: 40px;
-  --rdp-day_button-height: 38px;
-  --rdp-day_button-width: 38px;
-  --rdp-nav-height: 40px;
-  --rdp-disabled-opacity: 0.35;
-  font-family: var(--fuente);
-  color: var(--color-texto);
-}
-
-/* El calendario ocupa todo el ancho de su columna, con los días repartidos:
-   sin esto quedaba con su ancho fijo y el panel mostraba espacio vacío a los
-   costados (sobre todo en el celular). */
-.ffc-calendario .rdp-root,
-.ffc-calendario .rdp-months,
-.ffc-calendario .rdp-month,
-.ffc-calendario .rdp-month_grid {
-  width: 100%;
-  max-width: none;
-}
-
-.ffc-calendario .rdp-day,
-.ffc-calendario .rdp-weekday {
-  width: auto;
-}
-
-.ffc-calendario .rdp-day_button {
-  margin: 0 auto;
-}
-
-.ffc-calendario .rdp-caption_label {
-  font-size: var(--texto-base);
-  font-weight: 700;
-  text-transform: capitalize;
-}
-
-.ffc-calendario .rdp-weekday {
-  font-size: var(--texto-ayuda);
-  color: var(--color-texto-suave);
-  text-transform: capitalize;
-}
-
-.ffc-calendario .rdp-today:not(.rdp-selected) .rdp-day_button {
-  font-weight: 700;
-}
-
-.ffc-calendario .rdp-day_button:focus-visible {
-  outline: 3px solid var(--color-primario);
-  outline-offset: 1px;
-}
-
 .ffc-resumen {
   min-height: 1.5em;
   margin: 8px 0 0;
@@ -199,12 +138,6 @@
     padding: 0 0 12px;
     border-right: none;
     border-bottom: 2px solid var(--color-borde-suave);
-  }
-
-  .ffc-calendario .rdp-root {
-    --rdp-day-height: 38px;
-    --rdp-day_button-height: 36px;
-    --rdp-day_button-width: 34px;
   }
 
   .ffc-acceso {

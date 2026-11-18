@@ -1,0 +1,42 @@
+/* Campo de fecha con el calendario del sistema (CampoFecha). La forma del
+   campo y el ícono de calendario vienen de `.ds-campo__input--fecha`
+   (index.css); los colores del calendario, de Calendario.css. */
+
+.cf-campo {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Sin fecha: el texto en gris, como el placeholder de los demás campos. Con
+   las dos clases, porque index.css carga después y su color ganaba. */
+.ds-campo__input.cf-campo--vacio {
+  color: #6B7280;
+}
+
+/* El calendario se abre debajo del campo, encima de lo que siga. */
+.cf-panel {
+  position: absolute;
+  z-index: 40;
+  top: calc(100% + 4px);
+  left: 0;
+  width: max-content;
+  min-width: 100%;
+  max-width: calc(100vw - 32px);
+  padding: 12px;
+  border: 2px solid var(--color-borde-suave);
+  border-radius: var(--radio);
+  background: var(--color-fondo);
+  box-shadow: 0 10px 30px rgba(31, 78, 121, 0.18);
+}
+
+/* Celular: del ancho del campo, con el calendario estirado hasta los bordes. */
+@media (max-width: 720px) {
+  .cf-panel {
+    right: 0;
+    width: auto;
+    min-width: 0;
+    max-width: none;
+    padding: 10px;
+  }
+}
