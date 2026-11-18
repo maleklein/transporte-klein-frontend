@@ -4,12 +4,12 @@ import { listarUsuarios, ErrorDeApi } from '../api/usuarios';
 import {
   IconoAlerta,
   IconoBuscar,
-  IconoCheck,
   IconoCerrar,
   IconoChevronDerecha,
   IconoUsuario,
   IconoUsuarioMas,
 } from '../components/Iconos';
+import AvisoExito from '../components/AvisoExito';
 import BarraSuperior from '../components/BarraSuperior';
 import MigasDePan from '../components/MigasDePan';
 import BotonQuitarFiltro from '../components/BotonQuitarFiltro';
@@ -324,12 +324,7 @@ export default function Usuarios() {
           </button>
         </div>
 
-        {avisoExito && (
-          <div className="ds-aviso ds-aviso--exito" role="status">
-            <IconoCheck width={20} height={20} />
-            {avisoExito}
-          </div>
-        )}
+        {avisoExito && <AvisoExito alCerrar={() => setAvisoExito('')}>{avisoExito}</AvisoExito>}
 
         {/*
           El contador es una región "status": el lector de pantalla anuncia

@@ -1,7 +1,8 @@
 import { useCallback, useEffect, useId, useRef, useState } from 'react';
 import ModalConfirmacion from './ModalConfirmacion';
 import SugeridosCarga from './SugeridosCarga';
-import { IconoAlerta, IconoCamion, IconoCheck, IconoUbicacion } from './Iconos';
+import { IconoAlerta, IconoCamion, IconoUbicacion } from './Iconos';
+import AvisoExito from './AvisoExito';
 import { listarPostulantes } from '../api/cargas';
 import { ErrorDeApi } from '../api/usuarios';
 import { formatearMarcaCorta, formatearPeso } from '../utils/carga';
@@ -175,10 +176,9 @@ export default function PostulantesCarga({ carga, version, modalAbierto, alCerra
       </h2>
 
       {mensajeExito && (
-        <div className="ds-aviso ds-aviso--exito" role="status" tabIndex={-1} ref={refAviso}>
-          <IconoCheck width={20} height={20} />
+        <AvisoExito ref={refAviso} alCerrar={() => setMensajeExito('')}>
           {mensajeExito}
-        </div>
+        </AvisoExito>
       )}
 
       {estadoPedido === 'cargando' && <p className="pp-mensaje">Cargando postulados...</p>}

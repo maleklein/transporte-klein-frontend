@@ -346,8 +346,27 @@
   }
 }
 
+/* Al irse se desvanece y baja un poco, el camino inverso de cuando entra.
+   Un poco más lento que la entrada: lo que se va no tiene que llamar la
+   atención, y así se alcanza a ver que se fue. */
+.pg-aviso--sale {
+  animation: pg-aviso-sale 260ms ease-in forwards;
+}
+
+@keyframes pg-aviso-sale {
+  from {
+    opacity: 1;
+    transform: none;
+  }
+  to {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
-  .pg-aviso {
+  .pg-aviso,
+  .pg-aviso--sale {
     animation: none;
   }
 }

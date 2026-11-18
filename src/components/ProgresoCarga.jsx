@@ -197,6 +197,9 @@ export default function ProgresoCarga({ estado, eventos = [], alCambiarEstado, a
   // Aviso temporal: `{ texto, volverA }`. `volverA` es el estado al que
   // regresa "Deshacer", o null si ese cambio no se puede deshacer.
   const [aviso, setAviso] = useState(null);
+  // El aviso se está yendo: se desvanece y baja (`pg-aviso--sale`) y, al
+  // terminar la animación, se saca. Así no desaparece de golpe.
+  const [avisoSaliendo, setAvisoSaliendo] = useState(false);
 
   const puedeGestionar = typeof alCambiarEstado === 'function';
 
@@ -244,6 +247,7 @@ export default function ProgresoCarga({ estado, eventos = [], alCambiarEstado, a
   /** Corta la cuenta regresiva del aviso y lo saca de pantalla. */
   const cerrarAviso = () => {
     clearTimeout(refTemporizador.current);
+    setAvisoSaliendo(false);
     setAviso(null);
   };
 
@@ -255,7 +259,11 @@ export default function ProgresoCarga({ estado, eventos = [], alCambiarEstado, a
    */
   const programarCierre = (milisegundos) => {
     clearTimeout(refTemporizador.current);
-    refTemporizador.current = setTimeout(() => setAviso(null), milisegundos);
+    refTemporizador.current = setTimeout(() => {
+      // Sin animaciones (preferencia del sistema), no hay animationend que esperar.
+      if (window.matchMedia?.('(prefers-reduced-motion: reduce)').matches) setAviso(null);
+      else setAvisoSaliendo(true);
+    }, milisegundos);
   };
 
   /**
@@ -284,6 +292,7 @@ export default function ProgresoCarga({ estado, eventos = [], alCambiarEstado, a
       // verdad. Si no, el botón prometería algo que el backend iba a rechazar.
       const volverA =
         permitirDeshacer && puedeTransicionar(estadoNuevo, estadoPrevio) ? estadoPrevio : null;
+      setAvisoSaliendo(false);
       setAviso({ texto: textoAviso, volverA });
       programarCierre(volverA ? DURACION_CON_DESHACER : DURACION_SIMPLE);
       refFoco.current = foco;
@@ -588,15 +597,32 @@ export default function ProgresoCarga({ estado, eventos = [], alCambiarEstado, a
         className="pg-avisos"
         role="status"
         aria-live="polite"
-        onMouseEnter={() => clearTimeout(refTemporizador.current)}
+        // Si el mouse o el foco llegan mientras se está yendo, vuelve.
+        onMouseEnter={() => {
+          clearTimeout(refTemporizador.current);
+          setAvisoSaliendo(false);
+        }}
         onMouseLeave={() => aviso && programarCierre(DURACION_AL_SALIR)}
         // Focus y blur de React burbujean, así que alcanza con ponerlos acá
         // para pausar mientras alguien está con el teclado sobre "Deshacer".
-        onFocus={() => clearTimeout(refTemporizador.current)}
+        onFocus={() => {
+          clearTimeout(refTemporizador.current);
+          setAvisoSaliendo(false);
+        }}
         onBlur={() => aviso && programarCierre(DURACION_AL_SALIR)}
       >
         {aviso && (
-          <div className={`pg-aviso${aviso.volverA ? '' : ' pg-aviso--solo'}`}>
+          <div
+            className={`pg-aviso${aviso.volverA ? '' : ' pg-aviso--solo'}${
+              avisoSaliendo ? ' pg-aviso--sale' : ''
+            }`}
+            onAnimationEnd={(evento) => {
+              if (evento.animationName === 'pg-aviso-sale') {
+                setAvisoSaliendo(false);
+                setAviso(null);
+              }
+            }}
+          >
             <span>{aviso.texto}</span>
             {aviso.volverA && (
               <button
