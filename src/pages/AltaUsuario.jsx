@@ -5,7 +5,6 @@ import {
   IconoAlerta,
   IconoCamion,
   IconoCerrar,
-  IconoCheck,
   IconoGuardar,
   IconoUsuarioMas,
 } from '../components/Iconos';
@@ -137,8 +136,11 @@ const CAMPOS_CON_MAYUSCULA = ['nombre', 'apellido'];
 
 /**
  * Pantalla de alta de usuarios, en la ruta /usuarios/nuevo.
- * Muestra el formulario, valida los datos, los envía al backend y,
- * al cancelar o al registrar con éxito, navega de vuelta a /usuarios.
+ * Muestra el formulario, valida los datos y los envía al backend. Al cancelar
+ * vuelve al listado como estaba; al registrar, va directo al listado sin
+ * filtros (para que se vea el usuario nuevo), con la fila resaltada y el aviso
+ * de éxito arriba. El aviso se muestra una sola vez, en el listado: antes
+ * aparecía también en el formulario, que quedaba quieto 1,8 segundos.
  *
  * @returns {JSX.Element}
  */
@@ -150,7 +152,7 @@ export default function AltaUsuario() {
   const volver = destinoVolver(location, { ruta: '/usuarios', texto: 'Volver a Usuarios' });
 
   // Estado del formulario: valores cargados, campos ya tocados por el usuario,
-  // errores devueltos por el backend, mensajes generales y de éxito, y si ya
+  // errores devueltos por el backend, mensajes generales, y si ya
   // se intentó enviar o hay un envío en curso.
   const [valores, setValores] = useState(VALORES_INICIALES);
   const [tocados, setTocados] = useState({});
@@ -158,15 +160,11 @@ export default function AltaUsuario() {
   const [errorGeneral, setErrorGeneral] = useState('');
   // Falta de conexión al guardar: se avisa al lado de los botones.
   const [avisoConexion, setAvisoConexion] = useState(null);
-  const [mensajeExito, setMensajeExito] = useState('');
   const [intentoEnviar, setIntentoEnviar] = useState(false);
   const [enviando, setEnviando] = useState(false);
 
-  // refPrimerCampo: input de "Nombre", para ponerle el foco al entrar a la pantalla.
-  // refTemporizador: guarda el setTimeout que navega a /usuarios tras el éxito,
-  // para poder cancelarlo si la pantalla se desmonta antes de tiempo.
+  // Input de "Nombre", para ponerle el foco al entrar a la pantalla.
   const refPrimerCampo = useRef(null);
-  const refTemporizador = useRef(null);
 
   // Se recalculan en cada render: qué campos tienen error ahora mismo,
   // y si el formulario está en condiciones de enviarse.
@@ -192,10 +190,6 @@ export default function AltaUsuario() {
     const foco = setTimeout(() => refPrimerCampo.current?.focus(), 60);
     return () => clearTimeout(foco);
   }, []);
-
-  // Si el usuario sale de la pantalla antes de que se cumpla el temporizador
-  // de éxito, lo cancela para no navegar sobre una pantalla ya desmontada.
-  useEffect(() => () => clearTimeout(refTemporizador.current), []);
 
   /**
    * Cancela el alta y vuelve al listado de usuarios, sin registrar nada.
@@ -257,8 +251,8 @@ export default function AltaUsuario() {
 
   /**
    * Maneja el envío del formulario: valida, registra el usuario contra el
-   * backend y, si sale bien, muestra el mensaje de éxito y vuelve al
-   * listado de usuarios. Si falla, muestra el error correspondiente.
+   * backend y, si sale bien, vuelve al listado con el usuario nuevo. Si
+   * falla, muestra el error correspondiente.
    */
   const alEnviar = async (evento) => {
     evento.preventDefault();
@@ -278,14 +272,10 @@ export default function AltaUsuario() {
     try {
       const usuarioCreado = await crearUsuario(armarPayload(valores));
 
-      setMensajeExito(
-        `El usuario ${usuarioCreado.nombre} ${usuarioCreado.apellido} se registró correctamente.`,
-      );
-
-      // Se deja ver el mensaje de éxito antes de volver a la lista de usuarios.
-      refTemporizador.current = setTimeout(() => {
-        navigate('/usuarios', { state: { ...(volver.estado ?? {}), usuarioCreado } });
-      }, 1800);
+      // `replace`: el formulario sale del historial, así "atrás" desde el
+      // listado no vuelve a un formulario ya enviado. Sin filtros, para que el
+      // usuario nuevo se vea; el listado resalta su fila y muestra el aviso.
+      navigate('/usuarios', { replace: true, state: { ...(volver.estado ?? {}), usuarioCreado } });
     } catch (error) {
       const esDeApi = error instanceof ErrorDeApi;
       const mensaje = esDeApi
@@ -324,14 +314,6 @@ export default function AltaUsuario() {
 
         <form onSubmit={alEnviar} noValidate className="au-formulario">
           <div className="au-body">
-            {/* Mensajes de estado, arriba del formulario */}
-            {mensajeExito && (
-              <div className="ds-aviso ds-aviso--exito" role="status">
-                <IconoCheck />
-                {mensajeExito}
-              </div>
-            )}
-
             {errorGeneral && (
               <div className="ds-aviso ds-aviso--error" role="alert">
                 <IconoAlerta width={22} height={22} />
@@ -490,7 +472,7 @@ export default function AltaUsuario() {
               type="submit"
               className="ds-boton ds-boton--confirmar"
               onMouseDown={evitarFoco}
-              disabled={enviando || Boolean(mensajeExito)}
+              disabled={enviando}
             >
               <IconoGuardar />
               {enviando ? 'Registrando...' : 'Registrar Usuario'}
