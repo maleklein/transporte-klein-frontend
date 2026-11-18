@@ -16,7 +16,7 @@
 .mc-caja {
   width: 100%;
   max-width: 440px;
-  padding: 26px;
+  padding: var(--relleno-form-x);
   border-radius: var(--radio);
   background: var(--color-fondo);
   box-shadow: var(--sombra-modal);

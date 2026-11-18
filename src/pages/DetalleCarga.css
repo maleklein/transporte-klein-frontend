@@ -5,7 +5,7 @@
 .dc-contenido {
   max-width: var(--ancho-medio);
   margin: 0 auto;
-  padding: 28px;
+  padding: var(--margen-pagina);
 }
 
 .dc-volver {
@@ -110,7 +110,7 @@
 }
 
 .dc-card {
-  padding: 22px 24px;
+  padding: var(--relleno-tarjeta-grande);
   border: 2px solid var(--color-borde-suave);
   border-radius: var(--radio);
 }

@@ -7,7 +7,7 @@
 .nt-contenido {
   max-width: var(--ancho-medio);
   margin: 0 auto;
-  padding: 28px;
+  padding: var(--margen-pagina);
 }
 
 .nt-volver {

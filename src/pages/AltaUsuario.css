@@ -1,7 +1,7 @@
 .au-contenido {
   max-width: var(--ancho-angosto);
   margin: 0 auto;
-  padding: 28px;
+  padding: var(--margen-pagina);
 }
 
 .au-titulo {
@@ -21,7 +21,7 @@
 }
 
 .au-body {
-  padding: 24px 26px 8px;
+  padding: 24px var(--relleno-form-x) 8px;
 }
 
 /* --- Bloque diferenciado para datos de camionero --- */
@@ -49,7 +49,7 @@
   justify-content: flex-end;
   flex-wrap: wrap;
   gap: 12px;
-  padding: 18px 26px 24px;
+  padding: 18px var(--relleno-form-x) 24px;
   border-top: 2px solid var(--color-fondo-alt);
 }
 

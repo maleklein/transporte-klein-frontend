@@ -92,3 +92,27 @@
     font-size: 14px;
     margin-bottom: 15px;
 }
+
+/* Celular: menos relleno, para que los campos usen el ancho de la pantalla
+   (con 24 + 40 px por lado quedaban en unos 250 px de 375). Campos y botón de
+   48 px de alto, y texto de 16 px en los campos: con menos, el iPhone hace
+   zoom al tocarlos. */
+@media (max-width: 720px) {
+    .login-pagina {
+        padding: 16px;
+    }
+
+    .tarjeta-login {
+        padding: 32px 20px;
+    }
+
+    .grupo-input input {
+        min-height: 48px;
+        font-size: 16px;
+    }
+
+    .boton-ingresar {
+        min-height: 48px;
+        font-size: 16px;
+    }
+}

@@ -89,6 +89,6 @@
 @media (max-width: 560px) {
   .rp-resumen { grid-template-columns: minmax(0, 1fr); }
   /* Al tamaño de la compu, número y estrellas no entran a lo ancho del celular. */
-  .rp-promedio__numero { font-size: 2.75rem; }
+  .rp-promedio__numero { font-size: 2.25rem; }
   .rp-promedio .rp-estrellas { font-size: 1.5rem; }
 }

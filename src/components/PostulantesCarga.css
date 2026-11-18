@@ -137,7 +137,7 @@
   display: flex;
   align-items: flex-start;
   gap: 12px;
-  min-height: 52px;
+  min-height: var(--alto-control);
   padding: 12px 14px;
   border: 2px solid var(--color-borde-suave);
   border-radius: var(--radio-chico);

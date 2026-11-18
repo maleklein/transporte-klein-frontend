@@ -58,6 +58,34 @@
   --ancho-amplio: 1200px;   /* tablas, grillas y tarjetas: listados, métricas, paneles */
   --ancho-medio: 800px;     /* lectura: detalles, perfil, notificaciones, mis viajes */
   --ancho-angosto: 660px;   /* formularios */
+
+  /* Márgenes y rellenos. En la compu son amplios; en el celular bajan a los
+     16px que usan iOS y Android, para que el contenido no quede apretado. */
+  --margen-pagina: 28px;              /* costados de cada pantalla (<main>) */
+  --relleno-tarjeta: 18px 20px;       /* tarjetas de listados y resúmenes */
+  --relleno-tarjeta-grande: 22px 24px;/* tarjetas de detalle */
+  --relleno-caja: 20px;               /* recuadros de filtros */
+  --relleno-form-x: 26px;             /* costados de formularios y modales */
+
+  /* Alto de botones y campos. 48px es lo que pide Android; iOS pide 44. */
+  --alto-control: 52px;
+  --relleno-control-y: 13px; /* relleno de arriba y abajo de botones y campos */
+}
+
+/* Celular: letra y controles en los tamaños estándar (texto 16px, labels y
+   títulos de tarjeta 16px en negrita, controles de 48px). Más chico no:
+   el texto de los campos en menos de 16px hace que el iPhone haga zoom. */
+@media (max-width: 720px) {
+  :root {
+    --texto-label: 16px;
+    --margen-pagina: 16px;
+    --relleno-tarjeta: 16px;
+    --relleno-tarjeta-grande: 16px;
+    --relleno-caja: 16px;
+    --relleno-form-x: 16px;
+    --alto-control: 48px;
+    --relleno-control-y: 10px;
+  }
 }
 
 * {
@@ -165,8 +193,8 @@ body {
   align-items: center;
   justify-content: center;
   gap: 10px;
-  padding: 13px 22px;
-  min-height: 52px;
+  padding: var(--relleno-control-y) 22px;
+  min-height: var(--alto-control);
   border-radius: var(--radio-chico);
   font-family: var(--fuente);
   font-size: var(--texto-base);
@@ -294,8 +322,8 @@ body {
 
 .ds-campo__input {
   width: 100%;
-  padding: 13px 14px;
-  min-height: 52px;
+  padding: var(--relleno-control-y) 14px;
+  min-height: var(--alto-control);
   border: 2px solid var(--color-borde);
   border-radius: var(--radio-chico);
   font-family: var(--fuente);
