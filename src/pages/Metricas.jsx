@@ -64,8 +64,8 @@ const MARGEN_GRAFICO = (angosto) => ({ top: 8, right: 8, left: angosto ? 28 : 0,
  */
 const CAPA_CUADRICULA = 250;
 
-/** Sin período: todo el historial. Es el que se ve al entrar y el que deja la ×. */
-const TODO_EL_HISTORIAL = { fechaDesde: '', fechaHasta: '' };
+/** Sin período: todos los tiempos. Es el que se ve al entrar y el que deja la ×. */
+const TODOS_LOS_TIEMPOS = { fechaDesde: '', fechaHasta: '' };
 
 /**
  * Da formato legible a un tiempo en horas: "6 h" si es menos de un día,
@@ -106,14 +106,15 @@ function formatearPorcentaje(tasa) {
  * una guarda de ruta propia: mismo criterio que el resto de las pantallas de
  * administrador del proyecto).
  *
- * Al entrar muestra todo el historial. El período se elige en un solo
- * calendario (`SelectorPeriodo`, el mismo del filtro "Creada" de Cargas): con
- * un acceso rápido o marcando el primer y el último día y apretando "Aplicar"
- * en el panel. Con un período elegido, el campo se marca como filtro aplicado
- * y su × vuelve a todo el historial. Cada cambio vuelve a pedir las métricas;
- * como el calendario marca los dos extremos en orden, no hay un período al
- * revés que validar. Al entrar a la pantalla siempre vuelve a todo el
- * historial, sin cachear lo de una visita anterior.
+ * Al entrar muestra "Todos los tiempos": desde el primer movimiento del
+ * sistema hasta hoy. El período se elige en un solo calendario
+ * (`SelectorPeriodo`, el mismo del filtro "Creada" de Cargas): con un acceso
+ * rápido o marcando el primer y el último día y apretando "Aplicar" en el
+ * panel. Con un período elegido, el campo se marca como filtro aplicado y su ×
+ * vuelve a "Todos los tiempos". Cada cambio vuelve a pedir las métricas; como
+ * el calendario marca los dos extremos en orden, no hay un período al revés
+ * que validar. Al entrar a la pantalla siempre vuelve a "Todos los tiempos",
+ * sin cachear lo de una visita anterior.
  *
  * @returns {JSX.Element}
  */
@@ -132,7 +133,7 @@ export default function Metricas() {
   }, []);
 
   // El período elegido: cada cambio dispara el pedido a GET /metricas.
-  const [periodo, setPeriodo] = useState(TODO_EL_HISTORIAL);
+  const [periodo, setPeriodo] = useState(TODOS_LOS_TIEMPOS);
   // Se incrementa para volver a pedir el mismo período (botón "Reintentar"),
   // mismo recurso que `versionHistorial` en DetalleCarga.jsx.
   const [intentoRecarga, setIntentoRecarga] = useState(0);
@@ -214,11 +215,11 @@ export default function Metricas() {
             desde={periodo.fechaDesde}
             hasta={periodo.fechaHasta}
             alCambiar={({ desde, hasta }) => setPeriodo({ fechaDesde: desde, fechaHasta: hasta })}
-            textoVacio="Todo el historial"
+            textoVacio="Todos los tiempos"
           />
         </div>
 
-        {/* Las fechas que usó el backend: con todo el historial, desde el primer
+        {/* Las fechas que usó el backend: con todos los tiempos, desde el primer
             movimiento del sistema. */}
         <p className="mt-periodo">
           {metricas?.periodo

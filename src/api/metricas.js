@@ -13,13 +13,13 @@ const URL_API = import.meta.env.VITE_API_URL ?? 'http://localhost:3000';
  * GET /metricas (HU 13 - solo administrador) — trae las métricas y
  * estadísticas del sistema para un período.
  *
- * Con las dos fechas pide ese período. Sin ninguna pide todo el historial
+ * Con las dos fechas pide ese período. Sin ninguna pide todos los tiempos
  * (`periodo=todo`): no se deja al rango por defecto del backend, que son los
  * últimos 30 días. El período que se usó vuelve en `periodo` de la respuesta.
  *
  * @param {object} periodo
- * @param {string} periodo.fechaDesde - inicio del período (AAAA-MM-DD), o '' para todo el historial.
- * @param {string} periodo.fechaHasta - fin del período (AAAA-MM-DD), o '' para todo el historial.
+ * @param {string} periodo.fechaDesde - inicio del período (AAAA-MM-DD), o '' para todos los tiempos.
+ * @param {string} periodo.fechaHasta - fin del período (AAAA-MM-DD), o '' para todos los tiempos.
  * @param {object} [opciones]
  * @param {AbortSignal} [opciones.signal] - para cancelar el pedido si se dispara otro antes.
  * @returns {Promise<object>} el objeto de métricas tal cual lo devuelve el backend.

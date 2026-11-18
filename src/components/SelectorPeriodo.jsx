@@ -26,7 +26,7 @@ import './SelectorPeriodo.css';
  * elegido ("01/11/2026 – 15/11/2026").
  *
  * Se puede quedar sin período: el primer acceso es para eso ("Cualquier
- * fecha" en Cargas, "Todo el historial" en Métricas). Con un período elegido,
+ * fecha" en Cargas, "Todos los tiempos" en Métricas). Con un período elegido,
  * el campo se marca como filtro aplicado y lleva una × que lo quita.
  *
  * Una carga no puede crearse en el futuro: los días después de hoy no se
