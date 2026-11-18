@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import {
   avisoSinResultados,
   coincideBusqueda,
+  datoQueCoincide,
   normalizarBusqueda,
   tramosResaltados,
 } from '../src/utils/buscarUsuarios';
@@ -93,6 +94,31 @@ describe('coincideBusqueda', () => {
 
   it('acepta usuarios sin email o con el DNI como número', () => {
     expect(coincideBusqueda({ nombre: 'Ana', apellido: 'Suárez', dni: 33444555 }, '334')).toBe(true);
+  });
+});
+
+describe('datoQueCoincide', () => {
+  it('sin búsqueda, o si coincide por el nombre, no agrega nada', () => {
+    expect(datoQueCoincide(CARLOS, '')).toBeNull();
+    expect(datoQueCoincide(CARLOS, 'gauto')).toBeNull();
+    expect(datoQueCoincide(CARLOS, 'Carlos Gauto')).toBeNull();
+  });
+
+  it('si coincide por el DNI, con o sin puntos, dice "dni"', () => {
+    expect(datoQueCoincide(CARLOS, '466')).toBe('dni');
+    expect(datoQueCoincide(CARLOS, '46.604.678')).toBe('dni');
+  });
+
+  it('si coincide por el email, dice "email"', () => {
+    expect(datoQueCoincide(CARLOS, '@klein')).toBe('email');
+  });
+
+  it('con nombre y DNI mezclados, dice "dni"', () => {
+    expect(datoQueCoincide(CARLA, 'carla 123')).toBe('dni');
+  });
+
+  it('una palabra que está en el nombre y en el email cuenta como nombre', () => {
+    expect(datoQueCoincide(CARLA, 'romero')).toBeNull();
   });
 });
 

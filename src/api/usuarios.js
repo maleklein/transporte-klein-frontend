@@ -141,6 +141,31 @@ export async function listarUsuarios(filtros = {}, opciones = {}) {
 }
 
 /**
+ * La última versión guardada de cada usuario editado en esta sesión, por id.
+ *
+ * La ficha recibe el usuario por router state (no hay `GET /usuarios/:id`).
+ * Después de editar, "atrás" puede volver a una ficha abierta antes de
+ * guardar, con los datos viejos en su state: con esto la ficha muestra los
+ * nuevos. Vive en memoria: al recargar la página la ficha vuelve al listado,
+ * que pide todo de nuevo.
+ */
+const ultimasVersiones = new Map();
+
+/**
+ * El usuario como quedó la última vez que se lo editó en esta sesión, si esa
+ * versión es más nueva que la que se pasa (por `actualizado_en`). Si el
+ * listado trajo algo más reciente, porque otro lo editó después, gana eso.
+ *
+ * @param {object|undefined} usuario - el que llegó por router state.
+ * @returns {object|undefined}
+ */
+export function ultimaVersionDe(usuario) {
+  const guardado = usuario && ultimasVersiones.get(usuario.id_usuario);
+  if (!guardado) return usuario;
+  return new Date(guardado.actualizado_en) > new Date(usuario.actualizado_en) ? guardado : usuario;
+}
+
+/**
  * PUT /usuarios/:id (HU 1.2) — edita nombre, apellido, DNI, email y estado de
  * un usuario existente (y, si es camionero, sus datos de vehículo).
  *
@@ -183,5 +208,6 @@ export async function editarUsuario(idUsuario, datos) {
     throw new ErrorDeApi(mensaje, campoDelMensaje(mensaje), respuesta.status);
   }
 
+  if (cuerpo?.id_usuario) ultimasVersiones.set(cuerpo.id_usuario, cuerpo);
   return cuerpo;
 }
