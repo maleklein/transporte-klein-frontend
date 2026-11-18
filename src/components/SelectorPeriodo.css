@@ -1,12 +1,13 @@
-/* Filtro "Creada" de Gestión de Cargas: campo con forma de desplegable y un
-   panel con accesos rápidos y un calendario de rango (react-day-picker). */
+/* Selector de período (filtro "Creada" de Cargas y "Período" de Métricas):
+   campo con forma de desplegable y un panel con accesos rápidos y un
+   calendario de rango (react-day-picker). */
 
-.ffc {
+.sp {
   position: relative;
 }
 
 /* El campo es un botón con la misma forma y flecha que los desplegables. */
-.ffc-campo {
+.sp-campo {
   text-align: left;
   cursor: pointer;
   white-space: nowrap;
@@ -14,11 +15,11 @@
   text-overflow: ellipsis;
 }
 
-.ffc-campo--vacio {
+.sp-campo--vacio {
   color: #6B7280;
 }
 
-.ffc-panel {
+.sp-panel {
   position: absolute;
   z-index: 40;
   top: calc(100% + 4px);
@@ -36,7 +37,7 @@
 
 /* --- Accesos rápidos ---------------------------------------------------- */
 
-.ffc-accesos {
+.sp-accesos {
   display: flex;
   flex-direction: column;
   gap: 4px;
@@ -47,7 +48,7 @@
   list-style: none;
 }
 
-.ffc-acceso {
+.sp-acceso {
   width: 100%;
   min-height: 40px;
   padding: 8px 12px;
@@ -61,47 +62,47 @@
   cursor: pointer;
 }
 
-.ffc-acceso--elegido {
+.sp-acceso--elegido {
   background: var(--color-primario-claro);
   color: var(--color-primario);
   font-weight: 700;
 }
 
 @media (hover: hover) {
-  .ffc-acceso:hover {
+  .sp-acceso:hover {
     background: var(--color-primario);
     color: #fff;
   }
 }
 
-.ffc-acceso:focus-visible {
+.sp-acceso:focus-visible {
   outline: 3px solid var(--color-primario);
   outline-offset: 1px;
 }
 
 /* --- Calendario ----------------------------------------------------------- */
 
-.ffc-calendario {
+.sp-calendario {
   display: flex;
   flex-direction: column;
   padding-left: 8px;
 }
 
-.ffc-resumen {
+.sp-resumen {
   min-height: 1.5em;
   margin: 8px 0 0;
   font-size: var(--texto-ayuda);
   color: var(--color-texto-suave);
 }
 
-.ffc-acciones {
+.sp-acciones {
   display: flex;
   justify-content: flex-end;
   gap: 8px;
   margin-top: 8px;
 }
 
-.ffc-boton {
+.sp-boton {
   min-height: 40px;
   padding: 8px 16px;
   font-size: var(--texto-ayuda);
@@ -110,7 +111,7 @@
 /* Dos filtros por fila: "Creada" queda en la columna derecha, así que el
    panel se abre hacia la izquierda para no salirse de la pantalla. */
 @media (max-width: 1060px) and (min-width: 721px) {
-  .ffc-panel {
+  .cg-filtros .sp-panel {
     left: auto;
     right: 0;
   }
@@ -120,7 +121,7 @@
    arriba del calendario. */
 @media (max-width: 720px) {
   /* Del ancho del campo; el calendario se estira hasta los bordes. */
-  .ffc-panel {
+  .sp-panel {
     left: 0;
     right: 0;
     padding: 10px;
@@ -130,7 +131,7 @@
     max-width: none;
   }
 
-  .ffc-accesos {
+  .sp-accesos {
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: 6px;
@@ -140,7 +141,7 @@
     border-bottom: 2px solid var(--color-borde-suave);
   }
 
-  .ffc-acceso {
+  .sp-acceso {
     padding: 8px 2px;
     white-space: nowrap;
     letter-spacing: -0.01em;
@@ -149,15 +150,15 @@
     font-size: var(--texto-ayuda);
   }
 
-  .ffc-calendario {
+  .sp-calendario {
     padding-left: 0;
   }
 
-  .ffc-acciones {
+  .sp-acciones {
     align-self: stretch;
   }
 
-  .ffc-boton {
+  .sp-boton {
     flex: 1;
   }
 }

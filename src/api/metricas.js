@@ -13,12 +13,13 @@ const URL_API = import.meta.env.VITE_API_URL ?? 'http://localhost:3000';
  * GET /metricas (HU 13 - solo administrador) — trae las métricas y
  * estadísticas del sistema para un período.
  *
- * Las dos fechas son obligatorias y se mandan siempre explícitas (el llamador
- * no depende del rango por defecto del backend).
+ * Con las dos fechas pide ese período. Sin ninguna pide todos los tiempos
+ * (`periodo=todo`): no se deja al rango por defecto del backend, que son los
+ * últimos 30 días. El período que se usó vuelve en `periodo` de la respuesta.
  *
  * @param {object} periodo
- * @param {string} periodo.fechaDesde - inicio del período, formato AAAA-MM-DD.
- * @param {string} periodo.fechaHasta - fin del período, formato AAAA-MM-DD.
+ * @param {string} periodo.fechaDesde - inicio del período (AAAA-MM-DD), o '' para todos los tiempos.
+ * @param {string} periodo.fechaHasta - fin del período (AAAA-MM-DD), o '' para todos los tiempos.
  * @param {object} [opciones]
  * @param {AbortSignal} [opciones.signal] - para cancelar el pedido si se dispara otro antes.
  * @returns {Promise<object>} el objeto de métricas tal cual lo devuelve el backend.
@@ -26,7 +27,9 @@ const URL_API = import.meta.env.VITE_API_URL ?? 'http://localhost:3000';
  * @throws {ErrorDeApi} si el backend rechaza el período (400), no autoriza (401/403) o falla (500, sin conexión).
  */
 export async function obtenerMetricas({ fechaDesde, fechaHasta }, opciones = {}) {
-  const params = new URLSearchParams({ fecha_desde: fechaDesde, fecha_hasta: fechaHasta });
+  const params = new URLSearchParams(
+    fechaDesde || fechaHasta ? { fecha_desde: fechaDesde, fecha_hasta: fechaHasta } : { periodo: 'todo' },
+  );
 
   let respuesta;
   try {
