@@ -2,8 +2,10 @@
    Menú "Acciones" de una fila (ver MenuAcciones.jsx).
    ========================================================================== */
 
-/* Botón redondo sólo con el ícono ⋮, sin borde: se nota al pasar el mouse
-   o al abrirlo. 40 px, para tocarlo cómodo con el dedo. */
+/* Botón redondo sólo con el ícono ⋯, sin borde: se nota al pasar el mouse
+   o al abrirlo. 40 px, para tocarlo cómodo con el dedo. El gris es el de los
+   bordes: más claro que el texto, para que no compita con los datos de la
+   fila, y con el contraste mínimo de 3:1 para un control. */
 .ma-boton {
   display: inline-flex;
   align-items: center;
@@ -14,7 +16,7 @@
   background: none;
   border: none;
   border-radius: 50%;
-  color: var(--color-texto-suave);
+  color: var(--color-borde);
   cursor: pointer;
 }
 
