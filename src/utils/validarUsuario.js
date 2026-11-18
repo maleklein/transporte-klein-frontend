@@ -15,7 +15,7 @@
 
 import isEmail from 'validator/es/lib/isEmail';
 
-/** DNI argentino sin puntos ni espacios: 7 u 8 dígitos. */
+/** DNI argentino: 7 u 8 dígitos (el campo los muestra con puntos, pero guarda sólo los dígitos). */
 const PATRON_DNI = /^\d{7,8}$/;
 
 /**
@@ -30,7 +30,7 @@ export function validarDni(valor) {
   }
 
   if (!PATRON_DNI.test(limpio)) {
-    return 'El DNI debe tener 7 u 8 números, sin puntos ni espacios.';
+    return 'El DNI debe tener 7 u 8 números.';
   }
 
   return undefined;

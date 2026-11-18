@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { obtenerReputacion } from '../api/calificaciones';
 import { usuarioActual } from '../api/sesion';
 import { formatearFecha, formatearMarcaCorta } from '../utils/carga';
+import { formatearDni } from '../utils/formatoUsuario';
 import {
   IconoCalendario,
   IconoCorreo,
@@ -97,7 +98,7 @@ function DatosCuenta({ usuario }) {
             <IconoDocumento width={15} height={15} />
             DNI
           </dt>
-          <dd>{usuario.dni}</dd>
+          <dd>{formatearDni(usuario.dni)}</dd>
         </div>
         <div className="dc-dato">
           <dt>

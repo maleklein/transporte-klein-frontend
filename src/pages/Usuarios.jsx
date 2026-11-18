@@ -15,8 +15,10 @@ import BarraSuperior from '../components/BarraSuperior';
 import MigasDePan from '../components/MigasDePan';
 import BotonQuitarFiltro from '../components/BotonQuitarFiltro';
 import ComboBox from '../components/ComboBox';
+import MenuAcciones from '../components/MenuAcciones';
 import TextoResaltado from '../components/TextoResaltado';
 import { avisoSinResultados, coincideBusqueda } from '../utils/buscarUsuarios';
+import { formatearDni } from '../utils/formatoUsuario';
 import { destinoVolver, volverA } from '../utils/volver';
 import './DetalleCarga.css';
 import './Usuarios.css';
@@ -398,7 +400,7 @@ export default function Usuarios() {
                         />
                       </td>
                       <td>
-                        <TextoResaltado texto={String(usuario.dni)} busqueda={filtros.buscar} />
+                        <TextoResaltado texto={formatearDni(usuario.dni)} busqueda={filtros.buscar} />
                       </td>
                       <td>
                         <TextoResaltado texto={usuario.email} busqueda={filtros.buscar} />
@@ -427,26 +429,13 @@ export default function Usuarios() {
                           : '—'}
                       </td>
                       <td>
-                        <div className="us-acciones">
-                          <button
-                            type="button"
-                            className="ds-boton ds-boton--secundario us-boton-accion"
-                            onClick={() => irAlDetalle(usuario)}
-                            aria-label={`Ver ficha de ${usuario.nombre} ${usuario.apellido}`}
-                          >
-                            <IconoOjo width={18} height={18} />
-                            Ver
-                          </button>
-                          <button
-                            type="button"
-                            className="ds-boton ds-boton--secundario us-boton-accion"
-                            onClick={() => irAEditar(usuario)}
-                            aria-label={`Editar a ${usuario.nombre} ${usuario.apellido}`}
-                          >
-                            <IconoEditar width={18} height={18} />
-                            Editar
-                          </button>
-                        </div>
+                        <MenuAcciones
+                          etiqueta={`Acciones para ${usuario.nombre} ${usuario.apellido}`}
+                          opciones={[
+                            { texto: 'Ver ficha', Icono: IconoOjo, alElegir: () => irAlDetalle(usuario) },
+                            { texto: 'Editar', Icono: IconoEditar, alElegir: () => irAEditar(usuario) },
+                          ]}
+                        />
                       </td>
                     </tr>
                   ))}
