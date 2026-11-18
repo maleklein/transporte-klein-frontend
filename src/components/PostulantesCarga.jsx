@@ -14,20 +14,68 @@ import './PostulantesCarga.css';
 /** Cada cuánto se vuelve a pedir la lista mientras la carga espera asignación. */
 const INTERVALO_REFRESCO_MS = 30_000;
 
-/** Cómo se nombra cada estado de una postulación en la lista. */
+/**
+ * Cómo se nombra cada estado de una postulación al lado del nombre del
+ * camionero. Sin género: antes decía "Elegida" / "No elegida" (por la
+ * postulación) y, al lado de "Tomas Caussa", se leía como que hablaba de él.
+ */
 const ETIQUETAS_POSTULACION = Object.freeze({
   pendiente: 'En espera',
-  aceptada: 'Elegida',
-  rechazada: 'No elegida',
+  aceptada: 'Lleva la carga',
+  rechazada: 'Sin asignar',
 });
+
+/**
+ * Un camionero de la lista: nombre, vehículo, dónde está y cuándo se postuló.
+ *
+ * @param {object} props
+ * @param {object} props.postulante
+ * @param {boolean} [props.conEtiqueta] - si muestra el estado de la postulación al lado del nombre.
+ * @returns {JSX.Element}
+ */
+function ItemPostulante({ postulante, conEtiqueta = true }) {
+  return (
+    <li className={`pp-item pp-item--${postulante.estado}`}>
+      <div className="pp-item__cabecera">
+        <span className="pp-item__nombre">
+          {postulante.nombre} {postulante.apellido}
+        </span>
+        {conEtiqueta && (
+          <span className={`pp-etiqueta pp-etiqueta--${postulante.estado}`}>
+            {ETIQUETAS_POSTULACION[postulante.estado] ?? postulante.estado}
+          </span>
+        )}
+      </div>
+      <p className="pp-item__dato">
+        <IconoCamion width={16} height={16} />
+        {postulante.tipo_vehiculo || 'Vehículo sin cargar'} · capacidad{' '}
+        {formatearPeso(postulante.capacidad_kg)}
+      </p>
+      <p className="pp-item__dato">
+        <IconoUbicacion width={16} height={16} />
+        {postulante.ubicacion || 'Ubicación sin cargar'}
+        {postulante.disponibilidad === false && ' · ahora no está disponible'}
+      </p>
+      <p className="pp-item__fecha">Se postuló: {formatearMarcaCorta(postulante.fecha_postulacion)}</p>
+    </li>
+  );
+}
 
 /**
  * Camioneros postulados a una carga y su asignación (HU 4 y HU 6), en el
  * detalle del administrador.
  *
- * La lista muestra lo que hace falta para elegir —vehículo, capacidad, dónde
- * está, si sigue disponible— y cómo terminó cada postulación. La calificación
- * queda para cuando exista la de la HU 11.
+ * Mientras la carga espera asignación, la lista muestra lo que hace falta
+ * para elegir: vehículo, capacidad, dónde está y si sigue disponible.
+ *
+ * Una vez asignada, lo importante es quién la lleva: el bloque pasa a ser
+ * "Quién lleva la carga" (sin género: puede ser una camionera), con esa
+ * persona sola, y los demás postulados quedan
+ * plegados en "Ver los otros postulados", por si se quiere saber quién más se
+ * había anotado. Si la carga vuelve a pendiente, todos vuelven a la lista.
+ *
+ * En una carga cancelada, el bloque es "Se habían postulado" y no lleva
+ * etiquetas: no hay nada que esperar ni nadie a quien asignar.
  *
  * El modal de asignación vive acá pero lo abre el botón "Asignar camionero"
  * del progreso de la carga, que es donde está el próximo paso de cada estado:
@@ -132,6 +180,11 @@ export default function PostulantesCarga({ carga, version, modalAbierto, alCerra
   }, [carga.estado_actual]);
 
   const enEspera = postulantes.filter((postulante) => postulante.estado === 'pendiente');
+  // La asignación siempre sale de una postulación pendiente (también desde
+  // "Sugeridos"), así que el asignado está en la lista con su postulación aceptada.
+  const asignado = postulantes.find((postulante) => postulante.estado === 'aceptada');
+  const otros = postulantes.filter((postulante) => postulante !== asignado);
+  const cancelada = carga.estado_actual === ESTADOS.CANCELADA;
 
   const cerrarModal = useCallback(() => {
     if (!asignando) alCerrarModal();
@@ -169,8 +222,8 @@ export default function PostulantesCarga({ carga, version, modalAbierto, alCerra
   return (
     <section className="dc-card pp-tarjeta" aria-labelledby={`${idBase}-titulo`}>
       <h2 className="dc-card__titulo" id={`${idBase}-titulo`}>
-        Camioneros postulados
-        {estadoPedido === 'ok' && postulantes.length > 0 && (
+        {asignado ? 'Quién lleva la carga' : cancelada ? 'Se habían postulado' : 'Camioneros postulados'}
+        {!asignado && estadoPedido === 'ok' && postulantes.length > 0 && (
           <span className="pp-contador">({postulantes.length})</span>
         )}
       </h2>
@@ -192,40 +245,42 @@ export default function PostulantesCarga({ carga, version, modalAbierto, alCerra
 
       {estadoPedido === 'ok' && postulantes.length === 0 && (
         <p className="pp-mensaje">
-          Todavía no se postuló ningún camionero. Cuando se postule el primero, la carga pasa a
-          pendiente y vas a poder asignarla.
+          {cancelada
+            ? 'Nadie se había postulado a esta carga.'
+            : 'Todavía no se postuló ningún camionero. Cuando se postule el primero, la carga pasa a pendiente y vas a poder asignarla.'}
         </p>
       )}
 
-      {estadoPedido === 'ok' && postulantes.length > 0 && (
+      {estadoPedido === 'ok' && asignado && (
+        <>
+          <ul className="pp-lista">
+            <ItemPostulante postulante={asignado} conEtiqueta={false} />
+          </ul>
+          {otros.length > 0 && (
+            <details className="pp-otros">
+              <summary>
+                {otros.length === 1 ? 'Ver el otro postulado (1)' : `Ver los otros postulados (${otros.length})`}
+              </summary>
+              <ul className="pp-lista">
+                {otros.map((postulante) => (
+                  <ItemPostulante
+                    key={postulante.id_postulacion}
+                    postulante={postulante}
+                    // Los que no la llevan no necesitan etiqueta: ya se sabe
+                    // quién la lleva. Sí la lleva uno que siga en espera.
+                    conEtiqueta={postulante.estado !== 'rechazada'}
+                  />
+                ))}
+              </ul>
+            </details>
+          )}
+        </>
+      )}
+
+      {estadoPedido === 'ok' && !asignado && postulantes.length > 0 && (
         <ul className="pp-lista">
           {postulantes.map((postulante) => (
-            <li
-              key={postulante.id_postulacion}
-              className={`pp-item pp-item--${postulante.estado}`}
-            >
-              <div className="pp-item__cabecera">
-                <span className="pp-item__nombre">
-                  {postulante.nombre} {postulante.apellido}
-                </span>
-                <span className={`pp-etiqueta pp-etiqueta--${postulante.estado}`}>
-                  {ETIQUETAS_POSTULACION[postulante.estado] ?? postulante.estado}
-                </span>
-              </div>
-              <p className="pp-item__dato">
-                <IconoCamion width={16} height={16} />
-                {postulante.tipo_vehiculo || 'Vehículo sin cargar'} · capacidad{' '}
-                {formatearPeso(postulante.capacidad_kg)}
-              </p>
-              <p className="pp-item__dato">
-                <IconoUbicacion width={16} height={16} />
-                {postulante.ubicacion || 'Ubicación sin cargar'}
-                {postulante.disponibilidad === false && ' · ahora no está disponible'}
-              </p>
-              <p className="pp-item__fecha">
-                Se postuló: {formatearMarcaCorta(postulante.fecha_postulacion)}
-              </p>
-            </li>
+            <ItemPostulante key={postulante.id_postulacion} postulante={postulante} conEtiqueta={!cancelada} />
           ))}
         </ul>
       )}
