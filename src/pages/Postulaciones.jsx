@@ -5,11 +5,11 @@ import {
   IconoCalendario,
   IconoCamion,
   IconoEtiqueta,
-  IconoFlechaAtras,
   IconoOjo,
   IconoUbicacion,
 } from '../components/Iconos';
 import BarraSuperior from '../components/BarraSuperior';
+import MigasDePan from '../components/MigasDePan';
 import EstadoCarga from '../components/EstadoCarga';
 import { obtenerMisPostulaciones } from '../api/cargas';
 import { ErrorDeApi } from '../api/usuarios';
@@ -42,9 +42,9 @@ const GRUPOS = [
 export default function Postulaciones() {
   const navigate = useNavigate();
   const location = useLocation();
-  // Desde el inicio o desde Cargas vuelve ahí; si se entró directo, lleva a buscar cargas.
-  // Sin botón de volver si se entró desde la barra superior: no hay a dónde
-  // volver. Sí lo hay si se llegó desde el inicio o desde otra pantalla.
+  // Desde dónde se llegó: arma las migas (Inicio › Mis viajes) y, en el
+  // celular, la flecha de la barra. Desde la barra superior no hay a dónde
+  // volver, y las migas quedan en Inicio › Mis viajes.
   const volver = destinoVolver(location, null);
   const [postulaciones, setPostulaciones] = useState([]);
   // 'cargando' | 'ok' | 'error'
@@ -74,7 +74,7 @@ export default function Postulaciones() {
   // /mis-viajes#pos-espera. Los grupos recién existen cuando llegan los datos,
   // así que el desplazamiento espera a que la pantalla esté lista. Solo baja si
   // el grupo arranca en la mitad de abajo y no entra entero: si ya se ve, bajar
-  // escondería la barra, el título y el botón de volver sin mostrar nada nuevo.
+  // escondería la barra, el título y las migas sin mostrar nada nuevo.
   useEffect(() => {
     if (estadoPantalla !== 'ok' || !location.hash) return;
     // El id está en el título; se mide la sección entera, con sus tarjetas.
@@ -91,16 +91,7 @@ export default function Postulaciones() {
       <BarraSuperior volver={volver} />
 
       <main className="pos-contenido">
-        {volver && (
-          <button
-            type="button"
-            className="dc-volver bs-volver-pantalla"
-            onClick={() => navigate(volver.ruta, { state: volver.estado })}
-          >
-            <IconoFlechaAtras width={20} height={20} />
-            {volver.texto}
-          </button>
-        )}
+        <MigasDePan volver={volver} actual="Mis viajes" />
 
         <h1 className="ds-titulo-pagina pos-titulo">
           <IconoCamion width={26} height={26} />

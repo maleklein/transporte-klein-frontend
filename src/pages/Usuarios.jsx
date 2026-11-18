@@ -7,12 +7,12 @@ import {
   IconoCheck,
   IconoCerrar,
   IconoEditar,
-  IconoFlechaAtras,
   IconoOjo,
   IconoUsuario,
   IconoUsuarioMas,
 } from '../components/Iconos';
 import BarraSuperior from '../components/BarraSuperior';
+import MigasDePan from '../components/MigasDePan';
 import BotonQuitarFiltro from '../components/BotonQuitarFiltro';
 import ComboBox from '../components/ComboBox';
 import TextoResaltado from '../components/TextoResaltado';
@@ -232,16 +232,7 @@ export default function Usuarios() {
       <BarraSuperior volver={destino} />
 
       <main className="us-contenido">
-        {destino && (
-          <button
-            type="button"
-            className="dc-volver bs-volver-pantalla"
-            onClick={() => navigate(destino.ruta, { state: destino.estado ?? null })}
-          >
-            <IconoFlechaAtras width={20} height={20} />
-            {destino.texto}
-          </button>
-        )}
+        <MigasDePan volver={destino} actual="Usuarios" />
 
         <div className="us-encabezado">
           <h1 className="ds-titulo-pagina">

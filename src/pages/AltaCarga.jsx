@@ -2,8 +2,9 @@ import { useEffect, useRef, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { crearCarga, ErrorDeValidacion } from '../api/cargas';
 import { ErrorDeApi } from '../api/usuarios';
-import { IconoAlerta, IconoCajaMas, IconoCerrar, IconoFlechaAtras, IconoGuardar } from '../components/Iconos';
+import { IconoAlerta, IconoCajaMas, IconoCerrar, IconoGuardar } from '../components/Iconos';
 import BarraSuperior from '../components/BarraSuperior';
+import MigasDePan from '../components/MigasDePan';
 import Campo from '../components/Campo';
 import CampoFecha from '../components/CampoFecha';
 import SelectorUbicacion from '../components/SelectorUbicacion';
@@ -76,7 +77,7 @@ export default function AltaCarga() {
   /**
    * Cancela el alta y vuelve a la pantalla desde la que se entró (Gestión de
    * Cargas con sus filtros, o el inicio), sin registrar nada. Es el mismo
-   * destino que el botón "Volver a …" de arriba.
+   * destino que la miga anterior de arriba.
    *
    * @returns {void}
    */
@@ -193,10 +194,7 @@ export default function AltaCarga() {
       <BarraSuperior volver={volver} />
 
       <main className="ac-contenido">
-        <button type="button" className="dc-volver bs-volver-pantalla" onClick={cancelar}>
-          <IconoFlechaAtras width={20} height={20} />
-          {volver.texto}
-        </button>
+        <MigasDePan volver={volver} actual="Nueva carga" />
 
         <h1 className="ac-titulo">
           <IconoCajaMas width={26} height={26} />

@@ -1,0 +1,58 @@
+/* ==========================================================================
+   Migas de pan (reemplazan al "Volver a …" en la computadora).
+   En el celular las esconde `.bs-volver-pantalla` (BarraSuperior.css).
+   ========================================================================== */
+
+.mp-migas {
+  margin-bottom: 12px;
+}
+
+.mp-lista {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 2px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font-family: var(--fuente);
+  font-size: var(--texto-base);
+}
+
+.mp-miga {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+}
+
+.mp-enlace {
+  display: inline-flex;
+  align-items: center;
+  min-height: 36px;
+  padding: 4px 6px;
+  border-radius: var(--radio-chico);
+  color: var(--color-primario);
+  font-weight: 600;
+  text-decoration: none;
+}
+
+/* La primera miga queda alineada con el borde del contenido, no con su relleno. */
+.mp-miga:first-child .mp-enlace {
+  margin-left: -6px;
+}
+
+.mp-enlace:hover {
+  background: var(--color-primario-claro);
+  text-decoration: underline;
+}
+
+.mp-separador {
+  flex: none;
+  color: var(--color-borde);
+}
+
+.mp-actual {
+  padding: 4px 6px;
+  color: var(--color-texto-suave);
+  font-weight: 600;
+}

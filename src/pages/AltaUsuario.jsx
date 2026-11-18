@@ -6,11 +6,11 @@ import {
   IconoCamion,
   IconoCerrar,
   IconoCheck,
-  IconoFlechaAtras,
   IconoGuardar,
   IconoUsuarioMas,
 } from '../components/Iconos';
 import BarraSuperior from '../components/BarraSuperior';
+import MigasDePan from '../components/MigasDePan';
 import Campo from '../components/Campo';
 import ComboBox from '../components/ComboBox';
 import { evitarFoco } from '../utils/formulario';
@@ -306,10 +306,7 @@ export default function AltaUsuario() {
       <BarraSuperior volver={volver} />
 
       <main className="au-contenido">
-        <button type="button" className="dc-volver bs-volver-pantalla" onClick={cancelar}>
-          <IconoFlechaAtras width={20} height={20} />
-          {volver.texto}
-        </button>
+        <MigasDePan volver={volver} actual="Nuevo usuario" />
 
         <h1 className="au-titulo">
           <IconoUsuarioMas width={26} height={26} />

@@ -8,28 +8,6 @@
   padding: 28px;
 }
 
-.dc-volver {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  /* 44 px de alto: se toca cómodo con el dedo (antes medía 28). */
-  min-height: 44px;
-  margin-bottom: 6px;
-  padding: 4px 2px;
-  background: none;
-  border: none;
-  border-radius: var(--radio-chico);
-  font-family: var(--fuente);
-  font-size: var(--texto-base);
-  font-weight: 700;
-  color: var(--color-primario);
-  text-decoration: none;
-  cursor: pointer;
-}
-
-.dc-volver:hover {
-  text-decoration: underline;
-}
 
 .dc-mensaje {
   margin: 0;

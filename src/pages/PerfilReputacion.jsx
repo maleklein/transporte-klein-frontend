@@ -1,7 +1,8 @@
-import { Link, useLocation, useParams } from 'react-router-dom';
+import { useLocation, useParams } from 'react-router-dom';
 import BarraSuperior from '../components/BarraSuperior';
+import MigasDePan from '../components/MigasDePan';
 import ReputacionUsuario from '../components/ReputacionUsuario';
-import { IconoFlechaAtras, IconoUsuario } from '../components/Iconos';
+import { IconoUsuario } from '../components/Iconos';
 import { usuarioActual } from '../api/sesion';
 import { destinoVolver } from '../utils/volver';
 import './DetalleCarga.css';
@@ -9,9 +10,9 @@ import './DetalleCarga.css';
 /**
  * Perfil y reputación de un usuario (HU 11), en /perfiles/:id.
  *
- * El botón de volver aparece sólo si se llegó desde otra pantalla (por
- * ejemplo, la contraparte de un viaje): "Mi perfil" está en la barra superior
- * y desde ahí no hay a dónde volver.
+ * Las migas muestran desde dónde se llegó (por ejemplo, Inicio › Cargas ›
+ * Carga #29 › Perfil del usuario, desde la contraparte de un viaje). Desde
+ * "Mi perfil" de la barra superior quedan en Inicio › Mi perfil.
  *
  * @returns {JSX.Element}
  */
@@ -25,12 +26,7 @@ export default function PerfilReputacion() {
   return <>
     <BarraSuperior volver={volver} />
     <main className="dc-contenido">
-      {volver && (
-        <Link className="dc-volver bs-volver-pantalla" to={volver.ruta} state={volver.estado}>
-          <IconoFlechaAtras />
-          {volver.texto}
-        </Link>
-      )}
+      <MigasDePan volver={volver} actual={esPropio ? 'Mi perfil' : 'Perfil del usuario'} />
       <h1 className="ds-titulo-pagina pr-titulo">
         <IconoUsuario width={26} height={26} />
         {esPropio ? 'Mi perfil' : 'Perfil del usuario'}

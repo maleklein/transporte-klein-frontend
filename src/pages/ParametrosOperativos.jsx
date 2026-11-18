@@ -1,13 +1,13 @@
 import { useCallback, useEffect, useState } from 'react';
-import { useLocation, useNavigate } from 'react-router-dom';
+import { useLocation } from 'react-router-dom';
 import BarraSuperior from '../components/BarraSuperior';
+import MigasDePan from '../components/MigasDePan';
 import Campo from '../components/Campo';
 import ModalConfirmacion from '../components/ModalConfirmacion';
 import {
   IconoAjustes,
   IconoAlerta,
   IconoCheck,
-  IconoFlechaAtras,
   IconoGuardar,
   IconoInfo,
   IconoReintentar,
@@ -69,9 +69,8 @@ function aValoresDeFormulario(parametros) {
  * @returns {JSX.Element}
  */
 export default function ParametrosOperativos() {
-  const navigate = useNavigate();
-  // Si se entró desde el panel de inicio, el botón de volver lleva ahí; desde
-  // la barra superior no hay botón.
+  // Desde dónde se llegó, para las migas y la flecha del celular (desde la
+  // barra superior no hay a dónde volver).
   const destino = destinoVolver(useLocation(), null);
   // Los vigentes, tal cual los devolvió el backend.
   const [parametros, setParametros] = useState([]);
@@ -186,16 +185,7 @@ export default function ParametrosOperativos() {
       <BarraSuperior volver={destino} />
 
       <main className="au-contenido">
-        {destino && (
-          <button
-            type="button"
-            className="dc-volver bs-volver-pantalla"
-            onClick={() => navigate(destino.ruta, { state: destino.estado ?? null })}
-          >
-            <IconoFlechaAtras width={20} height={20} />
-            {destino.texto}
-          </button>
-        )}
+        <MigasDePan volver={destino} actual="Parámetros" />
 
         <h1 className="au-titulo">
           <IconoAjustes width={26} height={26} />

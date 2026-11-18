@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import BarraSuperior from '../components/BarraSuperior';
+import MigasDePan from '../components/MigasDePan';
 import {
   IconoAlerta,
   IconoCajaMas,
@@ -11,7 +12,6 @@ import {
   IconoCheck,
   IconoChevronAbajo,
   IconoChevronDerecha,
-  IconoFlechaAtras,
 } from '../components/Iconos';
 import {
   listarNotificaciones,
@@ -141,15 +141,8 @@ export default function Notificaciones() {
     return () => controlador.abort();
   }, [esAdministrador]);
 
-  // Llegando desde el inicio, el botón lo dice ("Volver al inicio").
+  // Desde dónde se llegó: arma las migas y, en el celular, la flecha de la barra.
   const destino = destinoVolver(location, null);
-
-  /**
-   * Vuelve a la pantalla desde la que se entró.
-   *
-   * @returns {void}
-   */
-  const volver = () => navigate(destino.ruta, { state: destino.estado });
 
   /**
    * Marca como leídas todas las que faltaban, de una vez. Sirve sobre todo al
@@ -255,16 +248,7 @@ export default function Notificaciones() {
       <BarraSuperior volver={destino} />
 
       <main className="nt-contenido">
-        {/*
-          Sólo si se llegó desde otra pantalla (el inicio, por ejemplo). Desde
-          la barra superior o la campana no hay a dónde volver.
-        */}
-        {destino && (
-          <button type="button" className="nt-volver bs-volver-pantalla" onClick={volver}>
-            <IconoFlechaAtras width={20} height={20} />
-            {destino.texto}
-          </button>
-        )}
+        <MigasDePan volver={destino} actual="Notificaciones" />
 
         <header className="nt-encabezado">
           <h1 className="nt-titulo">
