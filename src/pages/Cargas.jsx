@@ -21,7 +21,7 @@ import {
 } from '../components/Iconos';
 import BarraSuperior from '../components/BarraSuperior';
 import EstadoCarga from '../components/EstadoCarga';
-import FiltroFechaCreada from '../components/FiltroFechaCreada';
+import SelectorPeriodo from '../components/SelectorPeriodo';
 import {
   formatearFecha,
   formatearKm,
@@ -397,8 +397,10 @@ export default function Cargas() {
             "Cargas por estado" llegan con "Últimos 30 días" elegido.
           */}
           {!esCamionero && (
-            <FiltroFechaCreada
+            <SelectorPeriodo
               id="cg-creada"
+              etiqueta="Creada"
+              className="cg-filtro"
               desde={creadaDesde}
               hasta={creadaHasta}
               alCambiar={({ desde, hasta }) =>

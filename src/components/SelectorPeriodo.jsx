@@ -12,10 +12,12 @@ import {
 } from '../utils/carga';
 import BotonQuitarFiltro from './BotonQuitarFiltro';
 import './Calendario.css';
-import './FiltroFechaCreada.css';
+import './SelectorPeriodo.css';
 
 /**
- * Filtro "Creada" de Gestión de Cargas: por fecha de creación de la carga.
+ * Campo para elegir un período (desde–hasta) en un solo calendario. Lo usan el
+ * filtro "Creada" de Gestión de Cargas y el "Período" de Métricas, que cuentan
+ * lo mismo: las cargas creadas en esas fechas.
  *
  * Se ve como los otros desplegables. Al tocarlo se abre un panel con accesos
  * rápidos (últimos 7 o 30 días, este mes) y un calendario donde se marca el
@@ -23,20 +25,32 @@ import './FiltroFechaCreada.css';
  * calendario, con "Aplicar". El campo muestra el nombre del acceso o el rango
  * elegido ("01/11/2026 – 15/11/2026").
  *
- * Con un período elegido, el campo se marca como filtro aplicado y lleva una ×
- * que lo vuelve a "Cualquier fecha".
+ * Se puede quedar sin período: el primer acceso es para eso ("Cualquier
+ * fecha" en Cargas, "Todos los tiempos" en Métricas). Con un período elegido,
+ * el campo se marca como filtro aplicado y lleva una × que lo quita.
  *
  * Una carga no puede crearse en el futuro: los días después de hoy no se
  * pueden elegir.
  *
  * @param {object} props
  * @param {string} props.id - id del campo (para la etiqueta).
+ * @param {string} props.etiqueta - el nombre que se ve arriba del campo ("Creada", "Período").
+ * @param {string} [props.textoVacio='Cualquier fecha'] - lo que muestra sin período, en el campo y en su acceso.
+ * @param {string} [props.className] - clase de maquetación del contenedor, la de los otros filtros de la pantalla.
  * @param {string} props.desde - AAAA-MM-DD, o '' sin límite.
  * @param {string} props.hasta - AAAA-MM-DD, o '' sin límite.
- * @param {function({desde: string, hasta: string}): void} props.alCambiar - recibe el período nuevo ('' y '' para "Cualquier fecha").
+ * @param {function({desde: string, hasta: string}): void} props.alCambiar - recibe el período nuevo ('' y '' sin período).
  * @returns {JSX.Element}
  */
-export default function FiltroFechaCreada({ id, desde, hasta, alCambiar }) {
+export default function SelectorPeriodo({
+  id,
+  etiqueta,
+  desde,
+  hasta,
+  alCambiar,
+  textoVacio = 'Cualquier fecha',
+  className = '',
+}) {
   const idEtiqueta = useId();
   const idPanel = useId();
   const [abierto, setAbierto] = useState(false);
@@ -74,7 +88,7 @@ export default function FiltroFechaCreada({ id, desde, hasta, alCambiar }) {
   // Cierra al tocar afuera y con Escape. Al abrir, el foco va al panel.
   useEffect(() => {
     if (!abierto) return undefined;
-    (refPanel.current?.querySelector('.ffc-acceso--elegido') ?? refPanel.current?.querySelector('button'))?.focus();
+    (refPanel.current?.querySelector('.sp-acceso--elegido') ?? refPanel.current?.querySelector('button'))?.focus();
 
     const alTocarAfuera = (evento) => {
       if (!refContenedor.current?.contains(evento.target)) setAbierto(false);
@@ -103,17 +117,17 @@ export default function FiltroFechaCreada({ id, desde, hasta, alCambiar }) {
       : `Del ${formatearFecha(fechaATexto(borrador.from))} al ${formatearFecha(fechaATexto(borrador.to))}`;
 
   return (
-    <div className="cg-filtro ffc" ref={refContenedor}>
+    <div className={`sp${className ? ` ${className}` : ''}`} ref={refContenedor}>
       <span className="ds-campo__label" id={idEtiqueta}>
-        Creada
+        {etiqueta}
       </span>
       <div className="ds-filtro-control">
         <button
           type="button"
           id={id}
           ref={refBoton}
-          className={`ds-campo__input ds-campo__input--desplegable ffc-campo${
-            nombre ? ' ds-campo__input--activo' : ' ffc-campo--vacio'
+          className={`ds-campo__input ds-campo__input--desplegable sp-campo${
+            nombre ? ' ds-campo__input--activo' : ' sp-campo--vacio'
           }`}
           aria-labelledby={`${idEtiqueta} ${id}`}
           aria-haspopup="dialog"
@@ -121,12 +135,12 @@ export default function FiltroFechaCreada({ id, desde, hasta, alCambiar }) {
           aria-controls={abierto ? idPanel : undefined}
           onClick={() => (abierto ? cerrar() : abrir())}
         >
-          {nombre || 'Cualquier fecha'}
+          {nombre || textoVacio}
         </button>
 
         {nombre && (
           <BotonQuitarFiltro
-            etiqueta="Creada"
+            etiqueta={etiqueta}
             alQuitar={() => {
               setAbierto(false);
               alCambiar({ desde: '', hasta: '' });
@@ -137,23 +151,23 @@ export default function FiltroFechaCreada({ id, desde, hasta, alCambiar }) {
       </div>
 
       {abierto && (
-        <div className="ffc-panel" id={idPanel} ref={refPanel} role="dialog" aria-label="Período de creación">
-          <ul className="ffc-accesos">
+        <div className="sp-panel" id={idPanel} ref={refPanel} role="dialog" aria-label={etiqueta}>
+          <ul className="sp-accesos">
             <li>
               <button
                 type="button"
-                className={`ffc-acceso${nombre ? '' : ' ffc-acceso--elegido'}`}
+                className={`sp-acceso${nombre ? '' : ' sp-acceso--elegido'}`}
                 aria-pressed={!nombre}
                 onClick={() => elegir({ desde: '', hasta: '' })}
               >
-                Cualquier fecha
+                {textoVacio}
               </button>
             </li>
             {PERIODOS_CREACION.map((periodo) => (
               <li key={periodo.id}>
                 <button
                   type="button"
-                  className={`ffc-acceso${nombre === periodo.texto ? ' ffc-acceso--elegido' : ''}`}
+                  className={`sp-acceso${nombre === periodo.texto ? ' sp-acceso--elegido' : ''}`}
                   aria-pressed={nombre === periodo.texto}
                   onClick={() => elegir(rangoDePeriodo(periodo.id, hoy))}
                 >
@@ -163,7 +177,7 @@ export default function FiltroFechaCreada({ id, desde, hasta, alCambiar }) {
             ))}
           </ul>
 
-          <div className="ffc-calendario calendario">
+          <div className="sp-calendario calendario">
             <DayPicker
               mode="range"
               locale={es}
@@ -178,16 +192,16 @@ export default function FiltroFechaCreada({ id, desde, hasta, alCambiar }) {
               endMonth={hoy}
               defaultMonth={borrador?.from ?? hoy}
             />
-            <p className="ffc-resumen" aria-live="polite">
+            <p className="sp-resumen" aria-live="polite">
               {textoBorrador}
             </p>
-            <div className="ffc-acciones">
-              <button type="button" className="ds-boton ds-boton--cancelar ffc-boton" onClick={cerrar}>
+            <div className="sp-acciones">
+              <button type="button" className="ds-boton ds-boton--cancelar sp-boton" onClick={cerrar}>
                 Cancelar
               </button>
               <button
                 type="button"
-                className="ds-boton ds-boton--primario ffc-boton"
+                className="ds-boton ds-boton--primario sp-boton"
                 onClick={aplicarRango}
                 disabled={!borrador?.from}
               >
