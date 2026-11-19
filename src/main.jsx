@@ -2,6 +2,10 @@ import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import { createBrowserRouter, RouterProvider } from 'react-router-dom'
 import App from './App.jsx'
+// Inter, la fuente de todo el sistema (ver --fuente en index.css). Viene en
+// el paquete @fontsource-variable/inter: se sirve con la app, sin pedirla a
+// Google Fonts.
+import '@fontsource-variable/inter'
 import './index.css'
 
 // Safari del iPhone sólo aplica :active al tocar si la página escucha algún
