@@ -262,26 +262,30 @@ export function motivoAccionesBloqueadas(estadoActual) {
  * de "Disponible" o "Pendiente" en azul (no lo está), "Vencida" en ámbar con
  * el día del retiro ("retiro 18/09").
  *
- * @returns {{ aviso: string, titulo: string, detalle: string, paso: string, marca: string } | null} null en los demás estados.
+ * `postulados` (sólo pendiente) es la línea de la pestaña de postulados.
+ *
+ * @returns {{ aviso: string, titulo: string, detalle: string, paso: string, marca: string, postulados?: string } | null} null en los demás estados.
  */
 export function textosRetiroVencido(estadoActual, fechaRetiro) {
-  const yaNoLaVen = 'Los camioneros ya no la ven ni pueden postularse.';
   const enElPaso = { paso: 'Vencida', marca: `retiro ${fechaRetiro.slice(0, 5)}` };
-  const aviso = `La fecha de retiro (${fechaRetiro}) ya pasó y la carga sigue sin camionero asignado.`;
+  // El aviso de arriba sólo dice qué pasa; qué hacer lo explica el progreso,
+  // donde está el botón para cambiar la fecha.
+  const aviso = `La fecha de retiro (${fechaRetiro}) ya pasó.`;
   if (estadoActual === ESTADOS.DISPONIBLE) {
     return {
       ...enElPaso,
-      aviso: `${aviso} ${yaNoLaVen} Cambiale la fecha o cancelala.`,
-      titulo: 'Retiro vencido, sin postulados',
-      detalle: `${yaNoLaVen} Para publicarla de nuevo, cambiale la fecha de retiro con "Editar"; si el viaje ya no va, cancelala.`,
+      aviso,
+      titulo: 'Cambiá la fecha para volver a publicarla',
+      detalle: 'Los camioneros ya no la ven. Con una fecha nueva vuelve a aparecerles y se pueden postular. Si el viaje ya no va, cancelala.',
     };
   }
   if (estadoActual === ESTADOS.PENDIENTE) {
     return {
       ...enElPaso,
-      aviso: `${aviso} Los camioneros ya no la ven ni pueden postularse, y no se puede asignar: cambiale la fecha o cancelala.`,
-      titulo: 'Retiro vencido, con camioneros postulados',
-      detalle: 'Con la fecha vencida no se puede asignar. Para asignársela a uno de los postulados, primero cambiale la fecha de retiro con "Editar"; si el viaje ya no va, cancelala.',
+      aviso,
+      titulo: 'Cambiá la fecha para poder asignarla',
+      detalle: 'Los camioneros que se postularon siguen en la lista: con una fecha nueva vas a poder asignársela a uno. Si el viaje ya no va, cancelala.',
+      postulados: 'Para asignar a uno, primero cambiá la fecha de retiro: ya pasó.',
     };
   }
   return null;

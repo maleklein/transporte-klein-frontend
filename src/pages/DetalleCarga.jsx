@@ -588,6 +588,7 @@ export default function DetalleCarga() {
                 modalAbierto={modalAsignarAbierto}
                 alCerrarModal={cerrarAsignacion}
                 alAsignar={asignar}
+                textosVencido={vencido}
               />
             ) : (
               <PostulacionCarga carga={carga} alPostularse={alPostularse} />
@@ -608,6 +609,10 @@ export default function DetalleCarga() {
                 // prop, el progreso no muestra "Asignar camionero".
                 alAsignar={vencido ? undefined : abrirAsignacion}
                 textosVencido={vencido}
+                // Editar se abre con el calendario de la fecha ya desplegado.
+                alCambiarFecha={() =>
+                  navigate(`/cargas/${carga.id_carga}/editar`, { state: { ...location.state, enfocar: 'fecha' } })
+                }
               />
             )}
 

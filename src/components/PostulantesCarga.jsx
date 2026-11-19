@@ -88,9 +88,10 @@ function ItemPostulante({ postulante, conEtiqueta = true }) {
  * @param {boolean} props.modalAbierto - si el modal de asignación está abierto.
  * @param {function} props.alCerrarModal - cierra el modal sin asignar.
  * @param {function} props.alAsignar - asigna la carga al camionero elegido; recibe su id y puede lanzar `ErrorDeApi`.
+ * @param {object|null} [props.textosVencido] - con el retiro vencido, los textos de `textosRetiroVencido`: arriba de la lista se dice por qué no se puede asignar.
  * @returns {JSX.Element}
  */
-export default function PostulantesCarga({ carga, version, modalAbierto, alCerrarModal, alAsignar }) {
+export default function PostulantesCarga({ carga, version, modalAbierto, alCerrarModal, alAsignar, textosVencido = null }) {
   const idBase = useId();
   const [postulantes, setPostulantes] = useState([]);
   // 'cargando' | 'ok' | 'error'
@@ -278,6 +279,14 @@ export default function PostulantesCarga({ carga, version, modalAbierto, alCerra
             </details>
           )}
         </>
+      )}
+
+      {/* Retiro vencido: por qué no se puede asignar a nadie de esta lista. */}
+      {estadoPedido === 'ok' && !asignado && postulantes.length > 0 && textosVencido?.postulados && (
+        <p className="pp-vencida">
+          <IconoAlerta width={18} height={18} />
+          {textosVencido.postulados}
+        </p>
       )}
 
       {estadoPedido === 'ok' && !asignado && postulantes.length > 0 && (

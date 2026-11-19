@@ -297,7 +297,8 @@ export default function EditarUsuario() {
 
   return (
     <>
-      <BarraSuperior />
+      {/* El mismo destino que las migas: en el celular, la flecha ‹ de la barra. */}
+      <BarraSuperior volver={volver} />
 
       <main className="au-contenido">
         <MigasDePan volver={volver} actual="Editar usuario" />

@@ -43,7 +43,9 @@
 
 /* Campo opcional con fecha (ver `quitable`): la × ocupa el lugar del ícono de
    calendario, así que el ícono no se dibuja. */
-.cf-campo--quitable {
+/* Con las dos clases: index.css carga después y su `.ds-campo__input--fecha`
+   volvía a dibujar el ícono encima de la ×. */
+.ds-campo__input--fecha.cf-campo--quitable {
   background-image: none;
   padding-right: 52px;
 }

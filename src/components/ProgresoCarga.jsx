@@ -1,5 +1,5 @@
 import { useEffect, useId, useRef, useState } from 'react';
-import { IconoAlerta, IconoCerrar, IconoCheck } from './Iconos';
+import { IconoAlerta, IconoCalendario, IconoCerrar, IconoCheck } from './Iconos';
 import { ErrorDeApi } from '../api/usuarios';
 import { formatearFechaLarga, formatearMarcaCorta } from '../utils/carga';
 import { evitarFoco } from '../utils/formulario';
@@ -178,9 +178,10 @@ function marcasPorEstado(eventos) {
  * @param {function} [props.alCambiarEstado] - aplica la transición contra el backend; recibe el estado destino y puede lanzar `ErrorDeApi`. Sin esta prop el recorrido se muestra en modo lectura.
  * @param {function} [props.alAsignar] - abre la asignación de un camionero (HU 6). Es lo que hace el botón de avanzar desde "pendiente"; sin esta prop, ese botón no aparece.
  * @param {{ titulo: string, detalle: string } | null} [props.textosVencido] - si la carga tiene el retiro vencido, el título y el detalle que reemplazan a los del estado (ver `textosRetiroVencido`): los camioneros ya no la ven, así que "esperando transportista" no sería cierto.
+ * @param {function} [props.alCambiarFecha] - con el retiro vencido, lleva a editar la carga para cambiarle la fecha; el progreso muestra el botón "Cambiar la fecha de retiro".
  * @returns {JSX.Element}
  */
-export default function ProgresoCarga({ estado, eventos = [], alCambiarEstado, alAsignar, textosVencido = null }) {
+export default function ProgresoCarga({ estado, eventos = [], alCambiarEstado, alAsignar, textosVencido = null, alCambiarFecha }) {
   const idBase = useId();
   const refRaiz = useRef(null);
   const refTemporizador = useRef(null);
@@ -235,6 +236,7 @@ export default function ProgresoCarga({ estado, eventos = [], alCambiarEstado, a
   const cancelada = estado === ESTADOS.CANCELADA;
   // Con el retiro vencido no puede avanzar hasta que le cambien la fecha.
   const vencida = Boolean(textosVencido) && !cancelada;
+  const botonFecha = vencida && typeof alCambiarFecha === 'function';
 
   // De qué paso salió la carga al cancelarse, y cuándo. Sale de la bitácora:
   // el asiento de la cancelación guarda en `estado_anterior` el paso en el que
@@ -572,8 +574,19 @@ export default function ProgresoCarga({ estado, eventos = [], alCambiarEstado, a
           // La pregunta ocupa el lugar de los botones que la abrieron.
           recuadroConfirmacion()
         ) : (
-          (mostrarAvance || destinoRetroceso) && (
+          (mostrarAvance || destinoRetroceso || botonFecha) && (
             <div className="pg-ahora__acciones">
+              {/*
+                Retiro vencido: en el lugar de "Asignar camionero" (o donde
+                iría la próxima acción), la salida: cambiar la fecha.
+              */}
+              {botonFecha && (
+                <button type="button" className="ds-boton ds-boton--secundario" onClick={alCambiarFecha}>
+                  <IconoCalendario width={20} height={20} />
+                  Cambiar la fecha de retiro
+                </button>
+              )}
+
               {mostrarAvance && (
                 <button
                   type="button"

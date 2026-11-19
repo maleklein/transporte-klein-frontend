@@ -2,13 +2,24 @@ import { describe, expect, it } from 'vitest';
 import { textosRetiroVencido } from '../src/utils/estadosCarga';
 
 describe('textosRetiroVencido', () => {
-  it('disponible: dice que los camioneros ya no la ven, en el aviso y en el progreso', () => {
+  it('el aviso de arriba sólo dice qué pasa', () => {
+    for (const estado of ['disponible', 'pendiente']) {
+      expect(textosRetiroVencido(estado, '25/09/2026').aviso).toBe('La fecha de retiro (25/09/2026) ya pasó.');
+    }
+  });
+
+  it('disponible: pide cambiar la fecha para volver a publicarla', () => {
     const textos = textosRetiroVencido('disponible', '25/09/2026');
-    expect(textos.aviso).toBe(
-      'La fecha de retiro (25/09/2026) ya pasó y la carga sigue sin camionero asignado. Los camioneros ya no la ven ni pueden postularse. Cambiale la fecha o cancelala.',
-    );
-    expect(textos.titulo).toBe('Retiro vencido, sin postulados');
-    expect(textos.detalle).toContain('Los camioneros ya no la ven ni pueden postularse.');
+    expect(textos.titulo).toBe('Cambiá la fecha para volver a publicarla');
+    expect(textos.detalle).toContain('Los camioneros ya no la ven.');
+    expect(textos.postulados).toBeUndefined();
+  });
+
+  it('pendiente: pide cambiar la fecha para poder asignarla, y lo dice en la lista de postulados', () => {
+    const textos = textosRetiroVencido('pendiente', '25/09/2026');
+    expect(textos.titulo).toBe('Cambiá la fecha para poder asignarla');
+    expect(textos.detalle).toContain('siguen en la lista');
+    expect(textos.postulados).toBe('Para asignar a uno, primero cambiá la fecha de retiro: ya pasó.');
   });
 
   it('el progreso ya no dice "esperando transportista" ni que la pueden ver', () => {
@@ -17,14 +28,6 @@ describe('textosRetiroVencido', () => {
       expect(titulo).not.toMatch(/esperando transportista/i);
       expect(detalle).not.toMatch(/ya la pueden ver/i);
     }
-  });
-
-  it('pendiente: no ofrece asignar; pide cambiar la fecha o cancelar', () => {
-    const textos = textosRetiroVencido('pendiente', '25/09/2026');
-    expect(textos.titulo).toBe('Retiro vencido, con camioneros postulados');
-    expect(textos.aviso).toContain('no se puede asignar: cambiale la fecha o cancelala.');
-    expect(textos.detalle).toContain('primero cambiale la fecha de retiro');
-    expect(textos.aviso).not.toMatch(/asignásela/i);
   });
 
   it('el recorrido muestra "Vencida" con el día del retiro, no "Disponible" ni "Pendiente"', () => {
