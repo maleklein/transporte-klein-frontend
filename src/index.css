@@ -127,7 +127,12 @@ body {
 }
 
 /* --------------------------------------------------------------------------
-   Botones — regla del proyecto: SIEMPRE ícono + texto, nunca solo ícono.
+   Íconos en botones: nunca un ícono solo, siempre con su texto. Pero no
+   todo botón lleva ícono: va cuando ayuda a reconocer la acción de un
+   vistazo (Nueva Carga, Guardar, Editar, Cerrar sesión) y no cuando sólo
+   decora o el texto ya alcanza (Iniciar Sesión, Aplicar, Volver, Mostrar).
+   Un ícono que no significa nada distrae, y repetido en todos los botones
+   deja de distinguir ninguno (NN/g, Atlassian, GOV.UK).
    -------------------------------------------------------------------------- */
 /* Título de cada pantalla: azul, con el ícono que la representa en la barra.
    No fija margen: lo pone cada pantalla, según lo que tenga alrededor. */

@@ -7,6 +7,10 @@
    la vista (el navbar quedaba arriba del viewport, sin forma de scrollear).
    Ahora el centrado lo hace el contenedor `.login-pagina`, que sólo existe
    dentro de esta pantalla.
+
+   Campos, botones y avisos son los del sistema (`ds-campo`, `ds-boton`,
+   `ds-aviso` en index.css). Acá va sólo el acomodo de la tarjeta, con las
+   mismas variables de color, radio y relleno que el resto.
    ========================================================================== */
 
 .login-pagina {
@@ -14,105 +18,77 @@
     display: flex;
     justify-content: center;
     align-items: center;
-    padding: 24px;
-    background-color: #f8f9fa; /* Fondo gris muy clarito */
+    padding: var(--margen-pagina);
+    background-color: var(--color-fondo-alt);
 }
 
 .tarjeta-login {
-    background-color: white;
-    padding: 40px;
-    border-radius: 6px;
-    box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.08); /* Sombra suave como en la imagen */
-    width: 400px;
+    width: 440px;
     max-width: 100%;
+    padding: 36px var(--relleno-form-x);
+    background-color: var(--color-fondo);
+    border: 1px solid var(--color-borde-suave);
+    border-radius: var(--radio);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06);
+}
+
+/* Encabezado: el camión de la barra superior y el nombre del sistema, centrados.
+   Los campos y el botón quedan alineados a la izquierda, como en los demás
+   formularios. */
+.login-encabezado {
     text-align: center;
+    margin-bottom: 28px;
 }
 
-.tarjeta-login .titulo {
-    color: #1c4573; /* El azul oscuro de tu diseño */
-    font-size: 26px;
-    margin-bottom: 5px;
-}
-
-.tarjeta-login .subtitulo {
-    color: #6c757d;
-    font-size: 14px;
-    margin-bottom: 30px;
-}
-
-.grupo-input {
-    text-align: left;
-    margin-bottom: 20px;
-}
-
-.grupo-input label {
-    display: block;
-    font-size: 14px;
-    font-weight: bold;
-    color: #333;
+.login-logo {
+    color: var(--color-primario);
     margin-bottom: 8px;
 }
 
-.grupo-input input {
-    width: 100%;
-    padding: 10px;
-    border: 1px solid #ddd;
-    border-radius: 4px;
-    font-size: 14px;
+.login-titulo {
+    font-size: 26px;
+    font-weight: 700;
+    color: var(--color-primario);
+    line-height: 1.2;
 }
 
-.boton-ingresar {
-    width: 100%;
-    padding: 12px;
-    background-color: #1c4573; /* Azul oscuro del botón */
-    color: white;
-    border: none;
-    border-radius: 4px;
-    font-size: 15px;
-    cursor: pointer;
-    font-weight: bold;
+.login-subtitulo {
+    margin-top: 4px;
+    color: var(--color-texto-suave);
+    font-size: var(--texto-ayuda);
+}
+
+/* Contraseña con el botón Mostrar al lado, de la misma altura que el campo. */
+.login-clave {
     display: flex;
-    justify-content: center;
-    align-items: center;
-    gap: 8px; /* Espacio entre la flechita y el texto */
-    transition: background-color 0.3s;
+    gap: 8px;
 }
 
-.boton-ingresar:hover {
-    background-color: #133153; /* Se oscurece un poco al pasar el mouse */
+.login-clave .ds-campo__input {
+    flex: 1;
+    min-width: 0;
 }
 
-.boton-ingresar:disabled {
-    opacity: 0.7;
-    cursor: not-allowed;
+.login-mostrar-clave {
+    flex-shrink: 0;
+    padding-inline: 16px;
 }
 
-.mensaje-error {
-    color: #d9534f;
-    font-size: 14px;
-    margin-bottom: 15px;
+/* El botón ocupa todo el ancho: es la única acción de la pantalla. */
+.login-ingresar {
+    width: 100%;
+    margin-top: 8px;
 }
 
-/* Celular: menos relleno, para que los campos usen el ancho de la pantalla
-   (con 24 + 40 px por lado quedaban en unos 250 px de 375). Campos y botón de
-   48 px de alto, y texto de 16 px en los campos: con menos, el iPhone hace
-   zoom al tocarlos. */
+/* Celular: la tarjeta va arriba y no centrada, para que el teclado no tape
+   el botón al escribir. */
 @media (max-width: 720px) {
     .login-pagina {
-        padding: 16px;
+        align-items: flex-start;
+        padding-top: 48px;
     }
 
     .tarjeta-login {
-        padding: 32px 20px;
-    }
-
-    .grupo-input input {
-        min-height: 48px;
-        font-size: 16px;
-    }
-
-    .boton-ingresar {
-        min-height: 48px;
-        font-size: 16px;
+        padding: 28px var(--relleno-form-x);
     }
 }
