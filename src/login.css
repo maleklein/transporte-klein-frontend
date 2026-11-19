@@ -26,10 +26,12 @@
     width: 440px;
     max-width: 100%;
     padding: 36px var(--relleno-form-x);
+    /* Mismo borde que las tarjetas y formularios del resto del sistema (por
+       ejemplo Nuevo Usuario), sin sombra: la sombra queda para las tarjetas
+       que se pueden tocar, al pasar el mouse. */
     background-color: var(--color-fondo);
-    border: 1px solid var(--color-borde-suave);
+    border: 2px solid var(--color-borde-suave);
     border-radius: var(--radio);
-    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06);
 }
 
 /* Encabezado: el camión de la barra superior y el nombre del sistema, centrados.
