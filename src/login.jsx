@@ -162,9 +162,11 @@ const IniciarSesion = () => {
                                 onMouseDown={(evento) => evento.preventDefault()}
                                 onClick={() => asignarClaveVisible((visible) => !visible)}
                             >
+                                {/* El ojo muestra el estado: tachado mientras la
+                                    contraseña está oculta, abierto cuando se ve. */}
                                 {claveVisible
-                                    ? <IconoOjoTachado width={20} height={20} />
-                                    : <IconoOjo width={20} height={20} />}
+                                    ? <IconoOjo width={20} height={20} />
+                                    : <IconoOjoTachado width={20} height={20} />}
                             </button>
                         </div>
                     )}

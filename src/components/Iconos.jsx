@@ -175,7 +175,7 @@ export function IconoOjo(props) {
   );
 }
 
-/** El mismo ojo, tachado: para "Ocultar contraseña". */
+/** El mismo ojo, tachado: contraseña oculta. */
 export function IconoOjoTachado(props) {
   return (
     <svg {...base} {...props}>
