@@ -258,13 +258,19 @@ export function motivoAccionesBloqueadas(estadoActual) {
  *
  * @param {string} estadoActual - 'disponible' o 'pendiente'.
  * @param {string} fechaRetiro - la fecha ya formateada para mostrar ("25/09/2026").
- * @returns {{ aviso: string, titulo: string, detalle: string } | null} null en los demás estados.
+ * `paso` y `marca` son lo que muestra el recorrido en el paso actual: en vez
+ * de "Disponible" o "Pendiente" en azul (no lo está), "Vencida" en ámbar con
+ * el día del retiro ("retiro 18/09").
+ *
+ * @returns {{ aviso: string, titulo: string, detalle: string, paso: string, marca: string } | null} null en los demás estados.
  */
 export function textosRetiroVencido(estadoActual, fechaRetiro) {
   const yaNoLaVen = 'Los camioneros ya no la ven ni pueden postularse.';
+  const enElPaso = { paso: 'Vencida', marca: `retiro ${fechaRetiro.slice(0, 5)}` };
   const aviso = `La fecha de retiro (${fechaRetiro}) ya pasó y la carga sigue sin camionero asignado.`;
   if (estadoActual === ESTADOS.DISPONIBLE) {
     return {
+      ...enElPaso,
       aviso: `${aviso} ${yaNoLaVen} Cambiale la fecha o cancelala.`,
       titulo: 'Retiro vencido, sin postulados',
       detalle: `${yaNoLaVen} Para publicarla de nuevo, cambiale la fecha de retiro con "Editar"; si el viaje ya no va, cancelala.`,
@@ -272,6 +278,7 @@ export function textosRetiroVencido(estadoActual, fechaRetiro) {
   }
   if (estadoActual === ESTADOS.PENDIENTE) {
     return {
+      ...enElPaso,
       aviso: `${aviso} Los camioneros ya no la ven ni pueden postularse, y no se puede asignar: cambiale la fecha o cancelala.`,
       titulo: 'Retiro vencido, con camioneros postulados',
       detalle: 'Con la fecha vencida no se puede asignar. Para asignársela a uno de los postulados, primero cambiale la fecha de retiro con "Editar"; si el viaje ya no va, cancelala.',

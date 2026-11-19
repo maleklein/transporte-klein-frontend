@@ -116,7 +116,27 @@
   color: #fff;
 }
 
-/* Pasos que ya no van a ocurrir porque la carga se canceló antes. */
+/* Retiro vencido: el paso actual en ámbar con "!", como los avisos de
+   advertencia, y con el mismo halo que el paso actual. */
+.pg-paso--vencido .pg-paso__marca {
+  border-color: var(--color-advertencia);
+  background: var(--color-advertencia);
+  color: #fff;
+  box-shadow: 0 0 0 5px var(--color-advertencia-claro);
+}
+
+.pg-paso--vencido .pg-paso__nombre {
+  font-weight: 700;
+  color: var(--color-advertencia);
+}
+
+.pg-paso--vencido .pg-paso__momento {
+  font-weight: 600;
+  color: var(--color-advertencia);
+}
+
+/* Pasos que ya no van a ocurrir porque la carga se canceló antes (o que no
+   pueden ocurrir mientras el retiro esté vencido). */
 .pg-paso--anulado {
   opacity: 0.45;
 }
@@ -170,6 +190,14 @@
 
 .pg-ahora--cancelada {
   background: var(--color-peligro-claro);
+}
+
+.pg-ahora--vencida {
+  background: var(--color-advertencia-claro);
+}
+
+.pg-ahora--vencida .pg-ahora__titulo {
+  color: var(--color-advertencia);
 }
 
 .pg-ahora__titulo {

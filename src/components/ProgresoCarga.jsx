@@ -233,6 +233,8 @@ export default function ProgresoCarga({ estado, eventos = [], alCambiarEstado, a
 
   const marcas = marcasPorEstado(eventos);
   const cancelada = estado === ESTADOS.CANCELADA;
+  // Con el retiro vencido no puede avanzar hasta que le cambien la fecha.
+  const vencida = Boolean(textosVencido) && !cancelada;
 
   // De qué paso salió la carga al cancelarse, y cuándo. Sale de la bitácora:
   // el asiento de la cancelación guarda en `estado_anterior` el paso en el que
@@ -460,8 +462,8 @@ export default function ProgresoCarga({ estado, eventos = [], alCambiarEstado, a
 
       <ol className="pg-pasos">
         {FLUJO.map((paso, indice) => {
-          // Cinco situaciones posibles, y el orden importa: lo de la carga
-          // cancelada pisa al recorrido normal.
+          // Siete situaciones posibles, y el orden importa: lo de la carga
+          // cancelada pisa al recorrido normal, y lo del retiro vencido también.
           let situacion = 'pendiente';
           // Sólo los pasos ya alcanzados muestran su marca. Si la carga volvió
           // atrás, los que quedaron adelante vuelven a estar por hacer: la
@@ -480,6 +482,17 @@ export default function ProgresoCarga({ estado, eventos = [], alCambiarEstado, a
             situacion = 'anulado';
             marca = '';
             paraLector = 'no se va a hacer';
+          } else if (vencida && indice === indicePaso) {
+            // Retiro vencido (punto 3 del profesor): el paso actual no dice
+            // "Disponible" o "Pendiente" en azul, porque no lo está.
+            situacion = 'vencido';
+            marca = textosVencido.marca;
+            paraLector = 'paso actual, con el retiro vencido';
+          } else if (vencida && indice > indicePaso) {
+            // No puede avanzar hasta que le cambien la fecha.
+            situacion = 'anulado';
+            marca = '';
+            paraLector = 'no se puede hacer mientras esté vencida';
           } else if (indice < indicePaso || terminada) {
             situacion = 'cumplido';
             paraLector = 'hecho';
@@ -506,10 +519,13 @@ export default function ProgresoCarga({ estado, eventos = [], alCambiarEstado, a
               <span className="pg-paso__marca" aria-hidden="true">
                 {situacion === 'cumplido' && <IconoCheck width={16} height={16} />}
                 {situacion === 'cancelado' && <IconoCerrar width={14} height={14} />}
-                {situacion !== 'cumplido' && situacion !== 'cancelado' && indice + 1}
+                {situacion === 'vencido' && '!'}
+                {!['cumplido', 'cancelado', 'vencido'].includes(situacion) && indice + 1}
               </span>
               <span className="pg-paso__texto">
-                <span className="pg-paso__nombre">{etiquetaEstado(paso)}</span>
+                <span className="pg-paso__nombre">
+                  {situacion === 'vencido' ? textosVencido.paso : etiquetaEstado(paso)}
+                </span>
                 <span className="pg-paso__momento">{marca}</span>
                 <span className="pg-oculto"> ({paraLector})</span>
               </span>
@@ -534,6 +550,7 @@ export default function ProgresoCarga({ estado, eventos = [], alCambiarEstado, a
         className={[
           'pg-ahora',
           cancelada ? 'pg-ahora--cancelada' : '',
+          vencida ? 'pg-ahora--vencida' : '',
           terminada ? 'pg-ahora--entregada' : '',
         ]
           .filter(Boolean)

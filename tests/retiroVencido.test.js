@@ -27,6 +27,14 @@ describe('textosRetiroVencido', () => {
     expect(textos.aviso).not.toMatch(/asignásela/i);
   });
 
+  it('el recorrido muestra "Vencida" con el día del retiro, no "Disponible" ni "Pendiente"', () => {
+    for (const estado of ['disponible', 'pendiente']) {
+      const { paso, marca } = textosRetiroVencido(estado, '18/09/2026');
+      expect(paso).toBe('Vencida');
+      expect(marca).toBe('retiro 18/09');
+    }
+  });
+
   it('en los demás estados no hay textos de retiro vencido', () => {
     for (const estado of ['aceptada', 'en_viaje', 'entregada', 'cancelada']) {
       expect(textosRetiroVencido(estado, '25/09/2026')).toBeNull();
