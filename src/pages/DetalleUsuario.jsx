@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
-import { Navigate, useLocation, useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import {
+  IconoAlerta,
   IconoCalendario,
   IconoCamion,
   IconoCorreo,
@@ -11,11 +12,12 @@ import {
   IconoUbicacion,
   IconoUsuario,
 } from '../components/Iconos';
-import { ultimaVersionDe } from '../api/usuarios';
+import { ErrorDeApi, obtenerUsuario } from '../api/usuarios';
 import AvisoExito from '../components/AvisoExito';
 import BarraSuperior from '../components/BarraSuperior';
 import MigasDePan from '../components/MigasDePan';
 import ReputacionUsuario from '../components/ReputacionUsuario';
+import { useAvisoSinConexion } from '../components/contextoConexion';
 import { formatearFecha } from '../utils/carga';
 import { formatearDni } from '../utils/formatoUsuario';
 import { destinoVolver, volverA } from '../utils/volver';
@@ -23,28 +25,46 @@ import './DetalleCarga.css';
 import './DetalleUsuario.css';
 
 /**
- * Ficha de solo lectura de un usuario (HU 1.3), en la ruta /usuarios/detalle.
+ * Ficha de solo lectura de un usuario (HU 1.3), en la ruta /usuarios/:id.
  *
- * Muestra todos los datos del usuario seleccionado en el listado: datos
- * personales, rol, estado y, solo si es camionero, sus datos de vehículo y su
- * reputación. No tiene ningún campo editable: para modificar los datos está el
- * botón "Editar" del encabezado (HU 1.2), como en el detalle de una carga. Al
- * guardar o cancelar, la edición vuelve acá; si guardó, trae el usuario
- * actualizado y el aviso en `avisoExito`.
+ * Muestra todos los datos del usuario: datos personales, rol, estado y, solo
+ * si es camionero, sus datos de vehículo y su reputación. No tiene ningún
+ * campo editable: para modificar los datos está el botón "Editar" del
+ * encabezado (HU 1.2), como en el detalle de una carga. Al guardar o cancelar,
+ * la edición vuelve acá; si guardó, trae el aviso en `avisoExito`.
  *
- * Los datos llegan por router state desde el listado — `GET /usuarios` no
- * expone un endpoint individual por id, así que no se puede recargar por URL:
- * si se entra directo o se refresca, se vuelve al listado.
+ * Pide el usuario al backend (`GET /usuarios/:id`), así que se puede recargar
+ * o abrir con la dirección. Si llega desde el listado o la edición con el
+ * usuario en el `state`, lo muestra enseguida y lo reemplaza por lo que diga
+ * la base: si "atrás" vuelve a una ficha con datos viejos, se corrigen solos.
+ *
+ * Una ficha por id: con `key`, pasar de un usuario a otro arranca de cero.
  *
  * @returns {JSX.Element}
  */
 export default function DetalleUsuario() {
+  const { id } = useParams();
+  return <FichaUsuario key={id} id={id} />;
+}
+
+/**
+ * @param {object} props
+ * @param {string} props.id - el id de la dirección.
+ * @returns {JSX.Element}
+ */
+function FichaUsuario({ id }) {
   const location = useLocation();
   const navigate = useNavigate();
-  // Si se lo editó en esta sesión, la versión guardada (ver `ultimaVersionDe`).
-  const usuario = ultimaVersionDe(location.state?.usuario);
   // Vuelve al listado con la búsqueda y los filtros que tenía (`/usuarios?buscar=...`).
   const volver = destinoVolver(location, { ruta: '/usuarios', texto: 'Volver a Usuarios' });
+  const avisarSiFaltaConexion = useAvisoSinConexion();
+
+  // Lo que trajo el listado o la edición, si es este usuario: se ve enseguida.
+  const previo = location.state?.usuario;
+  const [usuario, setUsuario] = useState(previo && String(previo.id_usuario) === id ? previo : null);
+  // 'cargando' | 'ok' | 'no-encontrado' | 'error'
+  const [estadoPantalla, setEstadoPantalla] = useState(usuario ? 'ok' : 'cargando');
+  const [mensajeError, setMensajeError] = useState('');
 
   // Aviso que deja la edición al volver. Se guarda al entrar y se saca del
   // historial: si no, volvería a aparecer con atrás y adelante.
@@ -55,23 +75,69 @@ export default function DetalleUsuario() {
     navigate(location.pathname, { replace: true, state: resto });
   }, [location, navigate]);
 
-  if (!usuario) return <Navigate to="/usuarios" replace />;
+  useEffect(() => {
+    const controlador = new AbortController();
+    obtenerUsuario(id, { signal: controlador.signal })
+      .then((datos) => {
+        setUsuario(datos);
+        setEstadoPantalla('ok');
+      })
+      .catch((error) => {
+        if (error?.name === 'AbortError') return;
+        if (avisarSiFaltaConexion(error)) return;
+        // 400 es un id que no es número (`/usuarios/abc`): para quien lo abre, tampoco existe.
+        if (error instanceof ErrorDeApi && [400, 404].includes(error.estado)) {
+          setEstadoPantalla('no-encontrado');
+          return;
+        }
+        setMensajeError(
+          error instanceof ErrorDeApi ? error.message : 'No se pudo cargar la ficha del usuario. Intentá de nuevo.',
+        );
+        // Si ya se ve el usuario que trajo el listado, un error al confirmarlo no lo tapa.
+        setEstadoPantalla((anterior) => (anterior === 'ok' ? 'ok' : 'error'));
+      });
+    return () => controlador.abort();
+  }, [id, avisarSiFaltaConexion]);
+
+  if (estadoPantalla !== 'ok' || !usuario) {
+    return (
+      <>
+        <BarraSuperior volver={volver} />
+        <main className="dc-contenido">
+          <MigasDePan volver={volver} actual="Usuario" />
+          {estadoPantalla === 'cargando' && <p className="dc-mensaje">Cargando usuario...</p>}
+          {estadoPantalla === 'no-encontrado' && (
+            <div className="ds-aviso ds-aviso--error" role="alert">
+              <IconoAlerta width={22} height={22} />
+              No encontramos ese usuario. Puede que la dirección sea incorrecta.
+            </div>
+          )}
+          {estadoPantalla === 'error' && (
+            <div className="ds-aviso ds-aviso--error" role="alert">
+              <IconoAlerta width={22} height={22} />
+              {mensajeError}
+            </div>
+          )}
+        </main>
+      </>
+    );
+  }
 
   const nombreCompleto = `${usuario.nombre} ${usuario.apellido}`;
 
   /**
-   * Abre la edición. Le pasa el `state` de la ficha para que, al volver,
-   * la ficha siga sabiendo a dónde volver (el listado con sus filtros), y las
-   * migas digan Usuarios › Ana Suárez › Editar usuario.
+   * Abre la edición con el usuario que se está viendo. Le pasa a dónde volver
+   * (esta ficha, con lo que la ficha necesita para volver al listado), así
+   * las migas dicen Usuarios › Ana Suárez › Editar usuario.
    *
    * @returns {void}
    */
   const irAEditar = () => {
-    const { avisoExito: _usado, ...estadoFicha } = location.state;
-    navigate('/usuarios/editar', {
+    const estadoFicha = { usuario, ...(location.state?.volverA ? { volverA: location.state.volverA } : {}) };
+    navigate(`/usuarios/${id}/editar`, {
       state: {
         usuario,
-        ...volverA('/usuarios/detalle', 'Volver a la ficha', estadoFicha, nombreCompleto),
+        ...volverA(`/usuarios/${id}`, 'Volver a la ficha', estadoFicha, nombreCompleto),
       },
     });
   };

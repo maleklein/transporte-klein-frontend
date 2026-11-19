@@ -214,15 +214,15 @@ export default function Usuarios() {
   const volverAlListado = volverA(`/usuarios${location.search}`, 'Volver a Usuarios', estadoPropio);
 
   /**
-   * Navega a la ficha de solo lectura de un usuario, llevando sus datos por
-   * router state (no hay `GET /usuarios/:id` individual, así que se reusan
-   * los datos que ya trajo el listado).
+   * Navega a la ficha de un usuario (`/usuarios/:id`). Le pasa los datos que
+   * ya trajo el listado para que se vean enseguida; la ficha igual los pide
+   * al backend y muestra lo que diga la base.
    *
    * @param {object} usuario - la fila del listado sobre la que se hizo click.
    * @returns {void}
    */
   const irAlDetalle = (usuario) => {
-    navigate('/usuarios/detalle', { state: { usuario, ...volverAlListado } });
+    navigate(`/usuarios/${usuario.id_usuario}`, { state: { usuario, ...volverAlListado } });
   };
 
   return (

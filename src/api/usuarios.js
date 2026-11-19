@@ -141,28 +141,50 @@ export async function listarUsuarios(filtros = {}, opciones = {}) {
 }
 
 /**
- * La última versión guardada de cada usuario editado en esta sesión, por id.
+ * GET /usuarios/:id (HU 1.3) — un usuario, con los mismos datos que su fila en
+ * `GET /usuarios`. Lo usan la ficha y la edición, que así tienen su propia
+ * dirección (`/usuarios/12`), se pueden recargar y siempre muestran lo que hay
+ * en la base.
  *
- * La ficha recibe el usuario por router state (no hay `GET /usuarios/:id`).
- * Después de editar, "atrás" puede volver a una ficha abierta antes de
- * guardar, con los datos viejos en su state: con esto la ficha muestra los
- * nuevos. Vive en memoria: al recargar la página la ficha vuelve al listado,
- * que pide todo de nuevo.
+ * @param {number|string} id - id del usuario.
+ * @param {object} [opciones]
+ * @param {AbortSignal} [opciones.signal] - para cancelar el pedido si se sale de la pantalla.
+ * @returns {Promise<object>} el usuario.
+ * @throws {DOMException} `AbortError` si se canceló el pedido.
+ * @throws {ErrorDeApi} 404 si no existe ("Usuario no encontrado"), 400 si el id no es
+ *   numérico, o error inesperado / sin conexión.
  */
-const ultimasVersiones = new Map();
+export async function obtenerUsuario(id, opciones = {}) {
+  let respuesta;
+  try {
+    respuesta = await leerConReintentos(`${URL_API}/usuarios/${encodeURIComponent(id)}`, {
+      headers: { ...headersDeAuth() },
+      signal: opciones.signal,
+    });
+  } catch (error) {
+    if (error?.name === 'AbortError') throw error;
+    throw errorSinConexion();
+  }
 
-/**
- * El usuario como quedó la última vez que se lo editó en esta sesión, si esa
- * versión es más nueva que la que se pasa (por `actualizado_en`). Si el
- * listado trajo algo más reciente, porque otro lo editó después, gana eso.
- *
- * @param {object|undefined} usuario - el que llegó por router state.
- * @returns {object|undefined}
- */
-export function ultimaVersionDe(usuario) {
-  const guardado = usuario && ultimasVersiones.get(usuario.id_usuario);
-  if (!guardado) return usuario;
-  return new Date(guardado.actualizado_en) > new Date(usuario.actualizado_en) ? guardado : usuario;
+  let cuerpo = null;
+  try {
+    cuerpo = await respuesta.json();
+  } catch {
+    cuerpo = null;
+  }
+
+  if (!respuesta.ok) {
+    // Si el token dejó de servir o la cuenta está dada de baja,
+    // se limpia la sesión y se vuelve al login.
+    manejarNoAutorizado(respuesta.status, cuerpo);
+    const mensaje =
+      cuerpo?.message ??
+      cuerpo?.error ??
+      `Ocurrió un error inesperado (código ${respuesta.status}).`;
+    throw new ErrorDeApi(mensaje, null, respuesta.status);
+  }
+
+  return cuerpo;
 }
 
 /**
@@ -208,6 +230,5 @@ export async function editarUsuario(idUsuario, datos) {
     throw new ErrorDeApi(mensaje, campoDelMensaje(mensaje), respuesta.status);
   }
 
-  if (cuerpo?.id_usuario) ultimasVersiones.set(cuerpo.id_usuario, cuerpo);
   return cuerpo;
 }
