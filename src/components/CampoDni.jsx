@@ -1,54 +1,54 @@
-import { useLayoutEffect, useRef } from 'react';
+import { useState } from 'react';
 import Campo from './Campo';
-import { editarDni, formatearDni } from '../utils/formatoUsuario';
+import { entradaDni, formatearDni } from '../utils/formatoUsuario';
 
 /**
- * Campo de DNI que muestra los puntos mientras se escribe ("45.168.258"),
- * pero entrega sólo los dígitos ("45168258"), que es como se guarda.
+ * Campo de DNI: mientras se escribe muestra exactamente lo que se tipea, y al
+ * salir del campo lo muestra con puntos ("45.168.258"). Siempre entrega sólo
+ * los dígitos ("45168258"), que es como se guarda.
  *
- * Al agregar o sacar puntos React reemplaza el texto del campo y el cursor
- * saltaría al final; por eso, después de cada cambio se lo vuelve a poner
- * después del mismo dígito (ver `editarDni`).
+ * Antes ponía los puntos mientras se escribía, pero como el DNI tiene 7 u 8
+ * dígitos se agrupaban desde la derecha y cambiaban de lugar con cada número
+ * nuevo (1.234 → 12.345 → 123.456), y confundía. Las guías de formularios
+ * (USWDS, NHS, Agesic) formatean en vivo sólo los números de largo fijo, y
+ * coinciden en aceptar el número con o sin separadores: si la persona escribe
+ * los puntos, se aceptan.
+ *
+ * Al entrar al campo se ve lo mismo que antes de entrar (con puntos, si ya
+ * tenía un DNI), para que nada se mueva al tocarlo.
  *
  * @param {object} props - las mismas de `Campo`, salvo `value` y `onChange`.
  * @param {string} props.value - el DNI, sólo dígitos.
  * @param {function(string): void} props.onCambio - recibe el DNI nuevo, sólo dígitos.
+ * @param {function} [props.onFocus]
+ * @param {function} [props.onBlur]
  * @returns {JSX.Element}
  */
-export default function CampoDni({ value, onCambio, ...props }) {
-  const refInput = useRef(null);
-  const cursorPendiente = useRef(null);
-
-  // Después de cada render: si el último cambio dejó una posición de cursor, se aplica.
-  useLayoutEffect(() => {
-    const input = refInput.current;
-    if (cursorPendiente.current !== null && input && document.activeElement === input) {
-      input.setSelectionRange(cursorPendiente.current, cursorPendiente.current);
-    }
-    cursorPendiente.current = null;
-  });
-
-  const alCambiar = (evento) => {
-    const input = evento.target;
-    const edicion = editarDni({
-      texto: input.value,
-      cursor: input.selectionStart ?? input.value.length,
-      digitosPrevios: value,
-      tipo: evento.nativeEvent?.inputType,
-    });
-    cursorPendiente.current = edicion.cursor;
-    onCambio(edicion.digitos);
-  };
+export default function CampoDni({ value, onCambio, onFocus, onBlur, ...props }) {
+  // Lo escrito mientras el campo tiene el foco; null cuando no lo tiene, y
+  // entonces se muestra el DNI con puntos.
+  const [texto, setTexto] = useState(null);
 
   return (
     <Campo
       {...props}
-      refInput={refInput}
       type="text"
       inputMode="numeric"
       autoComplete="off"
-      value={formatearDni(value)}
-      onChange={alCambiar}
+      value={texto ?? formatearDni(value)}
+      onFocus={(evento) => {
+        setTexto(formatearDni(value));
+        onFocus?.(evento);
+      }}
+      onChange={(evento) => {
+        const entrada = entradaDni(evento.target.value);
+        setTexto(entrada.texto);
+        onCambio(entrada.digitos);
+      }}
+      onBlur={(evento) => {
+        setTexto(null);
+        onBlur?.(evento);
+      }}
     />
   );
 }

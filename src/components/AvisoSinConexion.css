@@ -11,12 +11,3 @@
 .asc-aviso__detalle {
   font-weight: 400;
 }
-
-/* En el celular los pies de formulario se apilan al revés (column-reverse,
-   para que la acción principal quede arriba): el aviso va último en el orden
-   para quedar arriba de los botones, como en la computadora. */
-@media (max-width: 620px) {
-  .asc-aviso {
-    order: 1;
-  }
-}

@@ -31,9 +31,11 @@ const ETIQUETAS_POSTULACION = Object.freeze({
  * @param {object} props
  * @param {object} props.postulante
  * @param {boolean} [props.conEtiqueta] - si muestra el estado de la postulación al lado del nombre.
+ * @param {boolean} [props.conDisponibilidad] - si avisa "ahora no está disponible". Sirve
+ *   solo mientras se elige a quién asignar: con la carga asignada o cancelada ya no dice nada.
  * @returns {JSX.Element}
  */
-function ItemPostulante({ postulante, conEtiqueta = true }) {
+function ItemPostulante({ postulante, conEtiqueta = true, conDisponibilidad = true }) {
   return (
     <li className={`pp-item pp-item--${postulante.estado}`}>
       <div className="pp-item__cabecera">
@@ -54,7 +56,7 @@ function ItemPostulante({ postulante, conEtiqueta = true }) {
       <p className="pp-item__dato">
         <IconoUbicacion width={16} height={16} />
         {postulante.ubicacion || 'Ubicación sin cargar'}
-        {postulante.disponibilidad === false && ' · ahora no está disponible'}
+        {conDisponibilidad && postulante.disponibilidad === false && ' · ahora no está disponible'}
       </p>
       <p className="pp-item__fecha">Se postuló: {formatearMarcaCorta(postulante.fecha_postulacion)}</p>
     </li>
@@ -69,8 +71,10 @@ function ItemPostulante({ postulante, conEtiqueta = true }) {
  * para elegir: vehículo, capacidad, dónde está y si sigue disponible.
  *
  * Una vez asignada, lo importante es quién la lleva: el bloque pasa a ser
- * "Quién lleva la carga" (sin género: puede ser una camionera), con esa
- * persona sola, y los demás postulados quedan
+ * "Camionero asignado", con esa persona sola. Es el nombre del rol, como
+ * "Camioneros postulados" o el botón "Asignar camionero", y no habla de la
+ * persona: por eso sirve también si es una camionera. Distinto era "No
+ * elegida" al lado de un nombre, que se leía como si hablara de él. y los demás postulados quedan
  * plegados en "Ver los otros postulados", por si se quiere saber quién más se
  * había anotado. Si la carga vuelve a pendiente, todos vuelven a la lista.
  *
@@ -223,7 +227,7 @@ export default function PostulantesCarga({ carga, version, modalAbierto, alCerra
   return (
     <section className="dc-card pp-tarjeta" aria-labelledby={`${idBase}-titulo`}>
       <h2 className="dc-card__titulo" id={`${idBase}-titulo`}>
-        {asignado ? 'Quién lleva la carga' : cancelada ? 'Se habían postulado' : 'Camioneros postulados'}
+        {asignado ? 'Camionero asignado' : cancelada ? 'Se habían postulado' : 'Camioneros postulados'}
         {!asignado && estadoPedido === 'ok' && postulantes.length > 0 && (
           <span className="pp-contador">({postulantes.length})</span>
         )}
@@ -258,7 +262,7 @@ export default function PostulantesCarga({ carga, version, modalAbierto, alCerra
       {estadoPedido === 'ok' && asignado && (
         <>
           <ul className="pp-lista">
-            <ItemPostulante postulante={asignado} conEtiqueta={false} />
+            <ItemPostulante postulante={asignado} conEtiqueta={false} conDisponibilidad={false} />
           </ul>
           {otros.length > 0 && (
             <details className="pp-otros">
@@ -273,6 +277,7 @@ export default function PostulantesCarga({ carga, version, modalAbierto, alCerra
                     // Los que no la llevan no necesitan etiqueta: ya se sabe
                     // quién la lleva. Sí la lleva uno que siga en espera.
                     conEtiqueta={postulante.estado !== 'rechazada'}
+                    conDisponibilidad={false}
                   />
                 ))}
               </ul>
@@ -292,7 +297,12 @@ export default function PostulantesCarga({ carga, version, modalAbierto, alCerra
       {estadoPedido === 'ok' && !asignado && postulantes.length > 0 && (
         <ul className="pp-lista">
           {postulantes.map((postulante) => (
-            <ItemPostulante key={postulante.id_postulacion} postulante={postulante} conEtiqueta={!cancelada} />
+            <ItemPostulante
+              key={postulante.id_postulacion}
+              postulante={postulante}
+              conEtiqueta={!cancelada}
+              conDisponibilidad={!cancelada}
+            />
           ))}
         </ul>
       )}

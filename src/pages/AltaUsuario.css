@@ -44,9 +44,11 @@
 }
 
 /* --- Pie con las acciones --- */
+/* Pie del formulario: botones a la izquierda, alineados con los campos, y la
+   acción principal primero (ver "Dónde van los botones" en index.css). */
 .au-footer {
   display: flex;
-  justify-content: flex-end;
+  justify-content: flex-start;
   flex-wrap: wrap;
   gap: 12px;
   padding: 18px var(--relleno-form-x) 24px;
@@ -55,7 +57,7 @@
 
 @media (max-width: 620px) {
   .au-footer {
-    flex-direction: column-reverse;
+    flex-direction: column;
   }
   .au-footer .ds-boton {
     width: 100%;

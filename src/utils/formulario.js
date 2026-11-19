@@ -17,3 +17,21 @@
 export function evitarFoco(evento) {
   evento.preventDefault();
 }
+
+/**
+ * Si dos juegos de valores de un formulario son distintos: lo que está escrito
+ * contra lo que había al entrar. Compara campo por campo, con los valores como
+ * texto, así un número escrito "1200" y uno guardado 1200 cuentan como iguales,
+ * y un campo vacío es igual a uno que no está.
+ *
+ * Lo usa el aviso de salir sin guardar (`useAvisoSalirSinGuardar`).
+ *
+ * @param {object|null} actuales
+ * @param {object|null} originales
+ * @returns {boolean} false si falta alguno de los dos (todavía no se cargó el formulario).
+ */
+export function valoresCambiaron(actuales, originales) {
+  if (!actuales || !originales) return false;
+  const claves = new Set([...Object.keys(actuales), ...Object.keys(originales)]);
+  return [...claves].some((clave) => String(actuales[clave] ?? '') !== String(originales[clave] ?? ''));
+}

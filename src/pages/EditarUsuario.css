@@ -4,3 +4,13 @@
   color: var(--color-texto-suave);
   font-size: var(--texto-ayuda);
 }
+
+/* "Cargando usuario...", mientras se piden los datos al entrar directo. */
+.eu-mensaje {
+  margin: 0;
+  padding: 40px 24px;
+  border: 2px solid var(--color-borde-suave);
+  border-radius: var(--radio);
+  text-align: center;
+  color: var(--color-texto-suave);
+}

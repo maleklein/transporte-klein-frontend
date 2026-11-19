@@ -3,12 +3,13 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import { crearCarga, ErrorDeValidacion } from '../api/cargas';
 import { ErrorDeApi } from '../api/usuarios';
 import { IconoAlerta, IconoCajaMas, IconoCerrar, IconoGuardar } from '../components/Iconos';
+import { useAvisoSalirSinGuardar } from '../components/AvisoSalirSinGuardar';
 import BarraSuperior from '../components/BarraSuperior';
 import MigasDePan from '../components/MigasDePan';
 import Campo from '../components/Campo';
 import CampoFecha from '../components/CampoFecha';
 import SelectorUbicacion from '../components/SelectorUbicacion';
-import { evitarFoco } from '../utils/formulario';
+import { evitarFoco, valoresCambiaron } from '../utils/formulario';
 import { formatearKm } from '../utils/carga';
 import { destinoVolver, volverA } from '../utils/volver';
 import {
@@ -44,6 +45,8 @@ export default function AltaCarga() {
   // errores devueltos por el backend, el mensaje general, y si ya se intentó
   // enviar o hay un envío en curso.
   const [valores, setValores] = useState(VALORES_INICIALES);
+  // Si se escribió algo, salir sin registrar pide confirmación.
+  const { permitirSalida, modal: modalSalir } = useAvisoSalirSinGuardar(valoresCambiaron(valores, VALORES_INICIALES));
   const [tocados, setTocados] = useState({});
   const [erroresBackend, setErroresBackend] = useState({});
   const [errorGeneral, setErrorGeneral] = useState('');
@@ -168,6 +171,7 @@ export default function AltaCarga() {
           ? ` Distancia estimada: ${formatearKm(cargaCreada.kilometros_estimados)}.`
           : ' No pudimos calcular la distancia en este momento: podés reintentarlo desde acá.';
 
+      permitirSalida();
       navigate(`/cargas/${cargaCreada.id_carga}`, {
         replace: true,
         state: {
@@ -323,6 +327,15 @@ export default function AltaCarga() {
           <div className="ac-footer">
             <AvisoSinConexion aviso={avisoConexion} />
             <button
+              type="submit"
+              className="ds-boton ds-boton--confirmar"
+              onMouseDown={evitarFoco}
+              disabled={enviando}
+            >
+              <IconoGuardar />
+              {enviando ? 'Registrando...' : 'Registrar Carga'}
+            </button>
+            <button
               type="button"
               className="ds-boton ds-boton--cancelar"
               onClick={cancelar}
@@ -332,18 +345,9 @@ export default function AltaCarga() {
               <IconoCerrar />
               Cancelar
             </button>
-
-            <button
-              type="submit"
-              className="ds-boton ds-boton--confirmar"
-              onMouseDown={evitarFoco}
-              disabled={enviando}
-            >
-              <IconoGuardar />
-              {enviando ? 'Registrando...' : 'Registrar Carga'}
-            </button>
           </div>
         </form>
+        {modalSalir}
       </main>
     </>
   );

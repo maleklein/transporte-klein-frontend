@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import { useLocation } from 'react-router-dom';
 import AvisoExito from '../components/AvisoExito';
+import { useAvisoSalirSinGuardar } from '../components/AvisoSalirSinGuardar';
 import BarraSuperior from '../components/BarraSuperior';
 import MigasDePan from '../components/MigasDePan';
 import Campo from '../components/Campo';
@@ -124,6 +125,9 @@ export default function ParametrosOperativos() {
     ({ clave }) => vigentePorClave[clave] && Number(valores[clave]) !== vigentePorClave[clave].valor,
   );
   const hayCambios = cambios.length > 0;
+  // Con valores escritos y sin guardar, salir pide confirmación. Guardar no
+  // navega: al guardar, los vigentes pasan a ser los escritos y deja de haber cambios.
+  const { modal: modalSalir } = useAvisoSalirSinGuardar(hayCambios);
 
   /** Actualiza un input y borra su error y el aviso de guardado anterior. */
   const alCambiar = (clave) => (evento) => {
@@ -274,15 +278,6 @@ export default function ParametrosOperativos() {
 
             <div className="au-footer">
               <button
-                type="button"
-                className="ds-boton ds-boton--cancelar"
-                onClick={descartar}
-                onMouseDown={evitarFoco}
-                disabled={!hayCambios || guardando}
-              >
-                Descartar cambios
-              </button>
-              <button
                 type="submit"
                 className="ds-boton ds-boton--confirmar"
                 onMouseDown={evitarFoco}
@@ -290,6 +285,15 @@ export default function ParametrosOperativos() {
               >
                 <IconoGuardar />
                 Guardar
+              </button>
+              <button
+                type="button"
+                className="ds-boton ds-boton--cancelar"
+                onClick={descartar}
+                onMouseDown={evitarFoco}
+                disabled={!hayCambios || guardando}
+              >
+                Descartar cambios
               </button>
             </div>
           </form>
@@ -315,6 +319,7 @@ export default function ParametrosOperativos() {
             ))}
           </ul>
         </ModalConfirmacion>
+        {modalSalir}
       </main>
     </>
   );

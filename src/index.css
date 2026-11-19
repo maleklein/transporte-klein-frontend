@@ -195,6 +195,23 @@ body {
    Al pasar el mouse, los llenos se aclaran con el mismo blanco translúcido
    que los botones de la barra superior (`--aclarado-hover`); los blancos
    toman un fondo celeste.
+
+   Dónde van los botones que cierran algo:
+
+   - Pie de un formulario (Nuevo usuario, Editar carga, Parámetros...): a la
+     izquierda, alineados con los campos, con la acción principal primero
+     (Guardar, Registrar) y Cancelar a su derecha. Así terminan donde el ojo
+     viene bajando por los campos; es lo que encontró la investigación de
+     Luke Wroblewski y lo que hacen GOV.UK, Carbon y PatternFly.
+   - Aviso de confirmación (ModalConfirmacion): a la derecha, con la acción
+     última y "Volver" a su izquierda, como Material, Spectrum y Carbon en
+     sus diálogos. En el HTML va primero "Volver", para que Tab pase antes
+     por la opción segura.
+   - En el celular, los dos casos igual: uno arriba del otro, de todo el
+     ancho, con la acción arriba.
+
+   Los botones de una pantalla que no cierran nada (Nuevo Usuario, Editar,
+   Cancelar carga en el encabezado) van donde los pide su bloque.
    -------------------------------------------------------------------------- */
 
 .ds-boton {

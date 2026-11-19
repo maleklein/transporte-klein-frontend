@@ -9,12 +9,13 @@ import {
   IconoFlechaAtras,
   IconoGuardar,
 } from '../components/Iconos';
+import { useAvisoSalirSinGuardar } from '../components/AvisoSalirSinGuardar';
 import BarraSuperior from '../components/BarraSuperior';
 import MigasDePan from '../components/MigasDePan';
 import Campo from '../components/Campo';
 import CampoFecha from '../components/CampoFecha';
 import SelectorUbicacion from '../components/SelectorUbicacion';
-import { evitarFoco } from '../utils/formulario';
+import { evitarFoco, valoresCambiaron } from '../utils/formulario';
 import { LARGOS_MAXIMOS, validar, armarPayload, hoyEnArgentina } from '../utils/validarCarga';
 import { ESTADOS_BLOQUEADOS_EDICION } from '../utils/carga';
 import { etiquetaEstado, motivoEdicionBloqueada } from '../utils/estadosCarga';
@@ -80,6 +81,9 @@ export default function EditarCarga() {
   const [mensajeBloqueo, setMensajeBloqueo] = useState('');
 
   const [valores, setValores] = useState(null);
+  // Cómo estaba la carga al entrar: si lo escrito difiere, salir sin guardar pide confirmación.
+  const [valoresOriginales, setValoresOriginales] = useState(null);
+  const { permitirSalida, modal: modalSalir } = useAvisoSalirSinGuardar(valoresCambiaron(valores, valoresOriginales));
   const [tocados, setTocados] = useState({});
   const [erroresBackend, setErroresBackend] = useState({});
   const [errorGeneral, setErrorGeneral] = useState('');
@@ -133,6 +137,7 @@ export default function EditarCarga() {
           );
         } else {
           setValores(valoresDesdeCarga(datos));
+          setValoresOriginales(valoresDesdeCarga(datos));
           setFechaOriginal(datos.fecha ?? '');
         }
         setEstadoPantalla('ok');
@@ -252,6 +257,7 @@ export default function EditarCarga() {
       // detalle no vuelve a un formulario ya guardado. El state con el que se
       // abrió la edición se le devuelve al detalle, para que su botón de volver
       // siga llevando al mismo lugar.
+      permitirSalida();
       navigate(`/cargas/${id}`, {
         replace: true,
         state: {
@@ -446,8 +452,16 @@ export default function EditarCarga() {
             </div>
 
             <div className="ac-footer">
-
               <AvisoSinConexion aviso={avisoConexion} />
+              <button
+                type="submit"
+                className="ds-boton ds-boton--confirmar"
+                onMouseDown={evitarFoco}
+                disabled={enviando}
+              >
+                <IconoGuardar />
+                {enviando ? 'Guardando...' : 'Guardar Cambios'}
+              </button>
               <button
                 type="button"
                 className="ds-boton ds-boton--cancelar"
@@ -458,18 +472,10 @@ export default function EditarCarga() {
                 <IconoCerrar />
                 Cancelar
               </button>
-              <button
-                type="submit"
-                className="ds-boton ds-boton--confirmar"
-                onMouseDown={evitarFoco}
-                disabled={enviando}
-              >
-                <IconoGuardar />
-                {enviando ? 'Guardando...' : 'Guardar Cambios'}
-              </button>
             </div>
           </form>
         )}
+        {modalSalir}
       </main>
     </>
   );
