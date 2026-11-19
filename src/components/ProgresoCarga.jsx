@@ -177,9 +177,10 @@ function marcasPorEstado(eventos) {
  * @param {object[]} [props.eventos] - historial de cambios, más viejos primero, para las marcas de tiempo.
  * @param {function} [props.alCambiarEstado] - aplica la transición contra el backend; recibe el estado destino y puede lanzar `ErrorDeApi`. Sin esta prop el recorrido se muestra en modo lectura.
  * @param {function} [props.alAsignar] - abre la asignación de un camionero (HU 6). Es lo que hace el botón de avanzar desde "pendiente"; sin esta prop, ese botón no aparece.
+ * @param {{ titulo: string, detalle: string } | null} [props.textosVencido] - si la carga tiene el retiro vencido, el título y el detalle que reemplazan a los del estado (ver `textosRetiroVencido`): los camioneros ya no la ven, así que "esperando transportista" no sería cierto.
  * @returns {JSX.Element}
  */
-export default function ProgresoCarga({ estado, eventos = [], alCambiarEstado, alAsignar }) {
+export default function ProgresoCarga({ estado, eventos = [], alCambiarEstado, alAsignar, textosVencido = null }) {
   const idBase = useId();
   const refRaiz = useRef(null);
   const refTemporizador = useRef(null);
@@ -540,14 +541,14 @@ export default function ProgresoCarga({ estado, eventos = [], alCambiarEstado, a
       >
         {/* `tabindex="-1"` para poder recibir el foco cuando ya no queda ningún botón. */}
         <h3 className="pg-ahora__titulo" data-foco="titulo" tabIndex={-1}>
-          {TEXTOS[estado]?.titulo ?? etiquetaEstado(estado)}
+          {textosVencido?.titulo ?? TEXTOS[estado]?.titulo ?? etiquetaEstado(estado)}
         </h3>
         <p className="pg-ahora__detalle">
           {cancelada
             ? `Se canceló${
                 eventoCancelacion ? ` ${formatearFechaLarga(eventoCancelacion.marca_tiempo)}` : ''
               }. Ya no aparece en el listado de los camioneros.`
-            : TEXTOS[estado]?.detalle}
+            : (textosVencido?.detalle ?? TEXTOS[estado]?.detalle)}
         </p>
 
         {confirmacion ? (

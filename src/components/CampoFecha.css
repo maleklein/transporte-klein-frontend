@@ -40,3 +40,10 @@
     padding: 10px;
   }
 }
+
+/* Campo opcional con fecha (ver `quitable`): la × ocupa el lugar del ícono de
+   calendario, así que el ícono no se dibuja. */
+.cf-campo--quitable {
+  background-image: none;
+  padding-right: 52px;
+}

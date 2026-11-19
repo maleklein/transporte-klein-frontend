@@ -240,3 +240,42 @@ export function motivoAccionesBloqueadas(estadoActual) {
   }
   return '';
 }
+
+/**
+ * Textos de una carga con el retiro vencido: sigue sin camionero asignado
+ * (disponible o pendiente) y su fecha de retiro ya pasó.
+ *
+ * El criterio es el del backend: los camioneros ya no la ven ni pueden
+ * postularse, y tampoco se puede asignar aunque ya tenga postulados (409 "La
+ * fecha de retiro de esta carga ya pasó..."). La salida es cambiarle la fecha
+ * o cancelarla. Antes, el aviso de arriba del detalle lo decía, pero "Proceso
+ * de la carga" seguía diciendo "esperando transportista" y "Los transportistas
+ * ya la pueden ver" (corrección del profesor del 17/11, punto 3). Ahora los
+ * dos usan estos textos.
+ *
+ * Una carga sin fecha de retiro (se acuerda después) no vence: quien llama
+ * sólo usa esto si `retiroVencido(carga)`.
+ *
+ * @param {string} estadoActual - 'disponible' o 'pendiente'.
+ * @param {string} fechaRetiro - la fecha ya formateada para mostrar ("25/09/2026").
+ * @returns {{ aviso: string, titulo: string, detalle: string } | null} null en los demás estados.
+ */
+export function textosRetiroVencido(estadoActual, fechaRetiro) {
+  const yaNoLaVen = 'Los camioneros ya no la ven ni pueden postularse.';
+  const aviso = `La fecha de retiro (${fechaRetiro}) ya pasó y la carga sigue sin camionero asignado.`;
+  if (estadoActual === ESTADOS.DISPONIBLE) {
+    return {
+      aviso: `${aviso} ${yaNoLaVen} Cambiale la fecha o cancelala.`,
+      titulo: 'Retiro vencido, sin postulados',
+      detalle: `${yaNoLaVen} Para publicarla de nuevo, cambiale la fecha de retiro con "Editar"; si el viaje ya no va, cancelala.`,
+    };
+  }
+  if (estadoActual === ESTADOS.PENDIENTE) {
+    return {
+      aviso: `${aviso} Los camioneros ya no la ven ni pueden postularse, y no se puede asignar: cambiale la fecha o cancelala.`,
+      titulo: 'Retiro vencido, con camioneros postulados',
+      detalle: 'Con la fecha vencida no se puede asignar. Para asignársela a uno de los postulados, primero cambiale la fecha de retiro con "Editar"; si el viaje ya no va, cancelala.',
+    };
+  }
+  return null;
+}

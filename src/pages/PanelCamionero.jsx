@@ -17,7 +17,7 @@ import { motivoSinCapacidad } from '../utils/carga';
 import { listarNotificaciones } from '../api/notificaciones';
 import { usuarioActual } from '../api/sesion';
 import { ErrorDeApi } from '../api/usuarios';
-import { formatearFecha } from '../utils/carga';
+import { textoFechaRetiro } from '../utils/carga';
 import { esViajeEnCurso, grupoDePostulacion } from '../utils/postulaciones';
 import { desdeInicio } from '../utils/volver';
 import { useAvisoSinConexion } from '../components/contextoConexion';
@@ -250,7 +250,7 @@ export default function PanelCamionero() {
                     </span>
                     <span className="pcm-viaje__fecha">
                       <IconoCalendario width={16} height={16} />
-                      Retiro: {formatearFecha(viaje.fecha_retiro)}
+                      Retiro: {textoFechaRetiro(viaje.fecha_retiro)}
                     </span>
                   </Link>
                 </li>

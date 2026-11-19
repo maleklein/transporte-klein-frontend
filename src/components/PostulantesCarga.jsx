@@ -5,7 +5,7 @@ import { IconoAlerta, IconoCamion, IconoUbicacion } from './Iconos';
 import AvisoExito from './AvisoExito';
 import { listarPostulantes } from '../api/cargas';
 import { ErrorDeApi } from '../api/usuarios';
-import { formatearMarcaCorta, formatearPeso } from '../utils/carga';
+import { formatearMarcaCorta, formatearPeso, retiroVencido } from '../utils/carga';
 import { ESTADOS } from '../utils/estadosCarga';
 import { useAvisoSinConexion } from './contextoConexion';
 import { esErrorDeConexion, textoSinConexion } from '../utils/conexion';
@@ -245,8 +245,11 @@ export default function PostulantesCarga({ carga, version, modalAbierto, alCerra
 
       {estadoPedido === 'ok' && postulantes.length === 0 && (
         <p className="pp-mensaje">
+          {/* Con el retiro vencido ya no se puede postular nadie (ver `textosRetiroVencido`). */}
           {cancelada
             ? 'Nadie se había postulado a esta carga.'
+            : retiroVencido(carga)
+              ? 'No se postuló ningún camionero, y con el retiro vencido ya no se puede postular nadie.'
             : 'Todavía no se postuló ningún camionero. Cuando se postule el primero, la carga pasa a pendiente y vas a poder asignarla.'}
         </p>
       )}

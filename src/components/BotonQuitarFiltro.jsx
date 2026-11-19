@@ -14,16 +14,17 @@ import { IconoCerrar } from './Iconos';
  * @param {object} props
  * @param {string} props.etiqueta - nombre del filtro, para el lector de pantalla ("Rol" → "Quitar filtro Rol").
  * @param {function(): void} props.alQuitar - deja el filtro en blanco y enfoca el campo.
+ * @param {string} [props.textoLector] - lo que lee el lector de pantalla, si no es un filtro ("Quitar fecha de retiro").
  * @returns {JSX.Element}
  */
-export default function BotonQuitarFiltro({ etiqueta, alQuitar }) {
+export default function BotonQuitarFiltro({ etiqueta, alQuitar, textoLector }) {
   return (
     <button
       type="button"
       className="ds-quitar-filtro"
       // Sólo para el lector de pantalla: sin `title`, para que al pasar el
       // mouse no aparezca un cartel ("Quitar filtro Estado"). La × se entiende sola.
-      aria-label={`Quitar filtro ${etiqueta}`}
+      aria-label={textoLector ?? `Quitar filtro ${etiqueta}`}
       // Que el clic no le saque el foco al campo: si es un desplegable abierto,
       // se cerraría por el blur antes de que llegue el clic.
       onMouseDown={(evento) => evento.preventDefault()}

@@ -120,8 +120,9 @@ export function validar(valores, { fechaOriginal } = {}) {
     errores.peso = 'El peso es demasiado grande. Revisá el valor.';
   }
 
+  // La fecha de retiro es opcional: a veces se acuerda después ("A coordinar").
   if (!valores.fecha.trim()) {
-    errores.fecha = 'Elegí la fecha de la carga.';
+    // Sin fecha: nada que controlar.
   } else if (!/^\d{4}-\d{2}-\d{2}$/.test(valores.fecha)) {
     errores.fecha = 'La fecha debe tener el formato día/mes/año.';
   } else {
@@ -169,7 +170,8 @@ export function armarPayload(valores) {
     // Se manda como número para que el backend reciba el punto decimal aunque
     // el usuario haya escrito con coma.
     peso: parsearPeso(valores.peso),
-    fecha: valores.fecha,
+    // Sin fecha va null: "a coordinar".
+    fecha: valores.fecha.trim() || null,
     observaciones: valores.observaciones.trim(),
   };
 }

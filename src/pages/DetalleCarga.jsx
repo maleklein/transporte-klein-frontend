@@ -38,6 +38,7 @@ import { destinoVolver } from '../utils/volver';
 import {
   ESTADOS_BLOQUEADOS_EDICION,
   formatearFecha,
+  textoFechaRetiro,
   formatearPeso,
   retiroVencido,
 } from '../utils/carga';
@@ -45,6 +46,7 @@ import {
   ESTADOS,
   ESTADOS_BLOQUEADOS_CANCELACION,
   motivoAccionesBloqueadas,
+  textosRetiroVencido,
 } from '../utils/estadosCarga';
 import { useAvisoSinConexion } from '../components/contextoConexion';
 import { esErrorDeConexion, textoSinConexion } from '../utils/conexion';
@@ -381,6 +383,10 @@ export default function DetalleCarga() {
       ? carga.observaciones
       : 'Sin descripción.';
 
+  // Retiro vencido: el aviso de arriba y "Progreso de la carga" dicen lo mismo.
+  const vencido =
+    carga && retiroVencido(carga) ? textosRetiroVencido(carga.estado_actual, formatearFecha(carga.fecha)) : null;
+
   return (
     <>
       <BarraSuperior volver={volver} />
@@ -496,14 +502,10 @@ export default function DetalleCarga() {
               <AvisoExito alCerrar={() => setAvisoExito('')}>{avisoExito}</AvisoExito>
             )}
 
-            {esAdministrador && retiroVencido(carga) && (
+            {esAdministrador && vencido && (
               <div className="ds-aviso ds-aviso--advertencia" role="status">
                 <IconoAlerta width={20} height={20} />
-                <span>
-                  La fecha de retiro ({formatearFecha(carga.fecha)}) ya pasó y la carga sigue sin
-                  camionero asignado. Los camioneros ya no la ven ni pueden postularse: cambiale la
-                  fecha o cancelala.
-                </span>
+                <span>{vencido.aviso}</span>
               </div>
             )}
 
@@ -546,7 +548,7 @@ export default function DetalleCarga() {
                     <IconoCalendario width={15} height={15} />
                     Fecha de retiro
                   </dt>
-                  <dd>{formatearFecha(carga.fecha)}</dd>
+                  <dd>{textoFechaRetiro(carga.fecha)}</dd>
                 </div>
                 <div className="dc-dato">
                   <dt>
@@ -602,7 +604,10 @@ export default function DetalleCarga() {
                 estado={carga.estado_actual}
                 eventos={eventos}
                 alCambiarEstado={cambiarEstado}
-                alAsignar={abrirAsignacion}
+                // Con el retiro vencido no se asigna (punto 3): sin esta
+                // prop, el progreso no muestra "Asignar camionero".
+                alAsignar={vencido ? undefined : abrirAsignacion}
+                textosVencido={vencido}
               />
             )}
 

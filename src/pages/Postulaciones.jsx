@@ -13,7 +13,7 @@ import MigasDePan from '../components/MigasDePan';
 import EstadoCarga from '../components/EstadoCarga';
 import { obtenerMisPostulaciones } from '../api/cargas';
 import { ErrorDeApi } from '../api/usuarios';
-import { formatearFecha } from '../utils/carga';
+import { textoFechaRetiro } from '../utils/carga';
 import { ESTADOS } from '../utils/estadosCarga';
 import { grupoDePostulacion } from '../utils/postulaciones';
 import { destinoVolver, volverA } from '../utils/volver';
@@ -166,7 +166,7 @@ export default function Postulaciones() {
                           </p>
                           <p className="pos-card-dato">
                             <IconoCalendario width={18} height={18} />
-                            Retiro programado: {formatearFecha(p.fecha_retiro)}
+                            Retiro programado: {textoFechaRetiro(p.fecha_retiro)}
                           </p>
                         </div>
                         {clave !== 'cerrada' && (

@@ -36,6 +36,8 @@ import './CampoFecha.css';
  * @param {string} [props.idError] - id del mensaje de error, para `aria-describedby`.
  * @param {boolean} [props.esFiltro=false] - es un filtro de un listado: con una
  *   fecha elegida se marca como aplicado y lleva una × para quitarla.
+ * @param {boolean} [props.quitable=false] - campo opcional de un formulario:
+ *   con una fecha elegida lleva una × para sacarla (sin marcarse como filtro).
  * @returns {JSX.Element}
  */
 export default function CampoFecha({
@@ -50,6 +52,7 @@ export default function CampoFecha({
   tieneError = false,
   idError,
   esFiltro = false,
+  quitable = false,
 }) {
   const idPanel = useId();
   const [abierto, setAbierto] = useState(false);
@@ -64,6 +67,7 @@ export default function CampoFecha({
   const desde = textoAFecha(min);
   const hasta = textoAFecha(max);
   const filtroAplicado = esFiltro && Boolean(elegida);
+  const conQuitar = filtroAplicado || (quitable && Boolean(elegida));
   const texto = elegida ? formatearFecha(valor) : marcador;
 
   /** Cierra el calendario; con `enfocar`, devuelve el foco al campo. */
@@ -124,7 +128,7 @@ export default function CampoFecha({
         ref={refBoton}
         className={`ds-campo__input ds-campo__input--fecha cf-campo${elegida ? '' : ' cf-campo--vacio'}${
           tieneError ? ' ds-campo__input--error' : ''
-        }${filtroAplicado ? ' ds-campo__input--activo' : ''}`}
+        }${filtroAplicado ? ' ds-campo__input--activo' : ''}${conQuitar && !filtroAplicado ? ' cf-campo--quitable' : ''}`}
         aria-label={`${etiqueta}: ${texto}`}
         aria-haspopup="dialog"
         aria-expanded={abierto}
@@ -136,9 +140,10 @@ export default function CampoFecha({
         {texto}
       </button>
 
-      {filtroAplicado && (
+      {conQuitar && (
         <BotonQuitarFiltro
           etiqueta={etiqueta}
+          textoLector={filtroAplicado ? undefined : `Quitar ${etiqueta.toLowerCase()}`}
           alQuitar={() => {
             setAbierto(false);
             alCambiar('');

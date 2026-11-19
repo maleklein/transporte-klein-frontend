@@ -181,7 +181,7 @@ export default function PostulacionCarga({ carga, alPostularse }) {
       <ModalConfirmacion
         abierto={modalAbierto}
         titulo="¿Te postulás a esta carga?"
-        detalle={`${carga.origen} → ${carga.destino}, con retiro el ${formatearFecha(carga.fecha)}. Postularte no te compromete hasta que el administrador te asigne la carga.`}
+        detalle={`${carga.origen} → ${carga.destino}, ${carga.fecha ? `con retiro el ${formatearFecha(carga.fecha)}` : 'con fecha de retiro a coordinar'}. Postularte no te compromete hasta que el administrador te asigne la carga.`}
         error={error}
         textoConfirmar="Sí, postularme"
         textoVolver="Volver"
