@@ -19,6 +19,23 @@
   color: var(--color-texto-suave);
 }
 
+/* Retiro vencido: por qué no se puede asignar a nadie de la lista. */
+.pp-vencida {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  margin: 0 0 12px;
+  font-weight: 600;
+  color: var(--color-advertencia);
+}
+
+.pp-vencida > svg {
+  flex: none;
+  position: relative;
+  top: 0.5lh;
+  translate: 0 -50%;
+}
+
 .pp-mensaje--modal {
   margin-bottom: 18px;
 }

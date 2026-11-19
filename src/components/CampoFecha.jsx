@@ -36,6 +36,11 @@ import './CampoFecha.css';
  * @param {string} [props.idError] - id del mensaje de error, para `aria-describedby`.
  * @param {boolean} [props.esFiltro=false] - es un filtro de un listado: con una
  *   fecha elegida se marca como aplicado y lleva una × para quitarla.
+ * @param {boolean} [props.abrirAlEntrar=false] - al mostrarse, baja suave hasta
+ *   el campo y abre el calendario (con el foco en el día elegido o en hoy).
+ *   Lo usa "Cambiar la fecha de retiro" del detalle de una carga vencida.
+ * @param {boolean} [props.quitable=false] - campo opcional de un formulario:
+ *   con una fecha elegida lleva una × para sacarla (sin marcarse como filtro).
  * @returns {JSX.Element}
  */
 export default function CampoFecha({
@@ -50,10 +55,42 @@ export default function CampoFecha({
   tieneError = false,
   idError,
   esFiltro = false,
+  quitable = false,
+  abrirAlEntrar = false,
 }) {
   const idPanel = useId();
   const [abierto, setAbierto] = useState(false);
   const refContenedor = useRef(null);
+
+  // `abrirAlEntrar`: la pantalla baja suave hasta el campo y, al llegar, se
+  // abre el calendario. En ese orden porque el calendario pone el foco en un
+  // día, y el navegador saltaría hasta ahí cortando la animación. Con "reducir
+  // movimiento" activado en el dispositivo, baja sin animación.
+  useEffect(() => {
+    if (!abrirAlEntrar || !refContenedor.current) return undefined;
+    const sinAnimacion = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
+    let abrio = false;
+    const abrir = () => {
+      if (abrio) return;
+      abrio = true;
+      setAbierto(true);
+    };
+    // Si el campo ya está a la vista, no hay nada que bajar: se abre enseguida.
+    const { top, bottom } = refContenedor.current.getBoundingClientRect();
+    if (top >= 0 && bottom <= window.innerHeight) {
+      abrir();
+      return undefined;
+    }
+    refContenedor.current.scrollIntoView({ behavior: sinAnimacion ? 'auto' : 'smooth', block: 'center' });
+    // `scrollend` avisa cuando termina de bajar; el temporizador cubre a los
+    // navegadores que no lo tienen y al caso en que no hacía falta bajar.
+    window.addEventListener('scrollend', abrir, { once: true });
+    const temporizador = setTimeout(abrir, sinAnimacion ? 0 : 700);
+    return () => {
+      window.removeEventListener('scrollend', abrir);
+      clearTimeout(temporizador);
+    };
+  }, [abrirAlEntrar]);
   const refBoton = useRef(null);
   // `alSalir` cambia en cada render de la página; el efecto de abajo lo lee de
   // acá para no tener que volver a suscribirse por eso.
@@ -64,6 +101,7 @@ export default function CampoFecha({
   const desde = textoAFecha(min);
   const hasta = textoAFecha(max);
   const filtroAplicado = esFiltro && Boolean(elegida);
+  const conQuitar = filtroAplicado || (quitable && Boolean(elegida));
   const texto = elegida ? formatearFecha(valor) : marcador;
 
   /** Cierra el calendario; con `enfocar`, devuelve el foco al campo. */
@@ -124,7 +162,7 @@ export default function CampoFecha({
         ref={refBoton}
         className={`ds-campo__input ds-campo__input--fecha cf-campo${elegida ? '' : ' cf-campo--vacio'}${
           tieneError ? ' ds-campo__input--error' : ''
-        }${filtroAplicado ? ' ds-campo__input--activo' : ''}`}
+        }${filtroAplicado ? ' ds-campo__input--activo' : ''}${conQuitar && !filtroAplicado ? ' cf-campo--quitable' : ''}`}
         aria-label={`${etiqueta}: ${texto}`}
         aria-haspopup="dialog"
         aria-expanded={abierto}
@@ -136,9 +174,10 @@ export default function CampoFecha({
         {texto}
       </button>
 
-      {filtroAplicado && (
+      {conQuitar && (
         <BotonQuitarFiltro
           etiqueta={etiqueta}
+          textoLector={filtroAplicado ? undefined : `Quitar ${etiqueta.toLowerCase()}`}
           alQuitar={() => {
             setAbierto(false);
             alCambiar('');
@@ -158,7 +197,15 @@ export default function CampoFecha({
             // Abre en el mes del día elegido y le pasa el foco (o a hoy, si no
             // hay ninguno), para seguir con las flechas.
             autoFocus
-            defaultMonth={elegida ?? (desde && desde > new Date() ? desde : undefined)}
+            // Si el día elegido ya no se puede elegir (una fecha vencida),
+            // abre en el primer mes que sí.
+            defaultMonth={
+              elegida && (!desde || elegida >= desde)
+                ? elegida
+                : desde && desde > new Date()
+                  ? desde
+                  : undefined
+            }
             disabled={deshabilitados.length > 0 ? deshabilitados : undefined}
             startMonth={desde}
             endMonth={hasta}

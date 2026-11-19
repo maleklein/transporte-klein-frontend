@@ -240,3 +240,53 @@ export function motivoAccionesBloqueadas(estadoActual) {
   }
   return '';
 }
+
+/**
+ * Textos de una carga con el retiro vencido: sigue sin camionero asignado
+ * (disponible o pendiente) y su fecha de retiro ya pasó.
+ *
+ * El criterio es el del backend: los camioneros ya no la ven ni pueden
+ * postularse, y tampoco se puede asignar aunque ya tenga postulados (409 "La
+ * fecha de retiro de esta carga ya pasó..."). La salida es cambiarle la fecha
+ * o cancelarla. Antes, el aviso de arriba del detalle lo decía, pero "Proceso
+ * de la carga" seguía diciendo "esperando transportista" y "Los transportistas
+ * ya la pueden ver" (corrección del profesor del 17/11, punto 3). Ahora los
+ * dos usan estos textos.
+ *
+ * Una carga sin fecha de retiro (se acuerda después) no vence: quien llama
+ * sólo usa esto si `retiroVencido(carga)`.
+ *
+ * @param {string} estadoActual - 'disponible' o 'pendiente'.
+ * @param {string} fechaRetiro - la fecha ya formateada para mostrar ("25/09/2026").
+ * `paso` y `marca` son lo que muestra el recorrido en el paso actual: en vez
+ * de "Disponible" o "Pendiente" en azul (no lo está), "Vencida" en ámbar con
+ * el día del retiro ("retiro 18/09").
+ *
+ * `postulados` (sólo pendiente) es la línea de la pestaña de postulados.
+ *
+ * @returns {{ aviso: string, titulo: string, detalle: string, paso: string, marca: string, postulados?: string } | null} null en los demás estados.
+ */
+export function textosRetiroVencido(estadoActual, fechaRetiro) {
+  const enElPaso = { paso: 'Vencida', marca: `retiro ${fechaRetiro.slice(0, 5)}` };
+  // El aviso de arriba sólo dice qué pasa; qué hacer lo explica el progreso,
+  // donde está el botón para cambiar la fecha.
+  const aviso = `La fecha de retiro (${fechaRetiro}) ya pasó.`;
+  if (estadoActual === ESTADOS.DISPONIBLE) {
+    return {
+      ...enElPaso,
+      aviso,
+      titulo: 'Cambiá la fecha para volver a publicarla',
+      detalle: 'Los camioneros ya no la ven. Con una fecha nueva vuelve a aparecerles y se pueden postular. Si el viaje ya no va, cancelala.',
+    };
+  }
+  if (estadoActual === ESTADOS.PENDIENTE) {
+    return {
+      ...enElPaso,
+      aviso,
+      titulo: 'Cambiá la fecha para poder asignarla',
+      detalle: 'Los camioneros que se postularon siguen en la lista: con una fecha nueva vas a poder asignársela a uno. Si el viaje ya no va, cancelala.',
+      postulados: 'Para asignar a uno, primero cambiá la fecha de retiro: ya pasó.',
+    };
+  }
+  return null;
+}

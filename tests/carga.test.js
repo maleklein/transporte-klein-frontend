@@ -4,8 +4,10 @@ import {
   nombrePeriodoCreacion,
   rangoDePeriodo,
   rutaCargasPorEstado,
+  retiroVencido,
   rutaPendientesAsignacion,
   textoAFecha,
+  textoFechaRetiro,
 } from '../src/utils/carga';
 
 describe('rutaPendientesAsignacion', () => {
@@ -77,5 +79,23 @@ describe('nombrePeriodoCreacion', () => {
   it('con una sola punta', () => {
     expect(nombrePeriodoCreacion('2026-11-01', '', HOY)).toBe('Desde el 01/11/2026');
     expect(nombrePeriodoCreacion('', '2026-11-15', HOY)).toBe('Hasta el 15/11/2026');
+  });
+});
+
+describe('fecha de retiro opcional', () => {
+  it('sin fecha se muestra "A coordinar"; con fecha, el día', () => {
+    expect(textoFechaRetiro(null)).toBe('A coordinar');
+    expect(textoFechaRetiro('')).toBe('A coordinar');
+    expect(textoFechaRetiro('2026-11-25')).toBe('25/11/2026');
+  });
+
+  it('una carga sin fecha nunca tiene el retiro vencido', () => {
+    expect(retiroVencido({ estado_actual: 'disponible', fecha: null })).toBe(false);
+    expect(retiroVencido({ estado_actual: 'pendiente', fecha: null })).toBe(false);
+  });
+
+  it('con la fecha pasada y sin asignar, sí', () => {
+    expect(retiroVencido({ estado_actual: 'disponible', fecha: '2020-01-01' })).toBe(true);
+    expect(retiroVencido({ estado_actual: 'aceptada', fecha: '2020-01-01' })).toBe(false);
   });
 });

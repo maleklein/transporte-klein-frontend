@@ -11,11 +11,27 @@ import { ESTADOS_ABIERTOS } from './estadosCarga';
  * ya no se la muestra; el administrador la ve marcada para cambiarle la fecha
  * o cancelarla.
  *
- * @param {object} carga - con `fecha` (AAAA-MM-DD) y `estado_actual`.
+ * Sin fecha de retiro (se acuerda después, "a coordinar") nunca vence.
+ *
+ * @param {object} carga - con `fecha` (AAAA-MM-DD, o null) y `estado_actual`.
  * @returns {boolean}
  */
 export function retiroVencido(carga) {
-  return ESTADOS_ABIERTOS.includes(carga.estado_actual) && carga.fecha < hoyEnArgentina();
+  return Boolean(carga.fecha) && ESTADOS_ABIERTOS.includes(carga.estado_actual) && carga.fecha < hoyEnArgentina();
+}
+
+/** Lo que se muestra cuando una carga todavía no tiene fecha de retiro. */
+export const SIN_FECHA_RETIRO = 'A coordinar';
+
+/**
+ * La fecha de retiro para mostrar: "25/11/2026", o "A coordinar" si todavía no
+ * se acordó (es opcional al cargar el viaje).
+ *
+ * @param {string|null} fecha - AAAA-MM-DD, o null.
+ * @returns {string}
+ */
+export function textoFechaRetiro(fecha) {
+  return fecha ? formatearFecha(fecha) : SIN_FECHA_RETIRO;
 }
 
 /**

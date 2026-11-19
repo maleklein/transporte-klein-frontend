@@ -98,6 +98,14 @@ export default function EditarCarga() {
 
   const refPrimerCampo = useRef(null);
 
+  // "Cambiar la fecha de retiro" (detalle de una carga vencida) abre esta
+  // pantalla con `enfocar: 'fecha'`: se abre el calendario de la fecha en vez
+  // de poner el foco en el primer campo. El aviso no se le devuelve al detalle
+  // (`estadoOrigen`), así su botón "Editar" común sigue abriendo como siempre.
+  const enfocarFecha = location.state?.enfocar === 'fecha';
+  const { enfocar: _enfocar, ...restoEstado } = location.state ?? {};
+  const estadoOrigen = location.state ? restoEstado : null;
+
   const erroresValidacion = valores ? validar(valores, { fechaOriginal }) : {};
   const formularioValido = Object.keys(erroresValidacion).length === 0;
 
@@ -154,10 +162,10 @@ export default function EditarCarga() {
 
   // Foco en el primer campo apenas el formulario está listo para editarse.
   useEffect(() => {
-    if (estadoPantalla !== 'ok' || mensajeBloqueo) return;
+    if (estadoPantalla !== 'ok' || mensajeBloqueo || enfocarFecha) return;
     const foco = setTimeout(() => refPrimerCampo.current?.focus(), 60);
     return () => clearTimeout(foco);
-  }, [estadoPantalla, mensajeBloqueo]);
+  }, [estadoPantalla, mensajeBloqueo, enfocarFecha]);
 
 
   /**
@@ -166,9 +174,7 @@ export default function EditarCarga() {
    * @returns {void}
    */
   // El detalle recibe de vuelta el state con el que se abrió, así su botón de volver sigue llevando al mismo lugar.
-  // A dónde vuelven Cancelar, la flecha ‹ y las migas: el detalle de la carga.
-  const volverALaCarga = { ruta: `/cargas/${id}`, texto: 'Volver a la carga', estado: location.state, miga: `Carga #${id}` };
-  const cancelar = () => navigate(`/cargas/${id}`, { state: location.state });
+  const cancelar = () => navigate(`/cargas/${id}`, { state: estadoOrigen });
 
   /**
    * Aplica varios campos de una sola vez y limpia sus errores del backend.
@@ -255,7 +261,7 @@ export default function EditarCarga() {
       navigate(`/cargas/${id}`, {
         replace: true,
         state: {
-          ...location.state,
+          ...estadoOrigen,
           // Si cambió la ruta y el servicio de mapas no respondió (HU 9), se
           // avisa: el detalle tiene el botón Reintentar.
           avisoExito:
@@ -290,13 +296,17 @@ export default function EditarCarga() {
     }
   };
 
+  // A dónde vuelve: al detalle de la carga, con el `state` con el que se
+  // había abierto (así el detalle sigue sabiendo a dónde volver).
+  const volverAlDetalle = { ruta: `/cargas/${id}`, texto: 'Volver a la carga', estado: estadoOrigen, miga: `Carga #${id}` };
+
   return (
     <>
-      {/* La flecha ‹ del celular vuelve al detalle, como Cancelar. */}
-      <BarraSuperior volver={volverALaCarga} />
+      {/* El mismo destino que las migas: en el celular, la flecha ‹ de la barra. */}
+      <BarraSuperior volver={volverAlDetalle} />
 
       <main className="ac-contenido">
-        <MigasDePan volver={volverALaCarga} actual="Editar carga" />
+        <MigasDePan volver={volverAlDetalle} actual="Editar carga" />
 
         <h1 className="ac-titulo">
           <IconoEditar width={26} height={26} />
@@ -395,17 +405,23 @@ export default function EditarCarga() {
                 />
               </div>
 
-              <Campo id="ec-fecha" etiqueta="Fecha de retiro" error={errorDe('fecha')}>
+              <Campo id="ec-fecha" etiqueta="Fecha de retiro" obligatorio={false} error={errorDe('fecha')}>
                 {({ id: idCampo, idError, tieneError }) => (
                   <CampoFecha
                     id={idCampo}
                     etiqueta="Fecha de retiro"
+                    // Opcional: el retiro a veces se acuerda después.
+                    marcador="A coordinar"
+                    quitable
+                    abrirAlEntrar={enfocarFecha}
                     valor={valores.fecha}
                     alCambiar={(fecha) => alCambiar('fecha')({ target: { value: fecha } })}
                     alSalir={alSalirDelCampo('fecha')}
-                    // Desde hoy, o desde la fecha que ya tenía si pasó: esa se
-                    // puede dejar como está (ver `validar`).
-                    min={fechaOriginal && fechaOriginal < hoyEnArgentina() ? fechaOriginal : hoyEnArgentina()}
+                    // Sólo desde hoy. Si la fecha que ya tenía pasó, se puede
+                    // dejar como está sin tocar el campo (ver `validar`); lo que
+                    // no tiene sentido es elegir otro día pasado, que después
+                    // se rechazaría.
+                    min={hoyEnArgentina()}
                     tieneError={tieneError}
                     idError={idError}
                   />

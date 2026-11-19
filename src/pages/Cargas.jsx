@@ -23,7 +23,7 @@ import MigasDePan from '../components/MigasDePan';
 import EstadoCarga from '../components/EstadoCarga';
 import SelectorPeriodo from '../components/SelectorPeriodo';
 import {
-  formatearFecha,
+  textoFechaRetiro,
   formatearKm,
   formatearPeso,
   motivoSinCapacidad,
@@ -275,7 +275,7 @@ export default function Cargas() {
       <div className="cg-card__meta">
         <span>
           <IconoCalendario width={16} height={16} />
-          {formatearFecha(carga.fecha)}
+          {textoFechaRetiro(carga.fecha)}
         </span>
         <span>
           <IconoPeso width={16} height={16} />

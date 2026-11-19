@@ -276,11 +276,14 @@ export default function AltaCarga() {
               />
             </div>
 
-            <Campo id="nc-fecha" etiqueta="Fecha de retiro" error={errorDe('fecha')}>
+            <Campo id="nc-fecha" etiqueta="Fecha de retiro" obligatorio={false} error={errorDe('fecha')}>
               {({ id, idError, tieneError }) => (
                 <CampoFecha
                   id={id}
                   etiqueta="Fecha de retiro"
+                  // Opcional: el retiro a veces se acuerda después.
+                  marcador="A coordinar"
+                  quitable
                   valor={valores.fecha}
                   alCambiar={(fecha) => alCambiar('fecha')({ target: { value: fecha } })}
                   alSalir={alSalirDelCampo('fecha')}

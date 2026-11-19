@@ -368,7 +368,7 @@ function FormularioEdicion({ usuario, volver }) {
 
   return (
     <>
-      {/* La flecha ‹ del celular vuelve a la ficha, como Cancelar. */}
+    {/* La flecha y las migas vuelven a la ficha, igual que Cancelar. */}
       <BarraSuperior volver={volver} />
 
       <main className="au-contenido">

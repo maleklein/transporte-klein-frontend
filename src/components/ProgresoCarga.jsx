@@ -1,5 +1,5 @@
 import { useEffect, useId, useRef, useState } from 'react';
-import { IconoAlerta, IconoCerrar, IconoCheck } from './Iconos';
+import { IconoAlerta, IconoCalendario, IconoCerrar, IconoCheck } from './Iconos';
 import { ErrorDeApi } from '../api/usuarios';
 import { formatearFechaLarga, formatearMarcaCorta } from '../utils/carga';
 import { evitarFoco } from '../utils/formulario';
@@ -177,9 +177,11 @@ function marcasPorEstado(eventos) {
  * @param {object[]} [props.eventos] - historial de cambios, más viejos primero, para las marcas de tiempo.
  * @param {function} [props.alCambiarEstado] - aplica la transición contra el backend; recibe el estado destino y puede lanzar `ErrorDeApi`. Sin esta prop el recorrido se muestra en modo lectura.
  * @param {function} [props.alAsignar] - abre la asignación de un camionero (HU 6). Es lo que hace el botón de avanzar desde "pendiente"; sin esta prop, ese botón no aparece.
+ * @param {{ titulo: string, detalle: string } | null} [props.textosVencido] - si la carga tiene el retiro vencido, el título y el detalle que reemplazan a los del estado (ver `textosRetiroVencido`): los camioneros ya no la ven, así que "esperando transportista" no sería cierto.
+ * @param {function} [props.alCambiarFecha] - con el retiro vencido, lleva a editar la carga para cambiarle la fecha; el progreso muestra el botón "Cambiar la fecha de retiro".
  * @returns {JSX.Element}
  */
-export default function ProgresoCarga({ estado, eventos = [], alCambiarEstado, alAsignar }) {
+export default function ProgresoCarga({ estado, eventos = [], alCambiarEstado, alAsignar, textosVencido = null, alCambiarFecha }) {
   const idBase = useId();
   const refRaiz = useRef(null);
   const refTemporizador = useRef(null);
@@ -232,6 +234,9 @@ export default function ProgresoCarga({ estado, eventos = [], alCambiarEstado, a
 
   const marcas = marcasPorEstado(eventos);
   const cancelada = estado === ESTADOS.CANCELADA;
+  // Con el retiro vencido no puede avanzar hasta que le cambien la fecha.
+  const vencida = Boolean(textosVencido) && !cancelada;
+  const botonFecha = vencida && typeof alCambiarFecha === 'function';
 
   // De qué paso salió la carga al cancelarse, y cuándo. Sale de la bitácora:
   // el asiento de la cancelación guarda en `estado_anterior` el paso en el que
@@ -459,8 +464,8 @@ export default function ProgresoCarga({ estado, eventos = [], alCambiarEstado, a
 
       <ol className="pg-pasos">
         {FLUJO.map((paso, indice) => {
-          // Cinco situaciones posibles, y el orden importa: lo de la carga
-          // cancelada pisa al recorrido normal.
+          // Siete situaciones posibles, y el orden importa: lo de la carga
+          // cancelada pisa al recorrido normal, y lo del retiro vencido también.
           let situacion = 'pendiente';
           // Sólo los pasos ya alcanzados muestran su marca. Si la carga volvió
           // atrás, los que quedaron adelante vuelven a estar por hacer: la
@@ -479,6 +484,17 @@ export default function ProgresoCarga({ estado, eventos = [], alCambiarEstado, a
             situacion = 'anulado';
             marca = '';
             paraLector = 'no se va a hacer';
+          } else if (vencida && indice === indicePaso) {
+            // Retiro vencido (punto 3 del profesor): el paso actual no dice
+            // "Disponible" o "Pendiente" en azul, porque no lo está.
+            situacion = 'vencido';
+            marca = textosVencido.marca;
+            paraLector = 'paso actual, con el retiro vencido';
+          } else if (vencida && indice > indicePaso) {
+            // No puede avanzar hasta que le cambien la fecha.
+            situacion = 'anulado';
+            marca = '';
+            paraLector = 'no se puede hacer mientras esté vencida';
           } else if (indice < indicePaso || terminada) {
             situacion = 'cumplido';
             paraLector = 'hecho';
@@ -505,10 +521,13 @@ export default function ProgresoCarga({ estado, eventos = [], alCambiarEstado, a
               <span className="pg-paso__marca" aria-hidden="true">
                 {situacion === 'cumplido' && <IconoCheck width={16} height={16} />}
                 {situacion === 'cancelado' && <IconoCerrar width={14} height={14} />}
-                {situacion !== 'cumplido' && situacion !== 'cancelado' && indice + 1}
+                {situacion === 'vencido' && '!'}
+                {!['cumplido', 'cancelado', 'vencido'].includes(situacion) && indice + 1}
               </span>
               <span className="pg-paso__texto">
-                <span className="pg-paso__nombre">{etiquetaEstado(paso)}</span>
+                <span className="pg-paso__nombre">
+                  {situacion === 'vencido' ? textosVencido.paso : etiquetaEstado(paso)}
+                </span>
                 <span className="pg-paso__momento">{marca}</span>
                 <span className="pg-oculto"> ({paraLector})</span>
               </span>
@@ -533,6 +552,7 @@ export default function ProgresoCarga({ estado, eventos = [], alCambiarEstado, a
         className={[
           'pg-ahora',
           cancelada ? 'pg-ahora--cancelada' : '',
+          vencida ? 'pg-ahora--vencida' : '',
           terminada ? 'pg-ahora--entregada' : '',
         ]
           .filter(Boolean)
@@ -540,22 +560,33 @@ export default function ProgresoCarga({ estado, eventos = [], alCambiarEstado, a
       >
         {/* `tabindex="-1"` para poder recibir el foco cuando ya no queda ningún botón. */}
         <h3 className="pg-ahora__titulo" data-foco="titulo" tabIndex={-1}>
-          {TEXTOS[estado]?.titulo ?? etiquetaEstado(estado)}
+          {textosVencido?.titulo ?? TEXTOS[estado]?.titulo ?? etiquetaEstado(estado)}
         </h3>
         <p className="pg-ahora__detalle">
           {cancelada
             ? `Se canceló${
                 eventoCancelacion ? ` ${formatearFechaLarga(eventoCancelacion.marca_tiempo)}` : ''
               }. Ya no aparece en el listado de los camioneros.`
-            : TEXTOS[estado]?.detalle}
+            : (textosVencido?.detalle ?? TEXTOS[estado]?.detalle)}
         </p>
 
         {confirmacion ? (
           // La pregunta ocupa el lugar de los botones que la abrieron.
           recuadroConfirmacion()
         ) : (
-          (mostrarAvance || destinoRetroceso) && (
+          (mostrarAvance || destinoRetroceso || botonFecha) && (
             <div className="pg-ahora__acciones">
+              {/*
+                Retiro vencido: en el lugar de "Asignar camionero" (o donde
+                iría la próxima acción), la salida: cambiar la fecha.
+              */}
+              {botonFecha && (
+                <button type="button" className="ds-boton ds-boton--secundario" onClick={alCambiarFecha}>
+                  <IconoCalendario width={20} height={20} />
+                  Cambiar la fecha de retiro
+                </button>
+              )}
+
               {mostrarAvance && (
                 <button
                   type="button"
