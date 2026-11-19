@@ -8,12 +8,13 @@ import {
   IconoGuardar,
   IconoUsuarioMas,
 } from '../components/Iconos';
+import { useAvisoSalirSinGuardar } from '../components/AvisoSalirSinGuardar';
 import BarraSuperior from '../components/BarraSuperior';
 import MigasDePan from '../components/MigasDePan';
 import Campo from '../components/Campo';
 import CampoDni from '../components/CampoDni';
 import ComboBox from '../components/ComboBox';
-import { evitarFoco } from '../utils/formulario';
+import { evitarFoco, valoresCambiaron } from '../utils/formulario';
 import { destinoVolver } from '../utils/volver';
 import { aplicarMayusculaInicial, validarNombreApellido } from '../utils/validarNombreApellido';
 import {
@@ -155,6 +156,8 @@ export default function AltaUsuario() {
   // errores devueltos por el backend, mensajes generales, y si ya
   // se intentó enviar o hay un envío en curso.
   const [valores, setValores] = useState(VALORES_INICIALES);
+  // Si se escribió algo, salir sin registrar pide confirmación.
+  const { permitirSalida, modal: modalSalir } = useAvisoSalirSinGuardar(valoresCambiaron(valores, VALORES_INICIALES));
   const [tocados, setTocados] = useState({});
   const [erroresBackend, setErroresBackend] = useState({});
   const [errorGeneral, setErrorGeneral] = useState('');
@@ -275,6 +278,7 @@ export default function AltaUsuario() {
       // `replace`: el formulario sale del historial, así "atrás" desde el
       // listado no vuelve a un formulario ya enviado. Sin filtros, para que el
       // usuario nuevo se vea; el listado resalta su fila y muestra el aviso.
+      permitirSalida();
       navigate('/usuarios', { replace: true, state: { ...(volver.estado ?? {}), usuarioCreado } });
     } catch (error) {
       const esDeApi = error instanceof ErrorDeApi;
@@ -479,6 +483,7 @@ export default function AltaUsuario() {
             </button>
           </div>
         </form>
+        {modalSalir}
       </main>
     </>
   );

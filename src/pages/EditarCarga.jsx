@@ -9,12 +9,13 @@ import {
   IconoFlechaAtras,
   IconoGuardar,
 } from '../components/Iconos';
+import { useAvisoSalirSinGuardar } from '../components/AvisoSalirSinGuardar';
 import BarraSuperior from '../components/BarraSuperior';
 import MigasDePan from '../components/MigasDePan';
 import Campo from '../components/Campo';
 import CampoFecha from '../components/CampoFecha';
 import SelectorUbicacion from '../components/SelectorUbicacion';
-import { evitarFoco } from '../utils/formulario';
+import { evitarFoco, valoresCambiaron } from '../utils/formulario';
 import { LARGOS_MAXIMOS, validar, armarPayload, hoyEnArgentina } from '../utils/validarCarga';
 import { ESTADOS_BLOQUEADOS_EDICION } from '../utils/carga';
 import { etiquetaEstado, motivoEdicionBloqueada } from '../utils/estadosCarga';
@@ -80,6 +81,9 @@ export default function EditarCarga() {
   const [mensajeBloqueo, setMensajeBloqueo] = useState('');
 
   const [valores, setValores] = useState(null);
+  // Cómo estaba la carga al entrar: si lo escrito difiere, salir sin guardar pide confirmación.
+  const [valoresOriginales, setValoresOriginales] = useState(null);
+  const { permitirSalida, modal: modalSalir } = useAvisoSalirSinGuardar(valoresCambiaron(valores, valoresOriginales));
   const [tocados, setTocados] = useState({});
   const [erroresBackend, setErroresBackend] = useState({});
   const [errorGeneral, setErrorGeneral] = useState('');
@@ -125,6 +129,7 @@ export default function EditarCarga() {
           );
         } else {
           setValores(valoresDesdeCarga(datos));
+          setValoresOriginales(valoresDesdeCarga(datos));
           setFechaOriginal(datos.fecha ?? '');
         }
         setEstadoPantalla('ok');
@@ -161,6 +166,8 @@ export default function EditarCarga() {
    * @returns {void}
    */
   // El detalle recibe de vuelta el state con el que se abrió, así su botón de volver sigue llevando al mismo lugar.
+  // A dónde vuelven Cancelar, la flecha ‹ y las migas: el detalle de la carga.
+  const volverALaCarga = { ruta: `/cargas/${id}`, texto: 'Volver a la carga', estado: location.state, miga: `Carga #${id}` };
   const cancelar = () => navigate(`/cargas/${id}`, { state: location.state });
 
   /**
@@ -244,6 +251,7 @@ export default function EditarCarga() {
       // detalle no vuelve a un formulario ya guardado. El state con el que se
       // abrió la edición se le devuelve al detalle, para que su botón de volver
       // siga llevando al mismo lugar.
+      permitirSalida();
       navigate(`/cargas/${id}`, {
         replace: true,
         state: {
@@ -284,13 +292,11 @@ export default function EditarCarga() {
 
   return (
     <>
-      <BarraSuperior />
+      {/* La flecha ‹ del celular vuelve al detalle, como Cancelar. */}
+      <BarraSuperior volver={volverALaCarga} />
 
       <main className="ac-contenido">
-        <MigasDePan
-          volver={{ ruta: `/cargas/${id}`, texto: 'Volver a la carga', estado: location.state, miga: `Carga #${id}` }}
-          actual="Editar carga"
-        />
+        <MigasDePan volver={volverALaCarga} actual="Editar carga" />
 
         <h1 className="ac-titulo">
           <IconoEditar width={26} height={26} />
@@ -454,6 +460,7 @@ export default function EditarCarga() {
             </div>
           </form>
         )}
+        {modalSalir}
       </main>
     </>
   );

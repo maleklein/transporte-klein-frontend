@@ -1,6 +1,6 @@
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
-import { BrowserRouter } from 'react-router-dom'
+import { createBrowserRouter, RouterProvider } from 'react-router-dom'
 import App from './App.jsx'
 import './index.css'
 
@@ -9,10 +9,13 @@ import './index.css'
 // (el recuadro gris del navegador se sacó en index.css).
 document.addEventListener('touchstart', () => {}, { passive: true })
 
+// Router "de datos": hace falta para frenar la navegación y avisar antes de
+// salir de un formulario con cambios sin guardar (`useBlocker`). Las rutas
+// siguen declaradas con <Routes> en App.jsx: esta ruta comodín las contiene.
+const router = createBrowserRouter([{ path: '*', element: <App /> }])
+
 createRoot(document.getElementById('root')).render(
   <StrictMode>
-    <BrowserRouter>
-      <App />
-    </BrowserRouter>
+    <RouterProvider router={router} />
   </StrictMode>,
 )
