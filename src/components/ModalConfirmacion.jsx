@@ -108,16 +108,12 @@ export default function ModalConfirmacion({
           </p>
         )}
 
+        {/*
+          Primero "Volver" (la opción segura, la primera con Tab) y después
+          la acción. El CSS los pone a la derecha en fila en la compu, y
+          apilados de todo el ancho, con la acción arriba, en el celular.
+        */}
         <div className="mc-caja__acciones">
-          <button
-            type="button"
-            className={`ds-boton ${claseConfirmar}`}
-            onClick={alConfirmar}
-            onMouseDown={evitarFoco}
-            disabled={aplicando || confirmarDeshabilitado}
-          >
-            {aplicando ? 'Aplicando...' : textoConfirmar}
-          </button>
           <button
             type="button"
             className="ds-boton ds-boton--secundario"
@@ -127,6 +123,15 @@ export default function ModalConfirmacion({
             disabled={aplicando}
           >
             {textoVolver}
+          </button>
+          <button
+            type="button"
+            className={`ds-boton ${claseConfirmar}`}
+            onClick={alConfirmar}
+            onMouseDown={evitarFoco}
+            disabled={aplicando || confirmarDeshabilitado}
+          >
+            {aplicando ? 'Aplicando...' : textoConfirmar}
           </button>
         </div>
       </div>

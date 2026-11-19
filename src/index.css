@@ -195,6 +195,21 @@ body {
    Al pasar el mouse, los llenos se aclaran con el mismo blanco translúcido
    que los botones de la barra superior (`--aclarado-hover`); los blancos
    toman un fondo celeste.
+
+   Dónde van los botones que cierran algo (el pie de un formulario, un aviso
+   de confirmación):
+
+   - En la compu, en fila y a la derecha. El que hace la acción (Guardar,
+     Confirmar, Salir sin guardar) va último, a la derecha de todo; el que
+     vuelve sin hacer nada (Cancelar, Volver, Seguir editando), a su
+     izquierda. Es lo que hacen Material, Windows y macOS en sus diálogos.
+   - En el celular, uno arriba del otro y de todo el ancho: el que hace la
+     acción arriba y el que vuelve abajo, más cerca del pulgar.
+   - En el HTML va primero el que vuelve: así, con el teclado, Tab pasa
+     antes por la opción segura. La fila se ordena sola con flex.
+
+   Los botones de una pantalla que no cierran nada (Nuevo Usuario, Editar,
+   Cancelar carga en el encabezado) van donde los pide su bloque.
    -------------------------------------------------------------------------- */
 
 .ds-boton {

@@ -48,10 +48,24 @@
   font-weight: 600;
 }
 
+/* Como el pie de los formularios (ver "Dónde van los botones" en index.css):
+   en fila a la derecha, con la acción última. */
 .mc-caja__acciones {
   display: flex;
+  justify-content: flex-end;
   flex-wrap: wrap;
   gap: 10px;
+}
+
+/* Celular: apilados de todo el ancho, la acción arriba y "Volver" abajo. */
+@media (max-width: 620px) {
+  .mc-caja__acciones {
+    flex-direction: column-reverse;
+  }
+
+  .mc-caja__acciones .ds-boton {
+    width: 100%;
+  }
 }
 
 /* El botón de confirmar peligroso va en rojo lleno: el `ds-boton--cancelar`
