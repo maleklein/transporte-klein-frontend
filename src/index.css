@@ -41,9 +41,10 @@
   --color-borde-suave: #D5DBE3;
 
   /* Tipografía — mínimo 16px en texto general, 18px en labels */
-  /* La fuente de cada sistema: San Francisco en Mac y iPhone, Segoe UI en
-     Windows, Roboto en Android. No se descarga nada. */
-  --fuente: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  /* Inter en todo el sistema. Viene con la app (@fontsource-variable/inter,
+     importada en main.jsx), así se ve igual en Mac, Windows y Android. Las
+     demás son la fuente de cada sistema, por si Inter no llegara a cargar. */
+  --fuente: 'Inter Variable', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
   --texto-base: 16px;
   --texto-label: 18px;
   --texto-titulo: 22px;
