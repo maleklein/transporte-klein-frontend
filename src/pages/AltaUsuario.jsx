@@ -363,7 +363,7 @@ export default function AltaUsuario() {
               />
               <Campo
                 id="nu-email"
-                etiqueta="Email"
+                etiqueta="Correo electrónico"
                 error={errorDe('email')}
                 type="email"
                 placeholder="Ej: carlos.gauto@mail.com"

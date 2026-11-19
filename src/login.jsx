@@ -2,7 +2,7 @@ import { useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { iniciarSesion, rutaInicio, tomarAvisoDeSesion } from './api/sesion';
 import Campo from './components/Campo';
-import { IconoAlerta, IconoCamion, IconoOjo, IconoOjoTachado } from './components/Iconos';
+import { IconoAlerta, IconoCamion, IconoFlechaDerecha, IconoOjo, IconoOjoTachado } from './components/Iconos';
 import { validarEmail } from './utils/validarUsuario';
 import './login.css';
 
@@ -90,96 +90,100 @@ const IniciarSesion = () => {
 
     return (
         <main className="login-pagina">
-          <div className="tarjeta-login">
-            <div className="login-encabezado">
-                <IconoCamion width={40} height={40} className="login-logo" />
-                <h1 className="login-titulo">Transporte Klein</h1>
-                <p className="login-subtitulo">Sistema de Gestión de Cargas</p>
+          <div className="login-contenido">
+            <div className="tarjeta-login">
+              {/* La marca, arriba de los campos y centrada. Es el título de
+                  la pantalla. */}
+              <div className="login-encabezado">
+                  <IconoCamion width={48} height={48} className="login-logo" />
+                  <h1 className="login-marca">Transporte Klein</h1>
+              </div>
+
+              {/* noValidate: los errores los muestra cada campo con el estilo del
+                  sistema, no el globito del navegador. */}
+              <form onSubmit={manejarEnvio} noValidate>
+                  {mensajeError && (
+                      <div className="ds-aviso ds-aviso--error" role="alert">
+                          <IconoAlerta width={22} height={22} />
+                          {mensajeError}
+                      </div>
+                  )}
+
+                  {/* id, name y autoComplete le dicen al navegador (y al llavero
+                      del celular) que este es el usuario del login, para que
+                      ofrezca guardar y autocompletar la contraseña. */}
+                  <Campo
+                      id="login-correo"
+                      etiqueta="Correo electrónico"
+                      obligatorio={false}
+                      error={errores.correo}
+                      refInput={refCorreo}
+                      name="email"
+                      type="email"
+                      autoComplete="username"
+                      inputMode="email"
+                      autoCapitalize="none"
+                      spellCheck={false}
+                      value={correo}
+                      onChange={cambiarCorreo}
+                  />
+
+                  <Campo
+                      id="login-clave"
+                      etiqueta="Contraseña"
+                      obligatorio={false}
+                      error={errores.clave}
+                  >
+                      {({ id, idError, tieneError }) => (
+                          <div className="login-clave ds-filtro-control">
+                              <input
+                                  id={id}
+                                  ref={refClave}
+                                  name="password"
+                                  type={claveVisible ? 'text' : 'password'}
+                                  autoComplete="current-password"
+                                  autoCapitalize="none"
+                                  spellCheck={false}
+                                  className={`ds-campo__input${tieneError ? ' ds-campo__input--error' : ''}`}
+                                  aria-invalid={tieneError}
+                                  aria-describedby={tieneError ? idError : undefined}
+                                  value={clave}
+                                  onChange={cambiarClave}
+                              />
+                              {/* El ojo, dentro del campo y a la derecha, en el
+                                  mismo lugar que la × de los filtros. type="button"
+                                  para que no envíe el formulario; el aria-label
+                                  dice qué hace, para el lector de pantalla. */}
+                              <button
+                                  type="button"
+                                  className="ds-boton-en-campo"
+                                  aria-controls={id}
+                                  aria-label={claveVisible ? 'Ocultar contraseña' : 'Mostrar contraseña'}
+                                  // Que el clic no le saque el foco al campo: en el
+                                  // celular, el teclado sigue abierto.
+                                  onMouseDown={(evento) => evento.preventDefault()}
+                                  onClick={() => asignarClaveVisible((visible) => !visible)}
+                              >
+                                  {/* El ojo muestra lo que hace: abierto para
+                                      mostrar la contraseña, tachado para ocultarla. */}
+                                  {claveVisible
+                                      ? <IconoOjoTachado width={20} height={20} />
+                                      : <IconoOjo width={20} height={20} />}
+                              </button>
+                          </div>
+                      )}
+                  </Campo>
+
+                  <button
+                      type="submit"
+                      className="ds-boton ds-boton--primario login-ingresar"
+                      disabled={enviando}
+                  >
+                      {enviando ? 'Ingresando...' : 'Iniciar sesión'}
+                      {!enviando && <IconoFlechaDerecha width={20} height={20} />}
+                  </button>
+              </form>
             </div>
-
-            {/* noValidate: los errores los muestra cada campo con el estilo del
-                sistema, no el globito del navegador. */}
-            <form onSubmit={manejarEnvio} noValidate>
-                {mensajeError && (
-                    <div className="ds-aviso ds-aviso--error" role="alert">
-                        <IconoAlerta width={22} height={22} />
-                        {mensajeError}
-                    </div>
-                )}
-
-                {/* id, name y autoComplete le dicen al navegador (y al llavero
-                    del celular) que este es el usuario del login, para que
-                    ofrezca guardar y autocompletar la contraseña. */}
-                <Campo
-                    id="login-correo"
-                    etiqueta="Email"
-                    obligatorio={false}
-                    error={errores.correo}
-                    refInput={refCorreo}
-                    name="email"
-                    type="email"
-                    autoComplete="username"
-                    inputMode="email"
-                    autoCapitalize="none"
-                    spellCheck={false}
-                    value={correo}
-                    onChange={cambiarCorreo}
-                />
-
-                <Campo
-                    id="login-clave"
-                    etiqueta="Contraseña"
-                    obligatorio={false}
-                    error={errores.clave}
-                >
-                    {({ id, idError, tieneError }) => (
-                        <div className="login-clave ds-filtro-control">
-                            <input
-                                id={id}
-                                ref={refClave}
-                                name="password"
-                                type={claveVisible ? 'text' : 'password'}
-                                autoComplete="current-password"
-                                autoCapitalize="none"
-                                spellCheck={false}
-                                className={`ds-campo__input${tieneError ? ' ds-campo__input--error' : ''}`}
-                                aria-invalid={tieneError}
-                                aria-describedby={tieneError ? idError : undefined}
-                                value={clave}
-                                onChange={cambiarClave}
-                            />
-                            {/* El ojo, dentro del campo y a la derecha, en el
-                                mismo lugar que la × de los filtros. type="button"
-                                para que no envíe el formulario; el aria-label
-                                dice qué hace, para el lector de pantalla. */}
-                            <button
-                                type="button"
-                                className="ds-boton-en-campo"
-                                aria-controls={id}
-                                aria-label={claveVisible ? 'Ocultar contraseña' : 'Mostrar contraseña'}
-                                // Que el clic no le saque el foco al campo: en el
-                                // celular, el teclado sigue abierto.
-                                onMouseDown={(evento) => evento.preventDefault()}
-                                onClick={() => asignarClaveVisible((visible) => !visible)}
-                            >
-                                {/* El ojo muestra el estado: tachado mientras la
-                                    contraseña está oculta, abierto cuando se ve. */}
-                                {claveVisible
-                                    ? <IconoOjo width={20} height={20} />
-                                    : <IconoOjoTachado width={20} height={20} />}
-                            </button>
-                        </div>
-                    )}
-                </Campo>
-
-                <button
-                    type="submit"
-                    className="ds-boton ds-boton--primario login-ingresar"
-                    disabled={enviando}
-                >
-                    {enviando ? 'Ingresando...' : 'Iniciar Sesión'}
-                </button>
-            </form>
           </div>
         </main>
     );

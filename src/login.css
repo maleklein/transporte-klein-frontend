@@ -22,9 +22,13 @@
     background-color: var(--color-fondo-alt);
 }
 
-.tarjeta-login {
+/* Marca y tarjeta, una arriba de la otra. */
+.login-contenido {
     width: 440px;
     max-width: 100%;
+}
+
+.tarjeta-login {
     padding: 36px var(--relleno-form-x);
     /* Mismo borde que las tarjetas y formularios del resto del sistema (por
        ejemplo Nuevo Usuario), sin sombra: la sombra queda para las tarjetas
@@ -34,30 +38,25 @@
     border-radius: var(--radio);
 }
 
-/* Encabezado: el camión de la barra superior y el nombre del sistema, centrados.
-   Los campos y el botón quedan alineados a la izquierda, como en los demás
-   formularios. */
+/* Marca, arriba de los campos: el camión de la barra superior y el nombre
+   del sistema, en una fila centrada. */
 .login-encabezado {
-    text-align: center;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 14px;
     margin-bottom: 28px;
+    color: var(--color-primario);
 }
 
 .login-logo {
-    color: var(--color-primario);
-    margin-bottom: 8px;
+    flex-shrink: 0;
 }
 
-.login-titulo {
-    font-size: 26px;
+.login-marca {
+    font-size: 32px;
     font-weight: 700;
-    color: var(--color-primario);
-    line-height: 1.2;
-}
-
-.login-subtitulo {
-    margin-top: 4px;
-    color: var(--color-texto-suave);
-    font-size: var(--texto-ayuda);
+    line-height: 1.1;
 }
 
 /* Contraseña con el ojo adentro, a la derecha (`ds-boton-en-campo`): el texto
@@ -88,5 +87,17 @@
 
     .tarjeta-login {
         padding: 28px var(--relleno-form-x);
+    }
+}
+
+/* Celular: la marca un poco más chica, para que entre en una línea. */
+@media (max-width: 720px) {
+    .login-encabezado .login-logo {
+        width: 40px;
+        height: 40px;
+    }
+
+    .login-marca {
+        font-size: 28px;
     }
 }

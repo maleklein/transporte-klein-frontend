@@ -175,13 +175,22 @@ export function IconoOjo(props) {
   );
 }
 
-/** El mismo ojo, tachado: contraseña oculta. */
+/** El mismo ojo, tachado: para "Ocultar contraseña". */
 export function IconoOjoTachado(props) {
   return (
     <svg {...base} {...props}>
       <path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7Z" />
       <circle cx="12" cy="12" r="3" />
       <path d="M3 3l18 18" />
+    </svg>
+  );
+}
+
+/** Flecha hacia adelante: después del texto de "Iniciar sesión". */
+export function IconoFlechaDerecha(props) {
+  return (
+    <svg {...base} {...props}>
+      <path d="M5 12h14M12 5l7 7-7 7" />
     </svg>
   );
 }

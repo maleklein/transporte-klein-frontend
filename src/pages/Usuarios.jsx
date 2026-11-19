@@ -260,7 +260,7 @@ export default function Usuarios() {
                 ref={refBuscar}
                 type="search"
                 className={`ds-campo__input us-buscar__input${filtros.buscar ? ' ds-campo__input--activo' : ''}`}
-                placeholder="Nombre, apellido, DNI o email..."
+                placeholder="Nombre, apellido, DNI o correo electrónico..."
                 autoComplete="off"
                 value={filtros.buscar}
                 onChange={alCambiarFiltro('buscar')}
@@ -369,7 +369,7 @@ export default function Usuarios() {
                   <tr>
                     <th scope="col">Nombre y apellido</th>
                     <th scope="col">DNI</th>
-                    <th scope="col">Email</th>
+                    <th scope="col">Correo electrónico</th>
                     <th scope="col">Rol</th>
                     <th scope="col">Estado</th>
                     <th scope="col">Datos del vehículo</th>

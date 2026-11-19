@@ -129,8 +129,9 @@ body {
 /* --------------------------------------------------------------------------
    Íconos en botones: nunca un ícono solo, siempre con su texto. Pero no
    todo botón lleva ícono: va cuando ayuda a reconocer la acción de un
-   vistazo (Nueva Carga, Guardar, Editar, Cerrar sesión) y no cuando sólo
-   decora o el texto ya alcanza (Iniciar Sesión, Aplicar, Volver).
+   vistazo (Nueva Carga, Guardar, Editar, Cerrar sesión, la flecha de
+   Iniciar sesión) y no cuando sólo decora o el texto ya alcanza (Aplicar,
+   Volver).
    Un ícono que no significa nada distrae, y repetido en todos los botones
    deja de distinguir ninguno (NN/g, Atlassian, GOV.UK).
    -------------------------------------------------------------------------- */

@@ -121,7 +121,7 @@ export const avisoSinResultados = ({ busqueda, rol, estado, coincidenSinFiltros 
   if (busqueda) {
     return {
       titulo: `No hay usuarios ${conBusqueda}.`,
-      ayuda: 'Revisá cómo está escrito o buscá por una parte del nombre, del apellido, del DNI o del email.',
+      ayuda: 'Revisá cómo está escrito o buscá por una parte del nombre, del apellido, del DNI o del correo electrónico.',
     };
   }
 
