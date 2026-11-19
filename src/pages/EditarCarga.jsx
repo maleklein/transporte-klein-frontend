@@ -436,8 +436,16 @@ export default function EditarCarga() {
             </div>
 
             <div className="ac-footer">
-
               <AvisoSinConexion aviso={avisoConexion} />
+              <button
+                type="submit"
+                className="ds-boton ds-boton--confirmar"
+                onMouseDown={evitarFoco}
+                disabled={enviando}
+              >
+                <IconoGuardar />
+                {enviando ? 'Guardando...' : 'Guardar Cambios'}
+              </button>
               <button
                 type="button"
                 className="ds-boton ds-boton--cancelar"
@@ -447,15 +455,6 @@ export default function EditarCarga() {
               >
                 <IconoCerrar />
                 Cancelar
-              </button>
-              <button
-                type="submit"
-                className="ds-boton ds-boton--confirmar"
-                onMouseDown={evitarFoco}
-                disabled={enviando}
-              >
-                <IconoGuardar />
-                {enviando ? 'Guardando...' : 'Guardar Cambios'}
               </button>
             </div>
           </form>

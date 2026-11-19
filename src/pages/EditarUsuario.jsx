@@ -506,8 +506,16 @@ function FormularioEdicion({ usuario, volver }) {
           </div>
 
           <div className="au-footer">
-
             <AvisoSinConexion aviso={avisoConexion} />
+            <button
+              type="submit"
+              className="ds-boton ds-boton--confirmar"
+              onMouseDown={evitarFoco}
+              disabled={enviando}
+            >
+              <IconoGuardar />
+              {enviando ? 'Guardando...' : 'Guardar Cambios'}
+            </button>
             <button
               type="button"
               className="ds-boton ds-boton--cancelar"
@@ -517,15 +525,6 @@ function FormularioEdicion({ usuario, volver }) {
             >
               <IconoCerrar />
               Cancelar
-            </button>
-            <button
-              type="submit"
-              className="ds-boton ds-boton--confirmar"
-              onMouseDown={evitarFoco}
-              disabled={enviando}
-            >
-              <IconoGuardar />
-              {enviando ? 'Guardando...' : 'Guardar Cambios'}
             </button>
           </div>
         </form>

@@ -324,6 +324,15 @@ export default function AltaCarga() {
           <div className="ac-footer">
             <AvisoSinConexion aviso={avisoConexion} />
             <button
+              type="submit"
+              className="ds-boton ds-boton--confirmar"
+              onMouseDown={evitarFoco}
+              disabled={enviando}
+            >
+              <IconoGuardar />
+              {enviando ? 'Registrando...' : 'Registrar Carga'}
+            </button>
+            <button
               type="button"
               className="ds-boton ds-boton--cancelar"
               onClick={cancelar}
@@ -332,16 +341,6 @@ export default function AltaCarga() {
             >
               <IconoCerrar />
               Cancelar
-            </button>
-
-            <button
-              type="submit"
-              className="ds-boton ds-boton--confirmar"
-              onMouseDown={evitarFoco}
-              disabled={enviando}
-            >
-              <IconoGuardar />
-              {enviando ? 'Registrando...' : 'Registrar Carga'}
             </button>
           </div>
         </form>

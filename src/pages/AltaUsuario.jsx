@@ -463,6 +463,15 @@ export default function AltaUsuario() {
           <div className="au-footer">
             <AvisoSinConexion aviso={avisoConexion} />
             <button
+              type="submit"
+              className="ds-boton ds-boton--confirmar"
+              onMouseDown={evitarFoco}
+              disabled={enviando}
+            >
+              <IconoGuardar />
+              {enviando ? 'Registrando...' : 'Registrar Usuario'}
+            </button>
+            <button
               type="button"
               className="ds-boton ds-boton--cancelar"
               onClick={cancelar}
@@ -471,15 +480,6 @@ export default function AltaUsuario() {
             >
               <IconoCerrar />
               Cancelar
-            </button>
-            <button
-              type="submit"
-              className="ds-boton ds-boton--confirmar"
-              onMouseDown={evitarFoco}
-              disabled={enviando}
-            >
-              <IconoGuardar />
-              {enviando ? 'Registrando...' : 'Registrar Usuario'}
             </button>
           </div>
         </form>
