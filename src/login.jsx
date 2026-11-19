@@ -54,9 +54,17 @@ const IniciarSesion = () => {
 
             <form onSubmit={manejarEnvio}>
                 <div className="grupo-input">
-                    <label>Correo Electrónico</label>
+                    <label htmlFor="login-correo">Correo Electrónico</label>
+                    {/* id, name y autoComplete le dicen al navegador (y al
+                        llavero del celular) que este es el usuario del login,
+                        para que ofrezca guardar y autocompletar la contraseña. */}
                     <input
+                        id="login-correo"
+                        name="email"
                         type="email"
+                        autoComplete="username"
+                        inputMode="email"
+                        autoCapitalize="none"
                         value={correo}
                         onChange={(evento) => {
                             asignarCorreo(evento.target.value);
@@ -78,9 +86,12 @@ const IniciarSesion = () => {
                 </div>
 
                 <div className="grupo-input">
-                    <label>Contraseña</label>
+                    <label htmlFor="login-clave">Contraseña</label>
                     <input
+                        id="login-clave"
+                        name="password"
                         type="password"
+                        autoComplete="current-password"
                         value={clave}
                         onChange={(evento) => asignarClave(evento.target.value)}
                         required
