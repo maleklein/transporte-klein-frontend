@@ -21,7 +21,7 @@ export default function BotonQuitarFiltro({ etiqueta, alQuitar, textoLector }) {
   return (
     <button
       type="button"
-      className="ds-quitar-filtro"
+      className="ds-boton-en-campo"
       // Sólo para el lector de pantalla: sin `title`, para que al pasar el
       // mouse no aparezca un cartel ("Quitar filtro Estado"). La × se entiende sola.
       aria-label={textoLector ?? `Quitar filtro ${etiqueta}`}

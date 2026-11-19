@@ -426,7 +426,7 @@ function FormularioEdicion({ usuario, volver }) {
               />
               <Campo
                 id="eu-email"
-                etiqueta="Email"
+                etiqueta="Correo electrónico"
                 error={errorDe('email')}
                 type="email"
                 placeholder="Ej: carlos.gauto@mail.com"

@@ -197,7 +197,7 @@ function FichaUsuario({ id }) {
             <div className="dc-dato">
               <dt>
                 <IconoCorreo width={15} height={15} />
-                Email
+                Correo electrónico
               </dt>
               <dd>{usuario.email}</dd>
             </div>

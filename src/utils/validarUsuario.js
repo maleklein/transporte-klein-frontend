@@ -47,17 +47,17 @@ export function validarEmail(valor) {
   const limpio = valor.trim();
 
   if (!limpio) {
-    return 'Ingresá el email.';
+    return 'Ingresá el correo electrónico.';
   }
 
   if (limpio.length > LARGO_MAXIMO_EMAIL) {
-    return `El email no puede superar los ${LARGO_MAXIMO_EMAIL} caracteres.`;
+    return `El correo electrónico no puede superar los ${LARGO_MAXIMO_EMAIL} caracteres.`;
   }
 
   // El formato lo valida `isEmail` de validator.js, la misma librería y versión
   // que usa el backend, así los dos aceptan exactamente lo mismo.
   if (!isEmail(limpio)) {
-    return 'Escribí un email válido. Ejemplo: nombre@mail.com';
+    return 'Escribí un correo electrónico válido. Ejemplo: nombre@mail.com';
   }
 
   return undefined;

@@ -181,7 +181,7 @@ describe('avisoSinResultados', () => {
   it('solo búsqueda: dice qué se buscó y sugiere revisarlo', () => {
     expect(avisoSinResultados({ busqueda: 'zzz', rol: '', estado: '', coincidenSinFiltros: 0 })).toEqual({
       titulo: 'No hay usuarios que coincidan con “zzz”.',
-      ayuda: 'Revisá cómo está escrito o buscá por una parte del nombre, del apellido, del DNI o del email.',
+      ayuda: 'Revisá cómo está escrito o buscá por una parte del nombre, del apellido, del DNI o del correo electrónico.',
     });
   });
 
