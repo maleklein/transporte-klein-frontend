@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import { editarUsuario, ErrorDeApi, obtenerUsuario } from '../api/usuarios';
 import { usuarioActual } from '../api/sesion';
@@ -9,12 +9,13 @@ import {
   IconoEditar,
   IconoGuardar,
 } from '../components/Iconos';
+import { useAvisoSalirSinGuardar } from '../components/AvisoSalirSinGuardar';
 import BarraSuperior from '../components/BarraSuperior';
 import MigasDePan from '../components/MigasDePan';
 import Campo from '../components/Campo';
 import CampoDni from '../components/CampoDni';
 import ComboBox from '../components/ComboBox';
-import { evitarFoco } from '../utils/formulario';
+import { evitarFoco, valoresCambiaron } from '../utils/formulario';
 import { destinoVolver, volverA } from '../utils/volver';
 import { aplicarMayusculaInicial, validarNombreApellido } from '../utils/validarNombreApellido';
 import {
@@ -232,6 +233,9 @@ function FormularioEdicion({ usuario, volver }) {
   const esMiCuenta = usuario?.id_usuario === usuarioActual()?.id;
 
   const [valores, setValores] = useState(() => (usuario ? valoresIniciales(usuario) : null));
+  // Si lo escrito difiere de lo que tenía el usuario, salir sin guardar pide confirmación.
+  const originales = useMemo(() => valoresIniciales(usuario), [usuario]);
+  const { permitirSalida, modal: modalSalir } = useAvisoSalirSinGuardar(valoresCambiaron(valores, originales));
   const [tocados, setTocados] = useState({});
   const [erroresBackend, setErroresBackend] = useState({});
   const [errorGeneral, setErrorGeneral] = useState('');
@@ -333,6 +337,7 @@ function FormularioEdicion({ usuario, volver }) {
 
       // `replace`: el formulario sale del historial, así "atrás" desde la
       // ficha no vuelve a un formulario ya guardado.
+      permitirSalida();
       navigate(volver.ruta, {
         replace: true,
         state: {
@@ -363,7 +368,8 @@ function FormularioEdicion({ usuario, volver }) {
 
   return (
     <>
-      <BarraSuperior />
+      {/* La flecha ‹ del celular vuelve a la ficha, como Cancelar. */}
+      <BarraSuperior volver={volver} />
 
       <main className="au-contenido">
         <MigasDePan volver={volver} actual="Editar usuario" />
@@ -523,6 +529,7 @@ function FormularioEdicion({ usuario, volver }) {
             </button>
           </div>
         </form>
+        {modalSalir}
       </main>
     </>
   );
