@@ -278,15 +278,6 @@ export default function ParametrosOperativos() {
 
             <div className="au-footer">
               <button
-                type="button"
-                className="ds-boton ds-boton--cancelar"
-                onClick={descartar}
-                onMouseDown={evitarFoco}
-                disabled={!hayCambios || guardando}
-              >
-                Descartar cambios
-              </button>
-              <button
                 type="submit"
                 className="ds-boton ds-boton--confirmar"
                 onMouseDown={evitarFoco}
@@ -294,6 +285,15 @@ export default function ParametrosOperativos() {
               >
                 <IconoGuardar />
                 Guardar
+              </button>
+              <button
+                type="button"
+                className="ds-boton ds-boton--cancelar"
+                onClick={descartar}
+                onMouseDown={evitarFoco}
+                disabled={!hayCambios || guardando}
+              >
+                Descartar cambios
               </button>
             </div>
           </form>
