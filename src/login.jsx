@@ -2,7 +2,7 @@ import { useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { iniciarSesion, rutaInicio, tomarAvisoDeSesion } from './api/sesion';
 import Campo from './components/Campo';
-import { IconoAlerta, IconoCamion } from './components/Iconos';
+import { IconoAlerta, IconoCamion, IconoOjo, IconoOjoTachado } from './components/Iconos';
 import { validarEmail } from './utils/validarUsuario';
 import './login.css';
 
@@ -22,7 +22,7 @@ import './login.css';
  *   guarden y completen la contraseña.
  * - Los errores de un campo se muestran debajo de ese campo, con el mismo
  *   texto que en el alta de usuarios, y no en el globito del navegador.
- * - La contraseña se puede mostrar para revisarla antes de ingresar. Al
+ * - La contraseña se puede mostrar con el ojo para revisarla antes de ingresar. Al
  *   enviar vuelve a ocultarse, para que el navegador no la guarde como texto.
  *
  * @returns {JSX.Element}
@@ -133,7 +133,7 @@ const IniciarSesion = () => {
                     error={errores.clave}
                 >
                     {({ id, idError, tieneError }) => (
-                        <div className="login-clave">
+                        <div className="login-clave ds-filtro-control">
                             <input
                                 id={id}
                                 ref={refClave}
@@ -148,17 +148,23 @@ const IniciarSesion = () => {
                                 value={clave}
                                 onChange={cambiarClave}
                             />
-                            {/* type="button" para que no envíe el formulario. El
-                                texto dice lo que va a hacer; el aria-label
-                                aclara qué, para el lector de pantalla. */}
+                            {/* El ojo, dentro del campo y a la derecha, en el
+                                mismo lugar que la × de los filtros. type="button"
+                                para que no envíe el formulario; el aria-label
+                                dice qué hace, para el lector de pantalla. */}
                             <button
                                 type="button"
-                                className="ds-boton ds-boton--secundario login-mostrar-clave"
+                                className="ds-boton-en-campo"
                                 aria-controls={id}
                                 aria-label={claveVisible ? 'Ocultar contraseña' : 'Mostrar contraseña'}
+                                // Que el clic no le saque el foco al campo: en el
+                                // celular, el teclado sigue abierto.
+                                onMouseDown={(evento) => evento.preventDefault()}
                                 onClick={() => asignarClaveVisible((visible) => !visible)}
                             >
-                                {claveVisible ? 'Ocultar' : 'Mostrar'}
+                                {claveVisible
+                                    ? <IconoOjoTachado width={20} height={20} />
+                                    : <IconoOjo width={20} height={20} />}
                             </button>
                         </div>
                     )}

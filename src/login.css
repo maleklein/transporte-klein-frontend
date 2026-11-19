@@ -58,20 +58,16 @@
     font-size: var(--texto-ayuda);
 }
 
-/* Contraseña con el botón Mostrar al lado, de la misma altura que el campo. */
-.login-clave {
-    display: flex;
-    gap: 8px;
-}
-
+/* Contraseña con el ojo adentro, a la derecha (`ds-boton-en-campo`): el texto
+   no llega hasta abajo del ojo. */
 .login-clave .ds-campo__input {
-    flex: 1;
-    min-width: 0;
+    padding-right: 52px;
 }
 
-.login-mostrar-clave {
-    flex-shrink: 0;
-    padding-inline: 16px;
+/* Edge dibuja su propio ojo en los campos de contraseña: con el nuestro
+   quedarían dos. */
+.login-clave .ds-campo__input::-ms-reveal {
+    display: none;
 }
 
 /* El botón ocupa todo el ancho: es la única acción de la pantalla. */

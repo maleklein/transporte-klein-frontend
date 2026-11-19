@@ -130,7 +130,7 @@ body {
    Íconos en botones: nunca un ícono solo, siempre con su texto. Pero no
    todo botón lleva ícono: va cuando ayuda a reconocer la acción de un
    vistazo (Nueva Carga, Guardar, Editar, Cerrar sesión) y no cuando sólo
-   decora o el texto ya alcanza (Iniciar Sesión, Aplicar, Volver, Mostrar).
+   decora o el texto ya alcanza (Iniciar Sesión, Aplicar, Volver).
    Un ícono que no significa nada distrae, y repetido en todos los botones
    deja de distinguir ninguno (NN/g, Atlassian, GOV.UK).
    -------------------------------------------------------------------------- */
@@ -494,7 +494,10 @@ select.ds-campo__input,
   background-image: none;
 }
 
-/* Contenedor del campo y su ×: la × se ubica sobre el borde derecho. */
+/* Botón con ícono dentro de un campo, a la derecha (`ds-boton-en-campo`): la ×
+   que quita un filtro (BotonQuitarFiltro) y el ojo que muestra la contraseña
+   del login. El contenedor del campo y su botón lleva `ds-filtro-control`,
+   que lo ubica. */
 .ds-filtro-control {
   position: relative;
 }
@@ -503,7 +506,7 @@ select.ds-campo__input,
    un círculo de 32px dibujado con ::before, que se pinta al pasar el mouse,
    al tocarlo o con el foco. Así el círculo deja aire con el borde del campo
    (que mide 48 o 52) en lugar de chocarlo. */
-.ds-quitar-filtro {
+.ds-boton-en-campo {
   position: absolute;
   top: 50%;
   right: 4px;
@@ -519,7 +522,7 @@ select.ds-campo__input,
   cursor: pointer;
 }
 
-.ds-quitar-filtro::before {
+.ds-boton-en-campo::before {
   content: '';
   position: absolute;
   inset: 0;
@@ -530,27 +533,27 @@ select.ds-campo__input,
   transition: background-color 0.12s ease;
 }
 
-/* La × por encima del círculo. */
-.ds-quitar-filtro svg {
+/* El ícono por encima del círculo. */
+.ds-boton-en-campo svg {
   position: relative;
 }
 
 @media (hover: hover) {
-  .ds-quitar-filtro:hover::before {
+  .ds-boton-en-campo:hover::before {
     background: rgba(31, 78, 121, 0.14);
   }
 }
 
-.ds-quitar-filtro:active::before {
+.ds-boton-en-campo:active::before {
   background: rgba(31, 78, 121, 0.22);
 }
 
 /* El foco va en el círculo, no en la zona de 44 que no se ve. */
-.ds-quitar-filtro:focus-visible {
+.ds-boton-en-campo:focus-visible {
   outline: none;
 }
 
-.ds-quitar-filtro:focus-visible::before {
+.ds-boton-en-campo:focus-visible::before {
   outline: 3px solid var(--color-primario);
   outline-offset: 1px;
 }
