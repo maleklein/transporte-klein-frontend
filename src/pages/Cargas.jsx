@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useLocation, useNavigate, useSearchParams } from 'react-router-dom';
-import { listarCargas } from '../api/cargas';
+import { listarCargasPaginadas } from '../api/cargas';
 import { listarProvincias } from '../api/geografia';
 import CampoFecha from '../components/CampoFecha';
 import ComboBox from '../components/ComboBox';
@@ -16,6 +16,7 @@ import {
 import BarraSuperior from '../components/BarraSuperior';
 import MigasDePan from '../components/MigasDePan';
 import EstadoCarga from '../components/EstadoCarga';
+import Paginacion from '../components/Paginacion';
 import SelectorPeriodo from '../components/SelectorPeriodo';
 import {
   textoFechaRetiro,
@@ -25,6 +26,7 @@ import {
   retiroVencido,
 } from '../utils/carga';
 import { ESTADOS, etiquetaEstado } from '../utils/estadosCarga';
+import { POR_PAGINA, cantidadDePaginas, paginaDeUrl, rangoDePagina } from '../utils/paginacion';
 import { destinoVolver, volverA } from '../utils/volver';
 import { useAvisoSinConexion } from '../components/contextoConexion';
 import './DetalleCarga.css';
@@ -32,23 +34,20 @@ import './Usuarios.css';
 import './Cargas.css';
 
 /**
- * Filtros en blanco. Sirve para inicializar el estado y para el botón
- * "Limpiar filtros".
- */
-const FILTROS_VACIOS = { estado: '', fecha: '', destino_provincia: '' };
-
-/**
  * Pantalla de consulta de cargas (HU 2.5), en la ruta /cargas.
  *
- * Al entrar pide `GET /cargas` sin filtros. Cada vez que cambia un filtro
- * (estado, fecha o destino) vuelve a pedir con los query params correspondientes
- * y actualiza la tabla (en el celular, una lista), con el mismo formato que
- * Gestión de Usuarios. Al hacer click en una fila navega a `/cargas/:id` con
- * el `id_carga` de esa fila; el detalle recarga la carga con `GET /cargas/:id`.
+ * Al entrar pide la primera página de `GET /cargas` (de a 20, ver
+ * `utils/paginacion.js`). Cada vez que cambia un filtro (estado, creada, fecha
+ * de retiro o provincia de destino) vuelve a pedir, desde la página 1, y
+ * actualiza la tabla (en el celular, una lista), con el mismo formato que
+ * Gestión de Usuarios. Debajo, Anterior / Siguiente pasan de página. Al hacer
+ * click en una fila navega a `/cargas/:id` con el `id_carga` de esa fila; el
+ * detalle recarga la carga con `GET /cargas/:id`.
  *
- * El filtro de estado también vive en la URL (`/cargas?estado=pendiente`),
- * para que otra pantalla pueda abrir el listado ya filtrado: el panel del
- * administrador (HU 16) lo usa para "Ver pendientes de asignación".
+ * Los filtros y la página viven en la URL (`/cargas?estado=pendiente&pagina=2`),
+ * que es su única fuente: así otra pantalla puede abrir el listado ya filtrado
+ * (el panel del administrador, HU 16, lo usa para "Ver pendientes de
+ * asignación") y, al volver del detalle, el listado queda como estaba.
  *
  * @returns {JSX.Element}
  */
@@ -57,54 +56,81 @@ export default function Cargas() {
   const location = useLocation();
   const [parametrosUrl, setParametrosUrl] = useSearchParams();
 
-  // Los tres filtros son discretos (se eligen de una lista o de un calendario),
+  // Los filtros son discretos (se eligen de una lista o de un calendario),
   // así que cada cambio dispara un único pedido y no hace falta esperar a que
   // el usuario termine de escribir.
-  // El estado no se guarda en `filtros`: se lee siempre de la URL, que es la
-  // única fuente. Si se guardara también acá, entrar a "Cargas" desde la barra
-  // estando en `?estado=pendiente` dejaría el filtro viejo puesto.
-  const [filtrosLocales, setFiltros] = useState(FILTROS_VACIOS);
-  const estadoUrl = parametrosUrl.get('estado') ?? '';
-  // Período de creación (filtro "Creada", sólo administrador). Va en la URL,
-  // como el estado: así las casillas de "Cargas por estado" del panel llevan
-  // al listado con el mismo período que contaron.
-  const fechaUrl = (clave) => {
+  // No se guardan en el estado de React: se leen siempre de la URL, que es la
+  // única fuente. Si se guardaran también acá, entrar a "Cargas" desde la barra
+  // estando en `?estado=pendiente` dejaría el filtro viejo puesto. Antes la
+  // fecha de retiro y la provincia sí eran estado local, y se perdían al
+  // volver del detalle; con la página en la URL, eso dejaba la página 3 de
+  // otra lista.
+  // Un valor con formato inválido se ignora, como si no hubiera filtro.
+  const valorUrl = (clave, formato) => {
     const valor = parametrosUrl.get(clave) ?? '';
-    return /^\d{4}-\d{2}-\d{2}$/.test(valor) ? valor : '';
+    return formato.test(valor) ? valor : '';
   };
-  const creadaDesde = fechaUrl('creada_desde');
-  const creadaHasta = fechaUrl('creada_hasta');
+  const FORMATO_FECHA = /^\d{4}-\d{2}-\d{2}$/;
+  const estadoUrl = parametrosUrl.get('estado') ?? '';
+  const fechaRetiro = valorUrl('fecha', FORMATO_FECHA);
+  const provinciaDestino = valorUrl('destino_provincia', /^\d{2}$/);
+  // Período de creación (filtro "Creada", sólo administrador): así las
+  // casillas de "Cargas por estado" del panel llevan al listado con el mismo
+  // período que contaron.
+  const creadaDesde = valorUrl('creada_desde', FORMATO_FECHA);
+  const creadaHasta = valorUrl('creada_hasta', FORMATO_FECHA);
   const filtros = useMemo(
-    () => ({ ...filtrosLocales, estado: estadoUrl, creada_desde: creadaDesde, creada_hasta: creadaHasta }),
-    [filtrosLocales, estadoUrl, creadaDesde, creadaHasta],
+    () => ({
+      estado: estadoUrl,
+      fecha: fechaRetiro,
+      destino_provincia: provinciaDestino,
+      creada_desde: creadaDesde,
+      creada_hasta: creadaHasta,
+    }),
+    [estadoUrl, fechaRetiro, provinciaDestino, creadaDesde, creadaHasta],
   );
+  const pagina = paginaDeUrl(parametrosUrl);
 
   /**
-   * Escribe en la URL el estado y el período. Con el `state`, cambiar un
+   * Escribe en la URL los filtros y la página. Con el `state`, cambiar un
    * filtro no borra a dónde vuelve la pantalla; `replace` para no llenar el
    * historial con un paso por cada cambio.
    *
-   * @param {{estado?: string, creada_desde?: string, creada_hasta?: string}} valores
+   * @param {Record<string, string|number>} valores - los que no vienen (o vacíos) se quitan.
    * @returns {void}
    */
   const escribirUrl = (valores) => {
     const params = {};
     for (const [clave, valor] of Object.entries(valores)) {
-      if (valor) params[clave] = valor;
+      if (valor) params[clave] = String(valor);
     }
     setParametrosUrl(params, { replace: true, state: location.state });
   };
 
   /**
-   * Cambia el filtro de estado escribiéndolo en la URL. `replace` para no
-   * llenar el historial con un paso por cada cambio de filtro.
+   * Cambia un filtro y deja los demás. Vuelve a la primera página: la que se
+   * estaba viendo es de otra lista.
    *
-   * @param {string} estado - estado elegido, o '' para no filtrar.
+   * @param {string} clave - 'estado', 'fecha', 'destino_provincia', 'creada_desde' o 'creada_hasta'.
+   * @param {string} valor - '' para quitarlo.
    * @returns {void}
    */
-  const cambiarEstadoFiltro = (estado) => {
-    // El período se conserva: se cambia sólo el estado.
-    escribirUrl({ estado, creada_desde: creadaDesde, creada_hasta: creadaHasta });
+  const cambiarFiltro = (clave, valor) => escribirUrl({ ...filtros, [clave]: valor });
+
+  // Arriba del listado: al pasar de página se vuelve acá, para empezar a leer
+  // la página nueva desde el principio y no desde el pie de la anterior.
+  const refInicioListado = useRef(null);
+
+  /**
+   * Pasa a otra página, con los mismos filtros.
+   *
+   * @param {number} nueva
+   * @returns {void}
+   */
+  const irAPagina = (nueva) => {
+    escribirUrl({ ...filtros, pagina: nueva > 1 ? nueva : '' });
+    const inicio = refInicioListado.current;
+    if (inicio && inicio.getBoundingClientRect().top < 0) inicio.scrollIntoView({ block: 'start' });
   };
 
 
@@ -113,6 +139,8 @@ export default function Cargas() {
   const destino = destinoVolver(location, null);
 
   const [cargas, setCargas] = useState([]);
+  // Cuántas pasan los filtros, sumando todas las páginas.
+  const [total, setTotal] = useState(0);
   // 'cargando' | 'ok' | 'error'
   const [estadoPantalla, setEstadoPantalla] = useState('cargando');
   const [mensajeError, setMensajeError] = useState('');
@@ -138,9 +166,7 @@ export default function Cargas() {
   // de fecha y destino, que son los que sí le sirven para elegir un viaje.
   const esCamionero = usuarioActual()?.rol === 'camionero';
 
-  const hayAlgunFiltro = Boolean(
-    filtros.estado || filtros.fecha || filtros.destino_provincia || creadaDesde || creadaHasta,
-  );
+  const hayAlgunFiltro = Object.values(filtros).some(Boolean);
 
   useEffect(() => {
     let vigente = true;
@@ -156,15 +182,30 @@ export default function Cargas() {
     };
   }, []);
 
-  // Pide las cargas cada vez que cambian los filtros aplicados. Si llega un
+  // Pide la página cada vez que cambian los filtros o la página. Si llega un
   // cambio antes de que responda el pedido anterior, lo cancela (gana el último).
   useEffect(() => {
     const controlador = new AbortController();
     setEstadoPantalla('cargando');
     setMensajeError('');
 
-    listarCargas(filtros, { signal: controlador.signal })
-      .then((datos) => {
+    listarCargasPaginadas(filtros, pagina, { signal: controlador.signal })
+      .then(({ cargas: datos, total: cantidad }) => {
+        // La página ya no existe (se entró con `?pagina=9`, o se borraron
+        // cargas): se va a la última que tiene algo, que vuelve a pedir.
+        const ultima = cantidadDePaginas(cantidad);
+        if (datos.length === 0 && pagina > ultima) {
+          setParametrosUrl(
+            (previos) => {
+              const siguientes = new URLSearchParams(previos);
+              if (ultima > 1) siguientes.set('pagina', String(ultima));
+              else siguientes.delete('pagina');
+              return siguientes;
+            },
+            { replace: true, state: location.state },
+          );
+          return;
+        }
         for (const carga of datos) {
           if (carga.estado_actual) estadosVistosRef.current.add(carga.estado_actual);
         }
@@ -173,6 +214,7 @@ export default function Cargas() {
         if (filtros.estado) estadosVistosRef.current.add(filtros.estado);
         setEstadosDisponibles([...estadosVistosRef.current].sort());
         setCargas(datos);
+        setTotal(cantidad);
         setEstadoPantalla('ok');
         yaCargoRef.current = true;
       })
@@ -189,17 +231,17 @@ export default function Cargas() {
       });
 
     return () => controlador.abort();
-  }, [filtros, avisarSiFaltaConexion]);
+    // `location.state` y `setParametrosUrl` sólo se usan para corregir la
+    // página: no tienen que volver a pedir.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [filtros, pagina, avisarSiFaltaConexion]);
 
   /**
    * Deja los filtros en blanco y vuelve a traer el listado completo.
    *
    * @returns {void}
    */
-  const limpiarFiltros = () => {
-    setFiltros(FILTROS_VACIOS);
-    escribirUrl({});
-  };
+  const limpiarFiltros = () => escribirUrl({});
 
   /**
    * Navega al detalle de una carga por su `id_carga`. El detalle recarga los
@@ -221,6 +263,13 @@ export default function Cargas() {
   const postulables = cargas.filter((carga) => !motivoSinCapacidad(carga));
   const excedidas = cargas.filter((carga) => motivoSinCapacidad(carga));
   const sinCapacidadCargada = excedidas.some((carga) => motivoSinCapacidad(carga) === 'sin-capacidad');
+
+  const paginas = cantidadDePaginas(total);
+  const { desde, hasta } = rangoDePagina(pagina, total);
+  // Al camionero, las que no puede llevar vienen al final (el backend las
+  // ordena así). En las últimas páginas puede no quedar ninguna que sí pueda:
+  // ahí no se dice "no hay cargas", se ve directo la sección de las que no.
+  const soloExcedidasEnPagina = pagina > 1 && postulables.length === 0 && excedidas.length > 0;
 
   /**
    * Qué decir cuando no hay ninguna carga en la tabla principal.
@@ -436,7 +485,7 @@ export default function Cargas() {
                   etiqueta: etiquetaEstado(estado),
                 }))}
                 valor={filtros.estado}
-                alElegir={cambiarEstadoFiltro}
+                alElegir={(estado) => cambiarFiltro('estado', estado)}
                 marcador="Todos los estados"
                 textoOpcionVacia="Todos los estados"
                 etiquetaFiltro="Estado"
@@ -456,8 +505,8 @@ export default function Cargas() {
               className="cg-filtro"
               desde={creadaDesde}
               hasta={creadaHasta}
-              alCambiar={({ desde, hasta }) =>
-                escribirUrl({ estado: estadoUrl, creada_desde: desde, creada_hasta: hasta })
+              alCambiar={({ desde: nuevoDesde, hasta: nuevoHasta }) =>
+                escribirUrl({ ...filtros, creada_desde: nuevoDesde, creada_hasta: nuevoHasta })
               }
             />
           )}
@@ -470,7 +519,7 @@ export default function Cargas() {
               id="cg-fecha"
               etiqueta="Fecha de retiro"
               valor={filtros.fecha}
-              alCambiar={(fecha) => setFiltros((previos) => ({ ...previos, fecha }))}
+              alCambiar={(fecha) => cambiarFiltro('fecha', fecha)}
               marcador="Cualquier fecha"
               esFiltro
             />
@@ -493,9 +542,7 @@ export default function Cargas() {
                 etiqueta: provincia.nombre,
               }))}
               valor={filtros.destino_provincia}
-              alElegir={(nuevoValor) =>
-                setFiltros((previos) => ({ ...previos, destino_provincia: nuevoValor }))
-              }
+              alElegir={(nuevoValor) => cambiarFiltro('destino_provincia', nuevoValor)}
               marcador="Todas las provincias"
               textoOpcionVacia="Todas las provincias"
               etiquetaFiltro="Provincia de destino"
@@ -518,7 +565,18 @@ export default function Cargas() {
           </button>
         </div>
 
-        {estadoPantalla === 'ok' && postulables.length > 0 && (
+        <div ref={refInicioListado} className="cg-inicio-listado" />
+
+        {/*
+          Con una sola página, cuántas hay (al camionero, cuántas puede
+          llevar). Con varias, cuáles se están viendo de cuántas.
+        */}
+        {estadoPantalla === 'ok' && paginas > 1 && (
+          <p className="cg-contador">
+            Mostrando {desde}–{hasta} de {total} cargas
+          </p>
+        )}
+        {estadoPantalla === 'ok' && paginas === 1 && postulables.length > 0 && (
           <p className="cg-contador">
             {postulables.length}{' '}
             {postulables.length === 1 ? 'carga encontrada' : 'cargas encontradas'}
@@ -534,7 +592,7 @@ export default function Cargas() {
 
         {estadoPantalla === 'cargando' && <p className="cg-mensaje">Cargando cargas...</p>}
 
-        {estadoPantalla === 'ok' && postulables.length === 0 && (
+        {estadoPantalla === 'ok' && postulables.length === 0 && !soloExcedidasEnPagina && (
           <p className="cg-mensaje">{mensajeSinCargas()}</p>
         )}
 
@@ -558,6 +616,14 @@ export default function Cargas() {
             {tablaCargas(excedidas, true)}
           </section>
         )}
+
+        <Paginacion
+          pagina={pagina}
+          cantidad={paginas}
+          alCambiar={irAPagina}
+          etiqueta="Páginas del listado de cargas"
+          deshabilitada={estadoPantalla === 'cargando'}
+        />
       </main>
     </>
   );

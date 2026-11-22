@@ -149,11 +149,50 @@ export async function editarCarga(id, datos) {
  * @throws {ErrorDeApi} si el backend rechaza un filtro (400) o falla (500, sin conexión).
  */
 export async function listarCargas(filtros = {}, opciones = {}) {
+  const cuerpo = await pedirCargas(filtros, null, opciones);
+  return Array.isArray(cuerpo) ? cuerpo : [];
+}
+
+/**
+ * GET /cargas?pagina=N — una página del listado, de a 20 (los mismos filtros
+ * que `listarCargas`). Es la que usa la pantalla de Cargas; los paneles de
+ * inicio, que sólo cuentan, siguen usando `listarCargas`.
+ *
+ * @param {object} filtros - los mismos que `listarCargas`.
+ * @param {number} pagina - desde 1.
+ * @param {object} [opciones]
+ * @param {AbortSignal} [opciones.signal]
+ * @returns {Promise<{cargas: object[], total: number, pagina: number, por_pagina: number}>}
+ *   `cargas` vacío si la página pasa de la última; `total` igual dice cuántas hay.
+ * @throws {DOMException} `AbortError` si se canceló el pedido.
+ * @throws {ErrorDeApi} si el backend rechaza un filtro o la página (400) o falla.
+ */
+export async function listarCargasPaginadas(filtros, pagina, opciones = {}) {
+  const cuerpo = await pedirCargas(filtros, pagina, opciones);
+  return {
+    cargas: Array.isArray(cuerpo?.cargas) ? cuerpo.cargas : [],
+    total: Number(cuerpo?.total) || 0,
+    pagina: Number(cuerpo?.pagina) || pagina,
+    por_pagina: Number(cuerpo?.por_pagina) || 0,
+  };
+}
+
+/**
+ * El pedido a `GET /cargas` que comparten `listarCargas` y
+ * `listarCargasPaginadas`.
+ *
+ * @param {object} filtros
+ * @param {number|null} pagina - null para pedir todas (sin paginar).
+ * @param {{signal?: AbortSignal}} opciones
+ * @returns {Promise<any>} el cuerpo de la respuesta.
+ */
+async function pedirCargas(filtros, pagina, opciones) {
   const params = new URLSearchParams();
   for (const clave of ['estado', 'fecha', 'destino_provincia', 'creada_desde', 'creada_hasta']) {
     const valor = String(filtros[clave] ?? '').trim();
     if (valor) params.set(clave, valor);
   }
+  if (pagina !== null) params.set('pagina', String(pagina));
   const consulta = params.toString();
 
   let respuesta;
@@ -186,7 +225,7 @@ export async function listarCargas(filtros = {}, opciones = {}) {
     throw new ErrorDeApi(mensaje, null, respuesta.status);
   }
 
-  return Array.isArray(cuerpo) ? cuerpo : [];
+  return cuerpo;
 }
 
 /**
