@@ -14,8 +14,7 @@ import EstadoCarga from '../components/EstadoCarga';
 import { obtenerMisPostulaciones } from '../api/cargas';
 import { ErrorDeApi } from '../api/usuarios';
 import { textoFechaRetiro } from '../utils/carga';
-import { ESTADOS } from '../utils/estadosCarga';
-import { grupoDePostulacion } from '../utils/postulaciones';
+import { etiquetaNoSalio, grupoDePostulacion } from '../utils/postulaciones';
 import { destinoVolver, volverA } from '../utils/volver';
 import { useAvisoSinConexion } from '../components/contextoConexion';
 import './Postulaciones.css';
@@ -152,9 +151,7 @@ export default function Postulaciones() {
                           )}
                           {clave === 'cerrada' && (
                             <span className="pos-badge pos-badge--rechazada">
-                              {p.estado_actual === ESTADOS.CANCELADA && p.estado !== 'rechazada'
-                                ? 'Carga cancelada'
-                                : 'No elegida'}
+                              {etiquetaNoSalio(p)}
                             </span>
                           )}
                         </div>

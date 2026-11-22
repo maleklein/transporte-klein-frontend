@@ -40,3 +40,23 @@ export function grupoDePostulacion(postulacion) {
 export function esViajeEnCurso(postulacion) {
   return grupoDePostulacion(postulacion) === 'asignado';
 }
+
+/**
+ * Qué dice la etiqueta de una postulación del grupo "No salieron" (HU 4):
+ * "Carga cancelada" si la carga se canceló y "No elegida" si se asignó a otro
+ * camionero.
+ *
+ * Alcanza con el estado de la carga. Desde que al cancelar las postulaciones
+ * en espera pasan a "rechazada" (backend, PR 68), el estado de la postulación
+ * ya no distingue los dos casos. Y no hace falta: se cancela sólo desde
+ * "disponible" o "pendiente", y en los dos todas las postulaciones están en
+ * espera (volver de "aceptada" a "pendiente" las devuelve a todas a
+ * "pendiente"). Ningún camionero de una carga cancelada había quedado sin
+ * asignar antes de la cancelación.
+ *
+ * @param {object} postulacion - fila de `GET /postulaciones/mis-postulaciones`.
+ * @returns {'Carga cancelada'|'No elegida'}
+ */
+export function etiquetaNoSalio(postulacion) {
+  return postulacion.estado_actual === ESTADOS.CANCELADA ? 'Carga cancelada' : 'No elegida';
+}
