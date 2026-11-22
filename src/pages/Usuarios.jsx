@@ -14,9 +14,17 @@ import BarraSuperior from '../components/BarraSuperior';
 import MigasDePan from '../components/MigasDePan';
 import BotonQuitarFiltro from '../components/BotonQuitarFiltro';
 import ComboBox from '../components/ComboBox';
+import Paginacion from '../components/Paginacion';
 import TextoResaltado from '../components/TextoResaltado';
 import { avisoSinResultados, coincideBusqueda, datoQueCoincide } from '../utils/buscarUsuarios';
 import { formatearDni } from '../utils/formatoUsuario';
+import {
+  cantidadDePaginas,
+  elementosDePagina,
+  paginaDeIndice,
+  paginaDeUrl,
+  rangoDePagina,
+} from '../utils/paginacion';
 import { destinoVolver, volverA } from '../utils/volver';
 import { useAvisoSinConexion } from '../components/contextoConexion';
 import './DetalleCarga.css';
@@ -84,9 +92,15 @@ const cumpleFiltros = (usuario, filtros) => {
  * tabla no entra, una lista con el nombre, el rol y el estado (como Ajustes
  * del iPhone), y el resto de los datos está en la ficha.
  *
- * La búsqueda y los filtros viven en la URL, que es su única fuente: así, al
- * volver de la ficha o de la edición, el listado sigue como se lo dejó. Entrar
- * desde "Usuarios" de la barra abre el listado sin filtros.
+ * La búsqueda, los filtros y la página viven en la URL, que es su única
+ * fuente: así, al volver de la ficha o de la edición, el listado sigue como se
+ * lo dejó. Entrar desde "Usuarios" de la barra abre el listado sin filtros.
+ *
+ * Se ven de a 20 (`utils/paginacion.js`), con Anterior / Siguiente debajo. La
+ * paginación también es sobre la lista ya cargada: los usuarios son los
+ * empleados y camioneros de la empresa, una lista acotada, y pasarla al
+ * backend obligaría a buscar allá y perder el filtrado instantáneo. Las cargas,
+ * que crecen con cada viaje, sí se paginan en el backend.
  *
  * @returns {JSX.Element}
  */
@@ -118,6 +132,13 @@ export default function Usuarios() {
     () => usuarios.filter((usuario) => cumpleFiltros(usuario, filtros)),
     [usuarios, filtros],
   );
+
+  // Una página que ya no existe (se borró la búsqueda a mano dejando
+  // `?pagina=9`) muestra la última.
+  const paginas = cantidadDePaginas(usuariosVisibles.length);
+  const pagina = Math.min(paginaDeUrl(parametrosUrl), paginas);
+  const usuariosPagina = elementosDePagina(usuariosVisibles, pagina);
+  const { desde, hasta } = rangoDePagina(pagina, usuariosVisibles.length);
 
   // Con el listado vacío por la búsqueda o los filtros: qué decir y qué salida
   // ofrecer. Para eso cuenta cuántos coinciden con la búsqueda sin Rol ni Estado.
@@ -178,11 +199,51 @@ export default function Usuarios() {
         const siguientes = new URLSearchParams(previos);
         if (value) siguientes.set(campo, value);
         else siguientes.delete(campo);
+        // Con otro filtro, la página que se veía es de otra lista.
+        siguientes.delete('pagina');
         return siguientes;
       },
       { replace: true, state: estadoPropio },
     );
   };
+
+  // Arriba del listado: al pasar de página se vuelve acá, para empezar a leer
+  // la página nueva desde el principio y no desde el pie de la anterior.
+  const refInicioListado = useRef(null);
+
+  /**
+   * Pasa a otra página, con la misma búsqueda y los mismos filtros.
+   *
+   * @param {number} nueva
+   * @returns {void}
+   */
+  const irAPagina = (nueva) => {
+    setParametrosUrl(
+      (previos) => {
+        const siguientes = new URLSearchParams(previos);
+        if (nueva > 1) siguientes.set('pagina', String(nueva));
+        else siguientes.delete('pagina');
+        return siguientes;
+      },
+      { replace: true, state: estadoPropio },
+    );
+    const inicio = refInicioListado.current;
+    if (inicio && inicio.getBoundingClientRect().top < 0) inicio.scrollIntoView({ block: 'start' });
+  };
+
+  // El usuario recién creado puede no caer en la página que se está viendo:
+  // se va a la suya, para que se vea resaltado. Una sola vez por usuario.
+  const idPaginaBuscadaRef = useRef(null);
+  useEffect(() => {
+    if (!idDestacado || estadoPantalla !== 'ok' || idPaginaBuscadaRef.current === idDestacado) return;
+    idPaginaBuscadaRef.current = idDestacado;
+    const indice = usuariosVisibles.findIndex((usuario) => usuario.id_usuario === idDestacado);
+    if (indice === -1) return;
+    const suya = paginaDeIndice(indice);
+    if (suya !== pagina) irAPagina(suya);
+    // `irAPagina` cambia en cada render; con `idDestacado` alcanza.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [idDestacado, estadoPantalla, usuariosVisibles, pagina]);
 
   // El alta vuelve acá pasando el usuario creado por router state, para
   // resaltar su fila y avisar. (La edición vuelve a la ficha, no acá.)
@@ -328,6 +389,9 @@ export default function Usuarios() {
           resultados se oculta a la vista (ya está el aviso de abajo), pero
           sigue anunciándose.
         */}
+        <div ref={refInicioListado} className="us-inicio-listado" />
+
+        {/* Con varias páginas, cuáles se están viendo de cuántos. */}
         {estadoPantalla === 'ok' && (
           <p
             className={usuariosVisibles.length > 0 ? 'us-contador' : 'us-solo-lectores'}
@@ -335,8 +399,12 @@ export default function Usuarios() {
           >
             {aviso
               ? `${aviso.titulo} ${aviso.ayuda}`
-              : `${usuariosVisibles.length} ${
-                  usuariosVisibles.length === 1 ? 'usuario encontrado' : 'usuarios encontrados'
+              : `${
+                  paginas > 1
+                    ? `Mostrando ${desde}–${hasta} de ${usuariosVisibles.length} usuarios`
+                    : `${usuariosVisibles.length} ${
+                        usuariosVisibles.length === 1 ? 'usuario encontrado' : 'usuarios encontrados'
+                      }`
                 }${busqueda ? ` para “${busqueda}”` : ''}`}
           </p>
         )}
@@ -379,7 +447,7 @@ export default function Usuarios() {
                   </tr>
                 </thead>
                 <tbody>
-                  {usuariosVisibles.map((usuario) => (
+                  {usuariosPagina.map((usuario) => (
                     // Toda la fila abre la ficha con el mouse. Con el teclado y el
                     // lector de pantalla, el botón es el nombre.
                     <tr
@@ -449,7 +517,7 @@ export default function Usuarios() {
             */}
             {!aviso && usuariosVisibles.length > 0 && (
               <ul className="us-lista">
-                {usuariosVisibles.map((usuario) => {
+                {usuariosPagina.map((usuario) => {
                   const dato = datoQueCoincide(usuario, filtros.buscar);
                   return (
                     <li key={usuario.id_usuario}>
@@ -493,6 +561,15 @@ export default function Usuarios() {
               </ul>
             )}
           </div>
+        )}
+
+        {estadoPantalla === 'ok' && !aviso && (
+          <Paginacion
+            pagina={pagina}
+            cantidad={paginas}
+            alCambiar={irAPagina}
+            etiqueta="Páginas del listado de usuarios"
+          />
         )}
       </main>
     </>

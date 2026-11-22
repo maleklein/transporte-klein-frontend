@@ -71,6 +71,12 @@
   }
 }
 
+/* A dónde se vuelve al pasar de página: un poco más arriba del contador,
+   para que no quede pegado al borde de la ventana. */
+.cg-inicio-listado {
+  scroll-margin-top: 16px;
+}
+
 .cg-contador {
   margin: 0 0 12px;
   font-size: var(--texto-base);

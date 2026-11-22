@@ -1,0 +1,44 @@
+/* Paginación de los listados. Mismo esquema que la del historial de
+   calificaciones (Calificaciones.css): Anterior a la izquierda, Siguiente a la
+   derecha y la página al medio. En el celular no entran en una fila: la página
+   va arriba y los botones, mitad y mitad. */
+.ds-paginacion {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  gap: 8px;
+  margin-top: 20px;
+}
+
+.ds-paginacion > :first-child {
+  justify-self: start;
+}
+
+.ds-paginacion > :last-child {
+  justify-self: end;
+}
+
+.ds-paginacion__pagina {
+  text-align: center;
+  font-size: var(--texto-base);
+  color: var(--color-texto-suave);
+  white-space: nowrap;
+}
+
+@media (max-width: 480px) {
+  .ds-paginacion {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .ds-paginacion__pagina {
+    grid-column: 1 / -1;
+    order: -1;
+  }
+
+  .ds-paginacion .ds-boton {
+    justify-self: stretch;
+    justify-content: center;
+    min-width: 0;
+    padding-inline: 12px;
+  }
+}
