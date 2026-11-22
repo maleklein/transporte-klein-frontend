@@ -94,7 +94,7 @@ const ACCESOS_CAMIONERO = [
  * (corrección del profesor del 17/11, punto 9). Ahí la barra queda en un solo
  * renglón, como en las apps: a la izquierda el botón de menú (sólo el ícono),
  * que despliega los accesos debajo; en el centro "Transporte Klein"; a la
- * derecha la campana, con un punto rojo si hay notificaciones sin leer. No se
+ * derecha la campana, con un punto celeste si hay notificaciones sin leer. No se
  * usa una barra fija abajo: en el navegador del celular ya hay una barra
  * abajo y quitaría más lugar.
  *

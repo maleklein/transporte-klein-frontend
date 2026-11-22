@@ -151,9 +151,9 @@
     padding: 0;
   }
 
-  /* La campana: sólo el ícono, y un punto rojo arriba a la izquierda si hay
-     sin leer. El número no se lee a ese tamaño; el texto "Notificaciones" y
-     la cantidad siguen para el lector de pantalla (`.ni-oculto`). */
+  /* La campana: sólo el ícono, sin borde, y el punto celeste si hay sin
+     leer. El texto "Notificaciones" y la cantidad siguen para el lector de
+     pantalla (`.ni-oculto`). */
   .bs-barra .ni-enlace {
     grid-column: 3;
     grid-row: 1;
@@ -163,6 +163,16 @@
     height: 48px;
     margin: 0;
     padding: 0;
+    border-color: transparent;
+  }
+
+  .bs-barra .ni-enlace:hover {
+    border-color: transparent;
+  }
+
+  .bs-barra .ni-icono svg {
+    width: 26px;
+    height: 26px;
   }
 
   .bs-barra .ni-texto {
@@ -172,18 +182,6 @@
     overflow: hidden;
     clip: rect(0 0 0 0);
     white-space: nowrap;
-  }
-
-  .bs-barra .ni-contador {
-    position: absolute;
-    top: 7px;
-    left: 9px;
-    min-width: 0;
-    width: 12px;
-    height: 12px;
-    padding: 0;
-    overflow: hidden;
-    font-size: 0;
   }
 
   /* Las migas de pan de la pantalla: en el celular las reemplaza la flecha ‹ de la barra. */

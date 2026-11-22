@@ -64,28 +64,24 @@ export default function IndicadorNotificaciones() {
     };
   }, [avisarConexionInestable]);
 
-  // El backend devuelve 100 como máximo, así que de 99 para arriba el número
-  // exacto ya no se conoce: "99+" dice justamente eso.
-  const textoContador = noLeidas > 99 ? '99+' : String(noLeidas);
-
   return (
     <NavLink
       to="/notificaciones"
       className={({ isActive }) => `bs-enlace ni-enlace${isActive ? ' bs-enlace--activo' : ''}`}
     >
-      <IconoCampana width={22} height={22} />
+      <span className="ni-icono">
+        <IconoCampana width={24} height={24} />
+        {/* A la vista sólo un punto, sin el número: avisa que hay algo nuevo.
+            La cantidad la oye el lector de pantalla en la frase de abajo. */}
+        {noLeidas > 0 && <span className="ni-punto" aria-hidden="true" />}
+      </span>
       <span className="ni-texto">Notificaciones</span>
       {noLeidas > 0 && (
-        <>
-          {/* El número a la vista no se lee solo ("Notificaciones 3" no dice
-              nada); el lector de pantalla oye la frase completa de al lado. */}
-          <span className="ni-contador" aria-hidden="true">
-            {textoContador}
-          </span>
-          <span className="ni-oculto">
-            , {noLeidas > 99 ? 'más de 99' : noLeidas} sin leer
-          </span>
-        </>
+        // El backend devuelve 100 como máximo, así que de 99 para arriba el
+        // número exacto ya no se conoce.
+        <span className="ni-oculto">
+          , {noLeidas > 99 ? 'más de 99' : noLeidas} sin leer
+        </span>
       )}
     </NavLink>
   );
