@@ -1,6 +1,8 @@
 /* ==========================================================================
    Consulta de cargas (HU 2.5) — listado en /cargas.
-   Barra de filtros + grilla de tarjetas (una por carga).
+   Barra de filtros + tabla de cargas. La tabla y la lista del celular usan
+   las clases de Gestión de Usuarios (Usuarios.css); acá van sólo los ajustes
+   propios de las cargas.
    ========================================================================== */
 
 .cg-filtros {
@@ -87,130 +89,43 @@
 }
 
 /* --------------------------------------------------------------------------
-   Grilla de tarjetas — máximo 2 columnas, igual que el resto del proyecto.
+   Tabla de cargas
    -------------------------------------------------------------------------- */
-.cg-grilla {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 18px;
+
+/* Peso, distancia y postulados alineados a la derecha, para comparar cifras. */
+.cg-tabla .cg-numero {
+  text-align: right;
 }
 
-@media (max-width: 720px) {
-  .cg-grilla {
-    grid-template-columns: 1fr;
-  }
+/* Vista del camionero: mismas columnas en las dos tablas, alineadas. */
+.cg-tabla--fija {
+  table-layout: fixed;
 }
 
-.cg-card {
-  position: relative;
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-  padding: var(--relleno-tarjeta);
-  border: 2px solid var(--color-borde-suave);
-  border-radius: var(--radio);
-  background: var(--color-fondo);
-  transition: border-color 0.12s ease, box-shadow 0.12s ease;
+.cg-tabla--fija th:nth-child(1) { width: 22%; }
+.cg-tabla--fija th:nth-child(2),
+.cg-tabla--fija th:nth-child(3) { width: 24%; }
+.cg-tabla--fija th:nth-child(4),
+.cg-tabla--fija th:nth-child(5) { width: 15%; }
+.cg-tabla--fija th:last-child { width: 44px; }
+
+/* Fechas y cifras en un solo renglón ("28.500 kg" no se parte). */
+.cg-sin-corte {
+  white-space: nowrap;
 }
 
-.cg-card:active,
-.cg-card:has(:focus-visible) {
-  border-color: var(--color-primario);
-  box-shadow: 0 4px 14px rgba(31, 78, 121, 0.12);
-}
-
-/* Sólo con mouse: en el celular el hover queda pegado después de tocar. */
-@media (hover: hover) {
-  .cg-card:hover {
-    border-color: var(--color-primario);
-    box-shadow: 0 4px 14px rgba(31, 78, 121, 0.12);
-  }
-}
-
-.cg-card__top {
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: 10px;
-}
-
-.cg-card__titulo {
-  margin: 0;
-  font-size: var(--texto-label);
-  font-weight: 700;
-  color: var(--color-texto);
-}
-
-/* Excepción a "ícono en el primer renglón": en la ruta, el ícono y la flecha
-   quedan centrados con el texto aunque ocupe varios renglones. */
-.cg-card__ruta {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  margin: 0;
-  padding: 8px 10px;
-  border-radius: var(--radio-chico);
-  background: var(--color-fondo-alt);
-  font-weight: 600;
-  color: var(--color-texto);
-}
-
-.cg-card__ruta svg {
-  flex-shrink: 0;
-  color: var(--color-primario);
-}
-
-.cg-card__flecha {
-  color: var(--color-texto-suave);
-}
-
-.cg-card__meta {
+/* Etiquetas de la celda de estado: retiro vencido (sólo administrador) + estado. */
+.cg-etiquetas {
   display: flex;
   flex-wrap: wrap;
-  gap: 8px 20px;
-  color: var(--color-texto-suave);
-  font-size: var(--texto-ayuda);
-}
-
-.cg-card__meta span {
-  display: inline-flex;
-  align-items: center;
   gap: 6px;
 }
 
-/* Acción principal de la tarjeta. El ::after la estira sobre toda la tarjeta,
-   así el click funciona en cualquier parte sin duplicar controles. */
-/* "3 postulados" en las cargas pendientes (sólo administrador). */
-.cg-postulados {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  align-self: flex-start;
-  padding: 4px 10px;
-  border-radius: 999px;
-  background: var(--color-primario-claro);
-  color: var(--color-primario);
-  font-weight: 700;
-  font-size: var(--texto-ayuda);
-}
-
-.cg-card__vermas {
-  align-self: flex-end;
-  min-height: 44px;
-  padding: 9px 16px;
-  font-size: var(--texto-ayuda);
-}
-
-.cg-card__vermas::after {
-  content: '';
-  position: absolute;
-  inset: 0;
-  border-radius: var(--radio);
-}
-
-.cg-card__vermas:focus-visible {
-  outline: 3px solid var(--color-primario);
-  outline-offset: 2px;
+/* En la lista del celular, las etiquetas van a la derecha, una debajo de la otra. */
+.us-item .cg-etiquetas {
+  flex-direction: column;
+  align-items: flex-end;
+  flex-shrink: 0;
 }
 
 /* El badge de estado (.ds-estado-carga) vive en index.css: se comparte con el detalle. */
@@ -222,14 +137,7 @@
   color: var(--color-texto-suave);
 }
 
-/* --- Etiquetas de la tarjeta: retiro vencido (sólo administrador) + estado --- */
-.cg-card__etiquetas {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: flex-end;
-  gap: 6px;
-}
-
+/* --- Retiro vencido (sólo administrador) --- */
 .cg-etiqueta-vencida {
   display: inline-block;
   padding: 4px 12px;
@@ -259,12 +167,12 @@
   color: var(--color-texto-suave);
 }
 
-.cg-card--excedida {
+/* Las filas se atenúan, pero el texto sigue legible y la fila se puede abrir. */
+.cg-tabla-caja--excedidas {
   background: var(--color-fondo-alt);
 }
 
-.cg-card--excedida .cg-card__titulo,
-.cg-card--excedida .cg-card__ruta,
-.cg-card--excedida .cg-card__meta {
+.cg-tabla-caja--excedidas .us-tabla td,
+.cg-tabla-caja--excedidas .us-item__texto {
   opacity: 0.75;
 }

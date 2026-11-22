@@ -10,13 +10,8 @@ import {
   IconoAlerta,
   IconoCaja,
   IconoCajaMas,
-  IconoCalendario,
   IconoCerrar,
-  IconoOjo,
-  IconoPeso,
-  IconoRuta,
-  IconoUbicacion,
-  IconoUsuario,
+  IconoChevronDerecha,
 } from '../components/Iconos';
 import BarraSuperior from '../components/BarraSuperior';
 import MigasDePan from '../components/MigasDePan';
@@ -33,6 +28,7 @@ import { ESTADOS, etiquetaEstado } from '../utils/estadosCarga';
 import { destinoVolver, volverA } from '../utils/volver';
 import { useAvisoSinConexion } from '../components/contextoConexion';
 import './DetalleCarga.css';
+import './Usuarios.css';
 import './Cargas.css';
 
 /**
@@ -46,9 +42,9 @@ const FILTROS_VACIOS = { estado: '', fecha: '', destino_provincia: '' };
  *
  * Al entrar pide `GET /cargas` sin filtros. Cada vez que cambia un filtro
  * (estado, fecha o destino) vuelve a pedir con los query params correspondientes
- * y actualiza la grilla de tarjetas. Al hacer click en una tarjeta navega a
- * `/cargas/:id` con el `id_carga` de esa fila; el detalle recarga la carga con
- * `GET /cargas/:id`.
+ * y actualiza la tabla (en el celular, una lista), con el mismo formato que
+ * Gestión de Usuarios. Al hacer click en una fila navega a `/cargas/:id` con
+ * el `id_carga` de esa fila; el detalle recarga la carga con `GET /cargas/:id`.
  *
  * El filtro de estado también vive en la URL (`/cargas?estado=pendiente`),
  * para que otra pantalla pueda abrir el listado ya filtrado: el panel del
@@ -227,7 +223,7 @@ export default function Cargas() {
   const sinCapacidadCargada = excedidas.some((carga) => motivoSinCapacidad(carga) === 'sin-capacidad');
 
   /**
-   * Qué decir cuando no hay ninguna carga en la grilla principal.
+   * Qué decir cuando no hay ninguna carga en la tabla principal.
    *
    * @returns {string}
    */
@@ -240,90 +236,148 @@ export default function Cargas() {
   };
 
   /**
-   * Tarjeta de una carga del listado.
+   * Celda de estado: la etiqueta del estado y, si el retiro ya pasó, "Retiro
+   * vencido" al lado. Al camionero no se le muestra (ver `esCamionero`): todas
+   * las que ve están abiertas a postulaciones, y una "Pendiente" (que ya tiene
+   * postulados) se leería como que no puede postularse.
    *
    * @param {object} carga
-   * @param {boolean} [excedida] - si el camionero no la puede llevar: se ve atenuada.
    * @returns {JSX.Element}
    */
-  const tarjeta = (carga, excedida = false) => (
-    <article key={carga.id_carga} className={`cg-card${excedida ? ' cg-card--excedida' : ''}`}>
-      <div className="cg-card__top">
-        <h2 className="cg-card__titulo">{carga.tipo_carga}</h2>
-        {/*
-          Al camionero no se le muestra el estado: todas las que ve están
-          abiertas a postulaciones, y una "Pendiente" (que ya tiene postulados)
-          se leería como que no puede postularse.
-        */}
-        {!esCamionero && (
-          <span className="cg-card__etiquetas">
-            {retiroVencido(carga) && <span className="cg-etiqueta-vencida">Retiro vencido</span>}
-            <EstadoCarga estado={carga.estado_actual} />
-          </span>
-        )}
-      </div>
+  const etiquetasEstado = (carga) => (
+    <span className="cg-etiquetas">
+      <EstadoCarga estado={carga.estado_actual} />
+      {retiroVencido(carga) && <span className="cg-etiqueta-vencida">Retiro vencido</span>}
+    </span>
+  );
 
-      <p className="cg-card__ruta">
-        <IconoUbicacion width={18} height={18} />
-        <span>{carga.origen}</span>
-        <span className="cg-card__flecha" aria-hidden="true">
-          →
-        </span>
-        <span>{carga.destino}</span>
-      </p>
+  /**
+   * Cuántos camioneros esperan la asignación: se ve desde el listado cuál
+   * conviene resolver primero, sin abrir cada carga. Sólo en las pendientes
+   * (el backend no se lo manda al camionero).
+   *
+   * @param {object} carga
+   * @returns {string}
+   */
+  const textoPostulados = (carga) =>
+    carga.estado_actual === ESTADOS.PENDIENTE && carga.cantidad_postulados > 0
+      ? String(carga.cantidad_postulados)
+      : '—';
 
-      <div className="cg-card__meta">
-        <span>
-          <IconoCalendario width={16} height={16} />
-          {textoFechaRetiro(carga.fecha)}
-        </span>
-        <span>
-          <IconoPeso width={16} height={16} />
-          {formatearPeso(carga.peso_kg)}
-        </span>
-        {/*
-          Distancia estimada (HU 9): dato secundario, sólo para el
-          administrador. Si quedó pendiente se avisa acá también, así
-          se ve desde el listado qué cargas hay que reintentar.
-        */}
-        {!esCamionero && (
-          <span>
-            <IconoRuta width={16} height={16} />
-            {carga.estado_calculo_km === 'ok'
-              ? formatearKm(carga.kilometros_estimados)
-              : 'Distancia pendiente'}
-          </span>
-        )}
-      </div>
-
+  /**
+   * Listado de cargas, con el mismo formato que Gestión de Usuarios: en la
+   * computadora, una tabla en la que toda la fila abre el detalle; en el
+   * celular, donde la tabla no entra, una lista con el tipo, la ruta, la fecha
+   * y el peso. Se dibujan las dos y el CSS muestra una.
+   *
+   * @param {object[]} lista
+   * @param {boolean} [excedidas] - si el camionero no las puede llevar: se ven atenuadas.
+   * @returns {JSX.Element}
+   */
+  const tablaCargas = (lista, excedidas = false) => (
+    <div className={`us-tabla-caja${excedidas ? ' cg-tabla-caja--excedidas' : ''}`}>
       {/*
-        Cuántos camioneros esperan la asignación: se ve desde el listado cuál
-        conviene resolver primero, sin abrir cada carga. Sólo en las
-        pendientes y para el administrador (el backend no se lo manda al
-        camionero).
+        Al camionero se le pueden mostrar dos tablas (las que puede llevar y
+        las que no): con anchos fijos, las columnas quedan alineadas entre sí.
       */}
-      {!esCamionero && carga.estado_actual === ESTADOS.PENDIENTE && carga.cantidad_postulados > 0 && (
-        <span className="cg-postulados">
-          <IconoUsuario width={16} height={16} />
-          {carga.cantidad_postulados === 1 ? '1 postulado' : `${carga.cantidad_postulados} postulados`}
-        </span>
-      )}
+      <table className={`us-tabla cg-tabla${esCamionero ? ' cg-tabla--fija' : ''}`}>
+        <thead>
+          <tr>
+            <th scope="col">Tipo de carga</th>
+            <th scope="col">Origen</th>
+            <th scope="col">Destino</th>
+            <th scope="col">Fecha de retiro</th>
+            <th scope="col" className="cg-numero">
+              Peso
+            </th>
+            {/*
+              Distancia estimada (HU 9) y postulados: datos para el
+              administrador. Si la distancia quedó pendiente se avisa acá
+              también, así se ve desde el listado qué cargas hay que reintentar.
+            */}
+            {!esCamionero && (
+              <th scope="col" className="cg-numero">
+                Distancia
+              </th>
+            )}
+            {!esCamionero && (
+              <th scope="col" className="cg-numero">
+                Postulados
+              </th>
+            )}
+            {!esCamionero && <th scope="col">Estado</th>}
+            <th scope="col">
+              <span className="us-columna-oculta">Detalle</span>
+            </th>
+          </tr>
+        </thead>
+        <tbody>
+          {lista.map((carga) => (
+            // Toda la fila abre el detalle con el mouse. Con el teclado y el
+            // lector de pantalla, el botón es el tipo de carga.
+            <tr key={carga.id_carga} className="us-fila" onClick={() => irAlDetalle(carga)}>
+              <td>
+                <button
+                  type="button"
+                  className="us-abrir"
+                  onClick={(evento) => {
+                    evento.stopPropagation();
+                    irAlDetalle(carga);
+                  }}
+                >
+                  <span className="us-solo-lectores">Ver detalle de la carga </span>
+                  {carga.tipo_carga}
+                </button>
+              </td>
+              <td>{carga.origen}</td>
+              <td>{carga.destino}</td>
+              <td className="cg-sin-corte">{textoFechaRetiro(carga.fecha)}</td>
+              <td className="cg-numero cg-sin-corte">{formatearPeso(carga.peso_kg)}</td>
+              {!esCamionero && (
+                <td className="cg-numero cg-sin-corte">
+                  {carga.estado_calculo_km === 'ok'
+                    ? formatearKm(carga.kilometros_estimados)
+                    : 'Pendiente'}
+                </td>
+              )}
+              {!esCamionero && <td className="cg-numero">{textoPostulados(carga)}</td>}
+              {!esCamionero && <td>{etiquetasEstado(carga)}</td>}
+              <td className="us-flecha">
+                <IconoChevronDerecha width={22} height={22} aria-hidden="true" />
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
 
-      {/*
-        El botón "estirado" (::after cubre toda la tarjeta en el CSS) hace
-        que el click en cualquier parte de la tarjeta lleve al detalle, sin
-        perder accesibilidad: sigue siendo un único control enfocable.
-      */}
-      <button
-        type="button"
-        className="ds-boton ds-boton--secundario cg-card__vermas"
-        onClick={() => irAlDetalle(carga)}
-        aria-label={`Ver detalle de la carga de ${carga.origen} a ${carga.destino}`}
-      >
-        <IconoOjo width={18} height={18} />
-        Ver detalle
-      </button>
-    </article>
+      <ul className="us-lista">
+        {lista.map((carga) => (
+          <li key={carga.id_carga}>
+            <button type="button" className="us-item" onClick={() => irAlDetalle(carga)}>
+              <span className="us-item__texto">
+                <span className="us-item__nombre">{carga.tipo_carga}</span>
+                <span className="us-item__dato">
+                  {carga.origen} → {carga.destino}
+                </span>
+                <span className="us-item__dato">
+                  {textoFechaRetiro(carga.fecha)} · {formatearPeso(carga.peso_kg)}
+                  {!esCamionero && textoPostulados(carga) !== '—' && (
+                    <>
+                      {' · '}
+                      {carga.cantidad_postulados === 1
+                        ? '1 postulado'
+                        : `${carga.cantidad_postulados} postulados`}
+                    </>
+                  )}
+                </span>
+              </span>
+              {!esCamionero && etiquetasEstado(carga)}
+              <IconoChevronDerecha className="us-item__flecha" width={22} height={22} aria-hidden="true" />
+            </button>
+          </li>
+        ))}
+      </ul>
+    </div>
   );
 
   return (
@@ -484,9 +538,7 @@ export default function Cargas() {
           <p className="cg-mensaje">{mensajeSinCargas()}</p>
         )}
 
-        {estadoPantalla === 'ok' && postulables.length > 0 && (
-          <div className="cg-grilla">{postulables.map((carga) => tarjeta(carga))}</div>
-        )}
+        {estadoPantalla === 'ok' && postulables.length > 0 && tablaCargas(postulables)}
 
         {/*
           Las que el camionero no puede llevar quedan aparte y al final, en vez
@@ -503,7 +555,7 @@ export default function Cargas() {
                 ? 'Tu vehículo no tiene la capacidad cargada, así que no podés postularte a ninguna carga. Pedile a un administrador que la cargue.'
                 : `Tu vehículo lleva hasta ${formatearPeso(excedidas[0].capacidad_camionero_kg)}. Estas cargas pesan más, así que no podés postularte.`}
             </p>
-            <div className="cg-grilla">{excedidas.map((carga) => tarjeta(carga, true))}</div>
+            {tablaCargas(excedidas, true)}
           </section>
         )}
       </main>
