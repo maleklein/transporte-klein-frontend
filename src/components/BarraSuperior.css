@@ -151,9 +151,9 @@
     padding: 0;
   }
 
-  /* La campana: sólo el ícono, sin borde, y el punto celeste si hay sin
-     leer. El texto "Notificaciones" y la cantidad siguen para el lector de
-     pantalla (`.ni-oculto`). */
+  /* La campana: sólo el ícono, con el mismo borde que el botón de menú, y
+     el punto celeste si hay sin leer. El texto "Notificaciones" y la
+     cantidad siguen para el lector de pantalla (`.ni-oculto`). */
   .bs-barra .ni-enlace {
     grid-column: 3;
     grid-row: 1;
@@ -163,11 +163,6 @@
     height: 48px;
     margin: 0;
     padding: 0;
-    border-color: transparent;
-  }
-
-  .bs-barra .ni-enlace:hover {
-    border-color: transparent;
   }
 
   .bs-barra .ni-icono svg {
