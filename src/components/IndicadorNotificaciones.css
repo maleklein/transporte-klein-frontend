@@ -25,21 +25,18 @@
   stroke-width: 1.8;
 }
 
-/* Sin número: el número se oye (ver `.ni-oculto`), no se ve. */
+/* Sin número: el número se oye (ver `.ni-oculto`), no se ve. Va separado
+   del hombro de la campana, sin tocarla, y más arriba que a la derecha:
+   corrido a la derecha se pegaba al texto y la barra no entraba en un
+   renglón. */
 .ni-punto {
   position: absolute;
-  top: -1px;
-  right: -2px;
+  top: -7px;
+  right: -3px;
   width: 9px;
   height: 9px;
   border-radius: 50%;
   background: var(--color-novedad);
-}
-
-/* En la pantalla de notificaciones el acceso queda blanco, y el celeste
-   sobre blanco no se ve: un aro del azul de la barra lo recorta. */
-.bs-enlace--activo .ni-punto {
-  box-shadow: 0 0 0 2px var(--color-primario);
 }
 
 /* Texto sólo para lectores de pantalla. */
