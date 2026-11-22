@@ -32,6 +32,11 @@
   /* Resaltado: la parte de un texto que coincide con una búsqueda. */
   --color-resaltado: #FFE58F;
 
+  /* Novedad: el punto de la campana cuando hay notificaciones sin leer.
+     Celeste y no rojo: avisa que hay algo nuevo, no que algo salió mal.
+     Sobre el azul de la barra da 3,9:1 (lo que pide un ícono es 3:1). */
+  --color-novedad: #64B5F6;
+
   /* Neutros — contraste alto sobre blanco */
   --color-fondo: #FFFFFF;
   --color-fondo-alt: #F1F4F7;
